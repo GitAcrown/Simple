@@ -549,7 +549,8 @@ class Systex:
                            "CHEMIN": None,
                            "URL": None,
                            "AFFICHAGE": None,
-                           "CONTENANT": False}
+                           "CONTENANT": False,
+                           "SECRET": False}
                     if "/" in stk:
                         tr = stk.split("/")[1]
                         pr = stk.split("/")[0]
@@ -561,6 +562,8 @@ class Systex:
                             img["AFFICHAGE"] = "billet"
                         else:
                             pass
+                        if "s" in pr:
+                            img["SECRET"] = True
                         if "?" in pr:
                             img["CONTENANT"] = True
                     else:
@@ -640,6 +643,11 @@ class Systex:
                         except:
                             print("L'URL de :{}: est indisponible. Je ne peux pas l'envoyer. (Format: web/defaut)"
                                   "".format(img["NOM"]))
+                    if img["SECRET"]:
+                        try:
+                            await self.bot.delete_message(message)
+                        except:
+                            print("Impossible de supprimer le message, l'auteur mon supérieur")
 
 
 def check_folders():
