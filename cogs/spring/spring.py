@@ -154,6 +154,8 @@ class Spring:
         ancsur = ", ".join(self.spr.open(membre)["SURNOMS"][3:])
         psdtxt = "**Pseudos**: {}\n**Surnoms**: {}".format(ancpsd if ancpsd else "*?*", ancsur if ancsur else "*?*")
         em.add_field(name="Précédemment", value=psdtxt)
+        if membre.game:
+            em.set_footer(text="Joue à {}".format(membre.game))
         await self.bot.say(embed=em)
 
     async def l_profil(self, avant, apres):
