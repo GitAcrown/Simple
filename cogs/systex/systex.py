@@ -384,9 +384,9 @@ class Systex:
         server = ctx.message.server
         if nom not in self.list_stk():
             if author.server_permissions.manage_messages:
-                msgplus = "Il est disponible avec :{}:".format(nom)
+                msgplus = "**Sticker ajouté avec succès !** | Il est disponible avec :{}:".format(nom)
             else:
-                msgplus = "Ajouté à la liste en attente d'approbation"
+                msgplus = "**En attente d'approbation** | Un modérateur pourra approuver le sticker avec '&stk approb {}'".format(nom)
             if not url:
                 attach = ctx.message.attachments
                 if len(attach) > 1:
@@ -413,7 +413,7 @@ class Systex:
                     f.write(await new.read())
                     f.close()
                 self.add_sticker(clef, nom, filepath, author, url)
-                await self.bot.say("**Sticker ajouté avec succès !** | {}".format(msgplus))
+                await self.bot.say(msgplus)
                 return
             else:
                 if url.endswith("jpg") or url.endswith("gif") or url.endswith("png") or url.endswith("jpeg"):
@@ -433,7 +433,7 @@ class Systex:
                                 string.ascii_lowercase + string.ascii_uppercase + string.digits) for _ in
                             range(6))
                         self.add_sticker(clef, nom, file, author, url)
-                        await self.bot.say("**Sticker ajouté avec succès !** | {}".format(msgplus))
+                        await self.bot.say(msgplus)
                         return
                     except Exception as e:
                         print("Impossible de télécharger une image : {}".format(e))
