@@ -40,6 +40,35 @@ class Systex:
         lst = [self.stk["STK"][e]["NOM"] for e in self.stk["STK"]]
         return lst
 
+    def levenshtein(self, s1, s2):
+        if len(s1) < len(s2):
+            m = s1
+            s1 = s2
+            s2 = m
+        if len(s2) == 0:
+            return len(s1)
+        previous_row = range(len(s2) + 1)
+        for i, c1 in enumerate(s1):
+            current_row = [i + 1]
+            for j, c2 in enumerate(s2):
+                insertions = previous_row[
+                                 j + 1] + 1
+                deletions = current_row[j] + 1
+                substitutions = previous_row[j] + (c1 != c2)
+                current_row.append(min(insertions, deletions, substitutions))
+            previous_row = current_row
+        return previous_row[-1]
+
+    def similarite(self, mot, liste, tolerance=3):
+        prochenb = tolerance
+        prochenom = None
+        for i in liste:
+            if self.levenshtein(i, mot) < prochenb:
+                prochenom = i
+                prochenb = self.levenshtein(i, mot)
+        else:
+            return prochenom
+
     def add_sticker(self, clef, nom: str, chemin, auteur: discord.Member, url, autbis = None, importe = None):
         if clef not in self.stk:
             autorise = False if not auteur.server_permissions.manage_messages else True
@@ -239,12 +268,31 @@ class Systex:
             self.save()
             await self.bot.say("**L'utilisateur n'a plus le droit d'utiliser des stickers**")
 
+    @_stkmod.command(pass_context=True)
+    async def custom(self, ctx, user: discord.Member):
+        """Interdir/autoriser l'utilisateur de faire un sticker customisé
+
+        Cette commande retire le sticker custom de l'utilisateur si il en a un."""
+        if user.id not in self.user:
+            self.user[user.id] = {}
+        if "STK_CUSTOM" not in self.user[user.id]:
+            self.user[user.id]["STK_CUSTOM"] = None
+        if self.user[user.id]["STK_CUSTOM"] or self.user[user.id]["STK_CUSTOM"] is None:
+            self.user[user.id]["STK_CUSTOM"] = False
+            self.save()
+            await self.bot.say("**L'utilisateur ne peut plus utiliser de sticker custom**")
+        else:
+            self.user[user.id]["STK_CUSTOM"] = None
+            self.save()
+            await self.bot.say("**L'utilisateur peut de nouveau utiliser un sticker custom**")
+
     @_stkmod.command(pass_context=True, hidden=True)
     async def reimport(self, ctx):
         """Réimporte tous les anciens stickers et remplace ceux ayant le même nom
 
         !!! A vos risques et périls !!!"""
-        await self.bot.say("**Patientez** | Cela peut mettre plusieures minutes...")
+        await self.bot.say("**Fonctionnalité bloquée !**")
+        return
         nb = 0
         for s in self.old["STICKERS"]:
             nom = s
@@ -284,6 +332,46 @@ class Systex:
         """Commandes de gestion des stickers"""
         if ctx.invoked_subcommand is None:
             await send_cmd_help(ctx)
+
+    @_stk.command(pass_context=True)
+    async def custom(self, ctx, url):
+        """Modifier son sticker :custom:
+
+        URL Seulement"""
+        user = ctx.message.author
+        if user.id not in self.user:
+            self.user[user.id] = {}
+        if "STK_CUSTOM" not in self.user[user.id]:
+            self.user[user.id]["STK_CUSTOM"] = None
+        if url.startswith("http"):
+            if not self.user[user.id]["STK_CUSTOM"]:
+                await self.bot.say("**Sticker custom modifié avec succès !**")
+                self.user[user.id]["STK_CUSTOM"] = url
+                self.save()
+            else:
+                await self.bot.say("**Vous n'avez pas le droit de mettre un sticker customisé**")
+        else:
+            await self.bot.say("**Ceci n'est pas une URL valide**")
+
+    @_stk.command(pass_context=True)
+    async def correct(self, ctx, tolerance:int):
+        """Permet de régler la tolérance de la correction automatique des stickers (0-3)
+        0 = Désactivé
+        1 = Faible
+        2 = Moyen
+        3 = Fort"""
+        user = ctx.message.author
+        if user.id not in self.user:
+            self.user[user.id] = {}
+        if "STK_TOL" not in self.user[user.id]:
+            self.user[user.id]["STK_TOL"] = 0
+        if 0 <= tolerance <= 3:
+            txt = "**Tolérance de correction reglée à {}**".format(tolerance) if tolerance > 0 else "**Correction désactivée**"
+            await self.bot.say(txt)
+            self.user[user.id]["STK_TOL"] = tolerance
+            self.save()
+        else:
+            await self.bot.say("**Le chiffre doit être compris entre 0 et 3**")
 
     @_stk.command(pass_context=True)
     async def add(self, ctx, nom, url=None):
@@ -379,63 +467,51 @@ class Systex:
             await self.bot.say("**Introuvable** | Le sticker ne semble pas exister.")
 
     def check(self, reaction, user):
-        return user.server_permissions.manage_messages
+        return not user.bot
 
     @_stk.command(pass_context=True, no_pm=True)
     @checks.mod_or_permissions(manage_messages=True)
-    async def approb(self, ctx):
+    async def approb(self, ctx, nom: str= None):
         """Accorder l'approbation du staff sur des sticker"""
         author = ctx.message.author
         server = ctx.message.server
-        while True:
+        if not nom:
             msg = "\n".join([self.stk["OPT"]["APPROB"][r]["NOM"] for r in self.stk["OPT"]["APPROB"]])
             em = discord.Embed(title="STK| En attente d'approbation", description=msg, color=0x7af442)
-            em.set_footer(text="Tapez le nom exact du sticker pour le voir en détails")
-            m = await self.bot.say(embed=em)
-            valid = False
-            while valid is False:
-                rep = await self.bot.wait_for_message(author=ctx.message.author, channel=ctx.message.channel,
-                                                      timeout=60)
+            em.set_footer(text="Faîtes '&stk approb <nom>' pour voir un sticker en détail.")
+            await self.bot.say(embed=em)
+        else:
+            if nom in [self.stk["OPT"]["APPROB"][r]["NOM"] for r in self.stk["OPT"]["APPROB"]]:
+                tr = nom
+                em = discord.Embed(title="STK| {} - par {}".format(self.stk["OPT"]["APPROB"][tr]["NOM"],
+                                                                   server.get_member(self.stk["OPT"]["APPROB"][tr
+                                                                                     ]["AUTEUR"]).name),
+                                   color=0x7af442)
+                em.set_image(url=self.stk["OPT"]["APPROB"][tr]["URL"])
+                em.set_footer(text="Acceptez-vous ce sticker ?")
+                menu = await self.bot.say(embed=em)
+                await self.bot.add_reaction(menu, "✔")
+                await self.bot.add_reaction(menu, "✖")
+                await asyncio.sleep(0.25)
+                rep = await self.bot.wait_for_reaction(["✔", "✖"], message=menu, timeout=30,
+                                                       check=self.check)
                 if rep is None:
-                    em.set_footer(text="TIMEOUT | Au revoir !")
-                    await self.bot.edit_message(m, embed=em)
+                    await self.bot.say("**TIMEOUT** | Bye :wave:")
                     return
-                elif rep.content in [self.stk["OPT"]["APPROB"][r]["NOM"] for r in self.stk["OPT"]["APPROB"]]:
-                    nom = rep.content
-                    for r in self.stk["OPT"]["APPROB"]:
-                        if nom == self.stk["OPT"]["APPROB"][r]["NOM"]:
-                            tr = r
-                    em = discord.Embed(title="STK| {} - par {}".format(self.stk["OPT"]["APPROB"][tr]["NOM"],
-                                                                       server.get_member(self.stk["OPT"]["APPROB"][tr
-                                                                                         ]["AUTEUR"]).name),
-                                       color=0x7af442)
-                    em.set_image(url=self.stk["OPT"]["APPROB"][tr]["URL"])
-                    em.set_footer(text="Acceptez-vous ce sticker ?")
-                    menu = await self.bot.say(embed=em)
-                    await self.bot.add_reaction(menu, "✔")
-                    await self.bot.add_reaction(menu, "✖")
-                    await asyncio.sleep(0.25)
-                    rep = await self.bot.wait_for_reaction(["✔", "✖"], message=menu, timeout=120,
-                                                           check=self.check)
-                    if rep is None:
-                        await self.bot.say("**TIMEOUT** | Bye :wave:")
-                        return
-                    elif rep.reaction.emoji == "✔":
-                        self.add_sticker(r, self.stk["OPT"]["APPROB"][tr]["NOM"],
-                                         self.stk["OPT"]["APPROB"][tr]["CHEMIN"],
-                                         author,
-                                         self.stk["OPT"]["APPROB"][tr]["URL"],
-                                         autbis=server.get_member(self.stk["OPT"]["APPROB"][tr]["AUTEUR"]).id)
-                        await self.bot.say("**Sticker approuvé** | Retour à la liste...")
-                        await asyncio.sleep(1)
-                        valid = True
-                    else:
-                        del self.stk["OPT"]["APPROB"][tr]
-                        await self.bot.say("**Sticker refusé** | Retour à la liste...")
-                        valid = True
-                        self.save()
+                elif rep.reaction.emoji == "✔":
+                    self.add_sticker(tr, self.stk["OPT"]["APPROB"][tr]["NOM"],
+                                     self.stk["OPT"]["APPROB"][tr]["CHEMIN"],
+                                     author,
+                                     self.stk["OPT"]["APPROB"][tr]["URL"],
+                                     autbis=server.get_member(self.stk["OPT"]["APPROB"][tr]["AUTEUR"]).id)
+                    await self.bot.say("**Sticker approuvé !**")
+                    await asyncio.sleep(1)
                 else:
-                    await self.bot.say("**Introuvable** | Ce sticker n'existe pas, vérifiez l'orthographe.")
+                    del self.stk["OPT"]["APPROB"][tr]
+                    await self.bot.say("**Sticker refusé !**")
+                    self.save()
+            else:
+                await self.bot.say("**Introuvable** | Ce sticker n'existe pas, vérifiez l'orthographe.")
 
     @_stk.command(pass_context=True)
     @checks.mod_or_permissions(manage_messages=True)
@@ -450,7 +526,7 @@ class Systex:
                           "3/**Affichage:** {}\n".format(stk["NOM"], stk["URL"], stk["AFFICHAGE"])
                     em = discord.Embed(title="STK| Modifier {}".format(r), description=txt)
                     em.set_image(url=stk["URL"])
-                    em.set_footer(text="Tapez le chiffre correspondant à l'action désirée.")
+                    em.set_footer(text="Tapez le chiffre correspondant à l'action désirée | Q pour quitter")
                     m = await self.bot.say(embed=em)
                     valid = False
                     while valid is False:
@@ -458,6 +534,10 @@ class Systex:
                                                               timeout=30)
                         if rep is None:
                             em.set_footer(text="TIMEOUT | Bye !")
+                            await self.bot.edit_message(m, embed=em)
+                            return
+                        elif rep.content.lower() == "q":
+                            em.set_footer(text="ANNULATION | Bye !")
                             await self.bot.edit_message(m, embed=em)
                             return
                         elif rep.content == "1":
@@ -569,22 +649,50 @@ class Systex:
                     else:
                         tr = stk
                     if tr == "list" or tr == "liste":
-                        msg = "**__Liste des stickers disponibles__**\n\n"
-                        n = 1
-                        for s in self.stk["STK"]:
-                            msg += "***{}***\n".format(self.stk["STK"][s]["NOM"])
-                            if len(msg) > 1980 * n:
-                                msg += "!!"
-                                n += 1
+                        if img["CONTENANT"]:
+                            msg = "**__Liste des stickers disponibles contenant '{}'__**\n\n".format(stk)
+                            n = 1
+                            for s in self.stk["STK"]:
+                                if stk.lower() in self.stk["STK"][s]["NOM"].lower():
+                                    msg += "***{}***\n".format(self.stk["STK"][s]["NOM"])
+                                    if len(msg) > 1980 * n:
+                                        msg += "!!"
+                                        n += 1
+                            else:
+                                msglist = msg.split("!!")
+                                for m in msglist:
+                                    await self.bot.send_message(author, m)
+                                continue
                         else:
-                            msglist = msg.split("!!")
-                            for m in msglist:
-                                await self.bot.send_message(author, m)
-                            return
+                            msg = "**__Liste des stickers disponibles__**\n\n"
+                            n = 1
+                            for s in self.stk["STK"]:
+                                msg += "***{}***\n".format(self.stk["STK"][s]["NOM"])
+                                if len(msg) > 1980 * n:
+                                    msg += "!!"
+                                    n += 1
+                            else:
+                                msglist = msg.split("!!")
+                                for m in msglist:
+                                    await self.bot.send_message(author, m)
+                                continue
                     if tr == "vent": #EE
                         await asyncio.sleep(0.25)
                         await self.bot.send_typing(channel)
                         return
+                    if tr == "custom":
+                        if author.id in self.user:
+                            if "STK_CUSTOM" in self.user[author.id]:
+                                if self.user[author.id]["STK_CUSTOM"]:
+                                    img["AFFICHAGE"] = "web"
+                                    img["URL"] = self.user[author.id]["STK_CUSTOM"]
+                                    img["NOM"] = "Custom > {}".format(author.name)
+                                else:
+                                    continue
+                            else:
+                                continue
+                        else:
+                            continue
 
                     if img["CONTENANT"] is False:
                         if tr in self.list_stk():
@@ -598,7 +706,26 @@ class Systex:
                                     if img["AFFICHAGE"] is None:
                                         img["AFFICHAGE"] = self.stk["STK"][r]["AFFICHAGE"]
                         else:
-                            return  # TODO Intégrer Leven
+                            if author.id in self.user:
+                                if "STK_TOL" in self.user[author.id]:
+                                    if self.user[author.id]["STK_TOL"] > 0:
+                                        liste = []
+                                        for s in self.stk["STK"]:
+                                            liste.append(s)
+                                        found = self.similarite(stk, liste, self.user[author.id]["STK_TOL"])
+                                        img["CHEMIN"] = self.stk["STK"][found]["CHEMIN"]
+                                        img["URL"] = self.stk["STK"][found]["URL"]
+                                        img["NOM"] = self.stk["STK"][found]["NOM"]
+                                        self.stk["STK"][r]["COMPTAGE"] += 1
+                                        self.save()
+                                        if img["AFFICHAGE"] is None:
+                                            img["AFFICHAGE"] = self.stk["STK"][r]["AFFICHAGE"]
+                                    else:
+                                        continue
+                                else:
+                                    continue
+                            else:
+                                continue
                     else:
                         rd = []
                         for r in self.stk["STK"]:
@@ -613,7 +740,11 @@ class Systex:
                             self.save()
                             if img["AFFICHAGE"] is None:
                                 img["AFFICHAGE"] = self.stk["STK"][r]["AFFICHAGE"]
-
+                    if img["SECRET"]:
+                        try:
+                            await self.bot.delete_message(message)
+                        except:
+                            print("Impossible de supprimer le message, l'auteur mon supérieur")
                     if img["AFFICHAGE"] == 'billet':
                         em = discord.Embed(color=author.color)
                         em.set_image(url=img["URL"])
@@ -643,11 +774,6 @@ class Systex:
                         except:
                             print("L'URL de :{}: est indisponible. Je ne peux pas l'envoyer. (Format: web/defaut)"
                                   "".format(img["NOM"]))
-                    if img["SECRET"]:
-                        try:
-                            await self.bot.delete_message(message)
-                        except:
-                            print("Impossible de supprimer le message, l'auteur mon supérieur")
 
 
 def check_folders():
