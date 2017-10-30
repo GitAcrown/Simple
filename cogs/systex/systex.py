@@ -521,7 +521,7 @@ class Systex:
                                      self.stk["OPT"]["APPROB"][tr]["CHEMIN"],
                                      author,
                                      self.stk["OPT"]["APPROB"][tr]["URL"],
-                                     autbis=server.get_member(self.stk["OPT"]["APPROB"][tr]["AUTEUR"]).id)
+                                     autbis=self.stk["OPT"]["APPROB"][tr]["AUTEUR"])
                     await self.bot.say("**Sticker approuvé !**")
                     await asyncio.sleep(1)
                 else:
