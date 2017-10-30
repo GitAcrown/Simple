@@ -684,19 +684,6 @@ class Systex:
                         await asyncio.sleep(0.25)
                         await self.bot.send_typing(channel)
                         return
-                    if tr == "custom":
-                        if author.id in self.user:
-                            if "STK_CUSTOM" in self.user[author.id]:
-                                if self.user[author.id]["STK_CUSTOM"]:
-                                    img["AFFICHAGE"] = "web"
-                                    img["URL"] = self.user[author.id]["STK_CUSTOM"]
-                                    img["NOM"] = "Custom > {}".format(author.name)
-                                else:
-                                    continue
-                            else:
-                                continue
-                        else:
-                            continue
 
                     if img["CONTENANT"] is False:
                         if tr in self.list_stk():
@@ -717,6 +704,7 @@ class Systex:
                                         for s in self.list_stk():
                                             liste.append(s)
                                         found = self.similarite(stk, liste, self.user[author.id]["STK_TOL"])
+                                        found = self.get_stk(found)
                                         img["CHEMIN"] = self.stk["STK"][found]["CHEMIN"]
                                         img["URL"] = self.stk["STK"][found]["URL"]
                                         img["NOM"] = self.stk["STK"][found]["NOM"]
@@ -744,11 +732,25 @@ class Systex:
                             self.save()
                             if img["AFFICHAGE"] is None:
                                 img["AFFICHAGE"] = self.stk["STK"][r]["AFFICHAGE"]
+                    if tr == "custom":
+                        if author.id in self.user:
+                            if "STK_CUSTOM" in self.user[author.id]:
+                                if self.user[author.id]["STK_CUSTOM"]:
+                                    img["AFFICHAGE"] = "web"
+                                    img["URL"] = self.user[author.id]["STK_CUSTOM"]
+                                    img["NOM"] = "Custom > {}".format(author.name)
+                                else:
+                                    continue
+                            else:
+                                continue
+                        else:
+                            continue
+
                     if img["SECRET"]:
                         try:
                             await self.bot.delete_message(message)
                         except:
-                            print("Impossible de supprimer le message, l'auteur mon supérieur")
+                            print("Impossible de supprimer le message, l'auteur est mon supérieur")
                     if img["AFFICHAGE"] == 'billet':
                         em = discord.Embed(color=author.color)
                         em.set_image(url=img["URL"])
