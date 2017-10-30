@@ -500,7 +500,7 @@ class Systex:
                 tr = self.get_stk_opt(nom)
                 em = discord.Embed(title="STK| {} - par {}".format(self.stk["OPT"]["APPROB"][tr]["NOM"],
                                                                    server.get_member(self.stk["OPT"]["APPROB"][tr
-                                                                                     ]["AUTEUR"]).name),
+                                                                                     ]["AUTEUR"]).name if self.stk["OPT"]["APPROB"][tr]["AUTEUR"] else "???"),
                                    color=0x7af442)
                 em.set_image(url=self.stk["OPT"]["APPROB"][tr]["URL"])
                 em.set_footer(text="Acceptez-vous ce sticker ?")
