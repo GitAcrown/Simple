@@ -498,9 +498,11 @@ class Systex:
         else:
             if nom in [self.stk["OPT"]["APPROB"][r]["NOM"] for r in self.stk["OPT"]["APPROB"]]:
                 tr = self.get_stk_opt(nom)
-                pseudo = server.get_member(self.stk["OPT"]["APPROB"][tr]["AUTEUR"]).name
+                pseudo = server.get_member(self.stk["OPT"]["APPROB"][tr]["AUTEUR"])
                 if not pseudo:
                     pseudo = "???"
+                else:
+                    pseudo = pseudo.name
                 em = discord.Embed(title="STK| {} - par {}".format(self.stk["OPT"]["APPROB"][tr]["NOM"],
                                                                    pseudo), color=0x7af442)
                 em.set_image(url=self.stk["OPT"]["APPROB"][tr]["URL"])
