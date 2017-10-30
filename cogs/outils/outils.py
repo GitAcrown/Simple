@@ -107,7 +107,7 @@ class Outils:
 
     @commands.command(pass_context=True)
     @checks.admin_or_permissions(manage_server=True)
-    async def activstats(self, ctx, max: int, channelid):
+    async def activs(self, ctx, max: int, channelid):
         """Récolte des statistiques à propos de l'activité sur le serveur"""
         await self.bot.say("Début de l'analyse de l'activité du serveur...")
         channel = self.bot.get_channel(channelid)
