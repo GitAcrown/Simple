@@ -16,6 +16,7 @@ from PIL import ImageDraw
 from PIL import ImageFont
 from __main__ import send_cmd_help
 from discord.ext import commands
+from string import capwords
 
 from .utils import checks
 from .utils.dataIO import fileIO, dataIO
@@ -68,6 +69,13 @@ class Systex:
                 prochenb = self.levenshtein(i, mot)
         else:
             return prochenom
+
+    def get_stk(self, nom):
+        for n in self.stk["STK"]:
+            if nom == self.stk["STK"][n]["NOM"]:
+                return n
+        else:
+            return False
 
     def add_sticker(self, clef, nom: str, chemin, auteur: discord.Member, url, autbis = None, importe = None):
         if clef not in self.stk:
@@ -482,7 +490,7 @@ class Systex:
             await self.bot.say(embed=em)
         else:
             if nom in [self.stk["OPT"]["APPROB"][r]["NOM"] for r in self.stk["OPT"]["APPROB"]]:
-                tr = nom
+                tr = self.get_stk(nom)
                 em = discord.Embed(title="STK| {} - par {}".format(self.stk["OPT"]["APPROB"][tr]["NOM"],
                                                                    server.get_member(self.stk["OPT"]["APPROB"][tr
                                                                                      ]["AUTEUR"]).name),
@@ -624,6 +632,7 @@ class Systex:
                         continue
                     if nb > 3:
                         await self.bot.send_message(author, "**Ne spammez pas les stickers SVP.**")
+                        return
                     nb += 1
                     img = {"NOM": None,
                            "CHEMIN": None,
@@ -649,21 +658,6 @@ class Systex:
                     else:
                         tr = stk
                     if tr == "list" or tr == "liste":
-                        if img["CONTENANT"]:
-                            msg = "**__Liste des stickers disponibles contenant '{}'__**\n\n".format(stk)
-                            n = 1
-                            for s in self.stk["STK"]:
-                                if stk.lower() in self.stk["STK"][s]["NOM"].lower():
-                                    msg += "***{}***\n".format(self.stk["STK"][s]["NOM"])
-                                    if len(msg) > 1980 * n:
-                                        msg += "!!"
-                                        n += 1
-                            else:
-                                msglist = msg.split("!!")
-                                for m in msglist:
-                                    await self.bot.send_message(author, m)
-                                continue
-                        else:
                             msg = "**__Liste des stickers disponibles__**\n\n"
                             n = 1
                             for s in self.stk["STK"]:
@@ -710,16 +704,16 @@ class Systex:
                                 if "STK_TOL" in self.user[author.id]:
                                     if self.user[author.id]["STK_TOL"] > 0:
                                         liste = []
-                                        for s in self.stk["STK"]:
+                                        for s in self.list_stk():
                                             liste.append(s)
                                         found = self.similarite(stk, liste, self.user[author.id]["STK_TOL"])
                                         img["CHEMIN"] = self.stk["STK"][found]["CHEMIN"]
                                         img["URL"] = self.stk["STK"][found]["URL"]
                                         img["NOM"] = self.stk["STK"][found]["NOM"]
-                                        self.stk["STK"][r]["COMPTAGE"] += 1
+                                        self.stk["STK"][found]["COMPTAGE"] += 1
                                         self.save()
                                         if img["AFFICHAGE"] is None:
-                                            img["AFFICHAGE"] = self.stk["STK"][r]["AFFICHAGE"]
+                                            img["AFFICHAGE"] = self.stk["STK"][found]["AFFICHAGE"]
                                     else:
                                         continue
                                 else:
