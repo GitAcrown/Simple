@@ -647,18 +647,13 @@ class Systex:
                         await self.bot.send_message(author, "**Ne spammez pas les stickers SVP.**")
                         return
                     nb += 1
-                    if stk in self.list_stk():
-                        chemin = os.listdir("data/systex/halimg/")
-                        chemin = "data/systex/halimg/" + random.choice(chemin)
-                        await self.bot.send_typing(channel)
-                        await self.bot.send_file(channel, chemin)
-                    return #EVENT HALLOWEEN
                     img = {"NOM": None,
                            "CHEMIN": None,
                            "URL": None,
                            "AFFICHAGE": None,
                            "CONTENANT": False,
-                           "SECRET": False}
+                           "SECRET": False,
+                           "HALLOWEEN": True} #EVENT HALLOWEEN
                     if "/" in stk:
                         tr = stk.split("/")[1]
                         pr = stk.split("/")[0]
@@ -670,6 +665,8 @@ class Systex:
                             img["AFFICHAGE"] = "billet"
                         else:
                             pass
+                        if "n" in pr:
+                            img["HALLOWEEN"] = False
                         if "s" in pr:
                             img["SECRET"] = True
                         if "?" in pr:
@@ -693,6 +690,13 @@ class Systex:
                         await asyncio.sleep(0.25)
                         await self.bot.send_typing(channel)
                         return
+                    if img["HALLOWEEN"]:
+                        if stk in self.list_stk():
+                            chemin = os.listdir("data/systex/halimg/")
+                            chemin = "data/systex/halimg/" + random.choice(chemin)
+                            await self.bot.send_typing(channel)
+                            await self.bot.send_file(channel, chemin)
+                        return #EVENT HALLOWEEN
 
                     if img["CONTENANT"] is False:
                         if tr in self.list_stk():
