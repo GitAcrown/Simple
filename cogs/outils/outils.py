@@ -30,6 +30,22 @@ class Outils:
         except:
             await self.bot.say("Impossible d'upload ce fichier")
 
+    @commands.command(pass_context=True)
+    async def ureset(self, ctx, chemin):
+        """Permet de reset un fichier JSON (Attention: Efface toutes les données)"""
+        try:
+            await self.bot.say("Reset du fichier en cours...")
+            os.remove(chemin)
+            await asyncio.sleep(1)
+            if not os.path.isfile(chemin):
+                print("Recréation de {} ...".format(chemin))
+                fileIO(chemin, "save", {})
+                await self.bot.say("Reset effectué avec succès !")
+            else:
+                await self.bot.say("Echec du reset...")
+        except:
+            await self.bot.say("Echec du reset... :(")
+
     @commands.command(aliases=["ss"], pass_context=True)
     @checks.admin_or_permissions(manage_server=True)
     async def superstats(self, ctx, max:int, channelid, nom:str):
