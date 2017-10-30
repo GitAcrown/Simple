@@ -77,6 +77,13 @@ class Systex:
         else:
             return False
 
+    def get_stk_opt(self, nom):
+        for n in self.stk["OPT"]["APPROB"]:
+            if nom == self.stk["OPT"]["APPROB"][n]["NOM"]:
+                return n
+        else:
+            return False
+
     def add_sticker(self, clef, nom: str, chemin, auteur: discord.Member, url, autbis = None, importe = None):
         if clef not in self.stk:
             autorise = False if not auteur.server_permissions.manage_messages else True
@@ -490,7 +497,7 @@ class Systex:
             await self.bot.say(embed=em)
         else:
             if nom in [self.stk["OPT"]["APPROB"][r]["NOM"] for r in self.stk["OPT"]["APPROB"]]:
-                tr = self.get_stk(nom)
+                tr = self.get_stk_opt(nom)
                 em = discord.Embed(title="STK| {} - par {}".format(self.stk["OPT"]["APPROB"][tr]["NOM"],
                                                                    server.get_member(self.stk["OPT"]["APPROB"][tr
                                                                                      ]["AUTEUR"]).name),
