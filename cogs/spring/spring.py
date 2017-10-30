@@ -168,6 +168,18 @@ class Spring:
                 spr["SURNOMS"].append(apres.display_name)
         self.spr.save()
 
+    async def l_leave(self, user):
+        id = "204585334925819904" #Hall
+        channel = self.bot.get_channel(id)
+        r = ["**Au revoir, *{}* petit ange.**", "***{}* a quitté notre monde.**", "***{}* a quitté la partie.**",
+             "***{}* s'est déconnecté un peu trop violemment**", "**RIP *{}*** :cry:", "**Bye bye *{}***",
+             "***{}* a appuyé sur le mauvais bouton...**", "***{}* a quitté la secte.**",
+             "***{}* est mort ! Il va respawn non ?**", "***{}* est sorti de la Matrice !**",
+             "***{}* est tombé du bord de la Terre !**",
+             "***{}* a été banni... Non je déconne, il est parti tout seul.**",
+             "***{}* a ragequit le serveur.**", "**/suicide *{}***"]
+        await self.bot.send_message(channel, "> " + random.choice(r).format(user.name))
+
 def check_folders():
     if not os.path.exists("data/spring"):
         print("Création du dossier Spring...")
@@ -185,4 +197,5 @@ def setup(bot):
     check_files()
     n = Spring(bot)
     bot.add_listener(n.l_profil, "on_member_update")
+    bot.add_listener(n.l_leave, "on_member_remove")
     bot.add_cog(n)
