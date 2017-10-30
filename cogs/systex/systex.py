@@ -284,7 +284,7 @@ class Systex:
             await self.bot.say("**L'utilisateur n'a plus le droit d'utiliser des stickers**")
 
     @_stkmod.command()
-    async def custom(self, user: discord.Member):
+    async def customstop(self, user: discord.Member):
         """Interdir/autoriser l'utilisateur de faire un sticker customisé
 
         Cette commande retire le sticker custom de l'utilisateur si il en a un."""
