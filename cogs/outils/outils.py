@@ -105,6 +105,47 @@ class Outils:
         except:
             await self.bot.say("Impossible d'upload le fichier...")
 
+    @commands.command(aliases=["ss"], pass_context=True)
+    @checks.admin_or_permissions(manage_server=True)
+    async def activity(self, ctx, max: int, channelid, nom: str):
+        """Récolte des statistiques à propos de l'activité sur le serveur"""
+        await self.bot.say("Début de l'analyse de l'activité du serveur...")
+        channel = self.bot.get_channel(channelid)
+        data = {}
+        n = 0
+        async for msg in self.bot.logs_from(channel, limit=max):
+            if n == (0.25 * max):
+                await self.bot.say("**Analyse** | Env. 25%")
+            if n == (0.50 * max):
+                await self.bot.say("**Analyse** | Env. 50%")
+            if n == (0.75 * max):
+                await self.bot.say("**Analyse** | Env. 75%")
+            if n == (0.90 * max):
+                await self.bot.say("**Analyse** | Env. 90%")
+            n += 1
+            ts = msg.timestamp
+            date = "{}/{}/{}".format(ts.day, ts.month, ts.year)
+            user = msg.author.id
+            if date not in data:
+                data[date] = {"NB_MSG": 0,
+                              "POSTERS": []}
+            else:
+                data[date]["NB_MSG"] += 1
+                if user not in data[date]["POSTERS"]:
+                    data[date]["POSTERS"].append(user)
+        txt = ""
+        for e in data:
+            txt += "{}\t{}\t{}\n".format(e, data[e]["NB_MSG"], len(data[e]["POSTERS"]))
+        filename = "StatsActivite_{}".format(str(random.randint(1, 999)))
+        file = open("data/outils/{}.txt".format(filename), "w", encoding="utf-8")
+        file.write(txt)
+        file.close()
+        try:
+            await self.bot.send_file(ctx.message.channel, "data/outils/{}.txt".format(filename))
+            os.remove("data/outils/{}.txt".format(filename))
+        except:
+            await self.bot.say("Impossible d'upload le fichier...")
+
 def check_folders():
     if not os.path.exists("data/outils"):
         print("Creation du fichier Outils ...")
