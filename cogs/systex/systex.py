@@ -647,8 +647,11 @@ class Systex:
                         await self.bot.send_message(author, "**Ne spammez pas les stickers SVP.**")
                         return
                     nb += 1
-                    chemins = os.listdir("data/systex/halimg/")
-                    await self.bot.send_file(random.choice(chemins))
+                    if stk in self.list_stk():
+                        chemin = os.listdir("data/systex/halimg/")
+                        chemin = "data/systex/halimg/" + random.choice(chemin)
+                        await self.bot.send_typing(channel)
+                        await self.bot.send_file(channel, chemin)
                     return #EVENT HALLOWEEN
                     img = {"NOM": None,
                            "CHEMIN": None,
