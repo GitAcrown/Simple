@@ -105,7 +105,7 @@ class Outils:
         except:
             await self.bot.say("Impossible d'upload le fichier...")
 
-    @commands.command(aliases=["ss"], pass_context=True)
+    @commands.command(pass_context=True)
     @checks.admin_or_permissions(manage_server=True)
     async def activity(self, ctx, max: int, channelid):
         """Récolte des statistiques à propos de l'activité sur le serveur"""
