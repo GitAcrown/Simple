@@ -267,8 +267,8 @@ class Systex:
         if ctx.invoked_subcommand is None:
             await send_cmd_help(ctx)
 
-    @_stkmod.command(pass_context=True)
-    async def stop(self, ctx, user: discord.Member):
+    @_stkmod.command()
+    async def stop(self, user: discord.Member):
         """Interdir/autoriser un utilisateur à utiliser les stickers"""
         if user.id not in self.user:
             self.user[user.id] = {}
@@ -283,8 +283,8 @@ class Systex:
             self.save()
             await self.bot.say("**L'utilisateur n'a plus le droit d'utiliser des stickers**")
 
-    @_stkmod.command(pass_context=True)
-    async def custom(self, ctx, user: discord.Member):
+    @_stkmod.command()
+    async def custom(self, user: discord.Member):
         """Interdir/autoriser l'utilisateur de faire un sticker customisé
 
         Cette commande retire le sticker custom de l'utilisateur si il en a un."""
@@ -631,8 +631,11 @@ class Systex:
         server = message.server
         channel = message.channel
         if author.id in self.user:
-            if self.user[author.id]["STK_STOP"]:
-                return
+            if "STK_STOP" in self.user[author.id]:
+                if self.user[author.id]["STK_STOP"]:
+                    return
+        else:
+            self.user[author.id] = {"STK_STOP": False}
         nb = 0
         if ":" in message.content:
             output = re.compile(':(.*?):', re.DOTALL | re.IGNORECASE).findall(message.content)
@@ -738,7 +741,7 @@ class Systex:
                                 if self.user[author.id]["STK_CUSTOM"]:
                                     img["AFFICHAGE"] = "web"
                                     img["URL"] = self.user[author.id]["STK_CUSTOM"]
-                                    img["NOM"] = "Custom > {}".format(author.name)
+                                    img["NOM"] = "Custom de {}".format(author.name)
                                 else:
                                     continue
                             else:
