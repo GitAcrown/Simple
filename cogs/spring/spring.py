@@ -171,13 +171,13 @@ class Spring:
     async def l_leave(self, user):
         id = "204585334925819904" #Hall
         channel = self.bot.get_channel(id)
-        r = ["**Au revoir, *{}* petit ange.**", "***{}* a quitté notre monde.**", "***{}* a quitté la partie.**",
-             "***{}* s'est déconnecté un peu trop violemment**", "**RIP *{}*** :cry:", "**Bye bye *{}***",
-             "***{}* a appuyé sur le mauvais bouton...**", "***{}* a quitté la secte.**",
-             "***{}* est mort ! Il va respawn non ?**", "***{}* est sorti de la Matrice !**",
-             "***{}* est tombé du bord de la Terre !**",
-             "***{}* a été banni... Non je déconne, il est parti tout seul.**",
-             "***{}* a ragequit le serveur.**", "**/suicide *{}***"]
+        r = ["Au revoir, *{}* petit ange.", "*{}* a quitté notre monde.", "*{}* a quitté la partie.",
+             "*{}* s'est déconnecté un peu trop violemment", "RIP *{}* :cry:", "Bye bye *{}*",
+             "*{}* a appuyé sur le mauvais bouton...", "*{}* a quitté la secte.",
+             "*{}* est mort ! Il va respawn non ?", "*{}* est sorti de la Matrice !",
+             "*{}* est tombé du bord de la Terre !",
+             "*{}* a été banni... Non je déconne, il est parti tout seul.",
+             "*{}* a ragequit le serveur.", "/suicide *{}*"]
         await self.bot.send_message(channel, "> " + random.choice(r).format(user.name))
 
 def check_folders():
