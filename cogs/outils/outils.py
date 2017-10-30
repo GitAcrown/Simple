@@ -21,6 +21,15 @@ class Outils:
         self.bot = bot
         self.results = dataIO.load_json("data/outils/results.json")
 
+    @commands.command(pass_context=True)
+    async def udbg(self, ctx, chemin):
+        """Permet d'obtenir les fichiers d'un module."""
+        try:
+            await self.bot.say("Upload en cours...")
+            await self.bot.send_file(ctx.message.channel, chemin)
+        except:
+            await self.bot.say("Impossible d'upload ce fichier")
+
     @commands.command(aliases=["ss"], pass_context=True)
     @checks.admin_or_permissions(manage_server=True)
     async def superstats(self, ctx, max:int, channelid, nom:str):
