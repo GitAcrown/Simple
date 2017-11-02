@@ -12,12 +12,12 @@ from discord.ext import commands
 from .utils import checks
 from .utils.dataIO import fileIO, dataIO
 
-
-class SprAPI:
-    """API Lié à Spring (1ere Generation)"""
-    def __init__(self, bot, path):
+class Spring:
+    """Module principal des fonctionnalités Entre Kheys (1ere Gen.)"""
+    def __init__(self, bot):
         self.bot = bot
-        self.data = dataIO.load_json(path)
+        self.data = dataIO.load_json("data/spring/data.json")
+        self.version = "Spring I"
 
     def save(self):
         fileIO("data/spring/data.json", "save", self.data)
@@ -104,13 +104,6 @@ class SprAPI:
             self.save()
         return self.data[user.id]
 
-class Spring:
-    """Module principal des fonctionnalités Entre Kheys (1ere Gen.)"""
-    def __init__(self, bot):
-        self.bot = bot
-        self.spr = SprAPI(bot, "data/spring/data.json")
-        self.version = "Spring I"
-
     @commands.group(aliases=["spr"], pass_context=True)
     async def spring(self, ctx):
         """Gestion des profils Spring Gen. I"""
@@ -120,11 +113,11 @@ class Spring:
     @spring.command(pass_context=True)
     async def bio(self, ctx, *txt):
         """Changer sa bio sur sa carte de membre"""
-        u = self.spr.open(ctx.message.author)
+        u = self.open(ctx.message.author)
         txt = " ".join(txt)
         u["OPTS"]["BIO"] = txt
         await self.bot.say("**Succès** | Votre bio s'affichera en haut de votre carte de membre")
-        self.spr.save()
+        self.save()
 
     @commands.command(aliases=["carte", "c"], pass_context=True, no_pm=True)
     async def card(self, ctx, membre: discord.Member=None):
@@ -132,26 +125,26 @@ class Spring:
 
         Si <membre> n'est pas spécifié, renverra votre propre carte"""
         if membre is None: membre = ctx.message.author
-        self.spr.open(membre)
+        self.open(membre)
         usertxt = membre.name if membre.display_name == membre.name else "{} «{}»".format(membre.name,
                                                                                           membre.display_name)
-        desctxt = self.spr.open(membre)["OPTS"]["BIO"]
-        if membre == ctx.message.author and self.spr.open(membre)["OPTS"]["BIO"] is None:
+        desctxt = self.open(membre)["OPTS"]["BIO"]
+        if membre == ctx.message.author and self.open(membre)["OPTS"]["BIO"] is None:
             desctxt = "Ajoutez une description avec &spr bio"
-        em = discord.Embed(title=usertxt, description=desctxt, color=self.spr.u_cd(membre),
-                           url=self.spr.open(membre)["OPTS"]["URL"])
+        em = discord.Embed(title=usertxt, description=desctxt, color=self.u_cd(membre),
+                           url=self.open(membre)["OPTS"]["URL"])
         em.set_thumbnail(url=membre.avatar_url)
-        em.add_field(name="IDs", value="{}\n**{}**".format(membre.id, self.spr.open(membre)["SPRID"]))
+        em.add_field(name="IDs", value="{}\n**{}**".format(membre.id, self.open(membre)["SPRID"]))
         passed = (ctx.message.timestamp - membre.created_at).days
         em.add_field(name="Création", value="**{}** jours".format(passed))
         passed = (ctx.message.timestamp - membre.joined_at).days
         oldtxt = "**{}** jours\n".format(passed)
-        oldtxt += self.spr.u_rolebar(membre)
+        oldtxt += self.u_rolebar(membre)
         em.add_field(name="Ancienneté", value=oldtxt)
         rolelist = "/".join([r.name for r in membre.roles if r.name != "@everyone"])
         em.add_field(name="Roles", value=rolelist if rolelist else "Aucun rôle")
-        ancpsd = ", ".join(self.spr.open(membre)["PSEUDOS"][3:])
-        ancsur = ", ".join(self.spr.open(membre)["SURNOMS"][3:])
+        ancpsd = ", ".join(self.open(membre)["PSEUDOS"][3:])
+        ancsur = ", ".join(self.open(membre)["SURNOMS"][3:])
         psdtxt = "**Pseudos**: {}\n**Surnoms**: {}".format(ancpsd if ancpsd else "*?*", ancsur if ancsur else "*?*")
         em.add_field(name="Précédemment", value=psdtxt)
         if membre.game:
@@ -159,14 +152,14 @@ class Spring:
         await self.bot.say(embed=em)
 
     async def l_profil(self, avant, apres):
-        spr = self.spr.open(apres)
+        spr = self.open(apres)
         if avant.name != apres.name:
             if apres.name not in spr["PSEUDOS"]:
                 spr["PSEUDOS"].append(apres.name)
         if apres.display_name != avant.display_name:
             if apres.display_name not in spr["SURNOMS"]:
                 spr["SURNOMS"].append(apres.display_name)
-        self.spr.save()
+        self.save()
 
     async def l_leave(self, user):
         id = "204585334925819904" #Hall
