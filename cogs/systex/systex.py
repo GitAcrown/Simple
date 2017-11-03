@@ -780,6 +780,8 @@ class Systex:
                                 em = discord.Embed(title= img["NOM"], description=txt, color=author.color)
                                 em.set_image(url=img["URL"])
                                 em.set_footer(text="Invoqué {} fois".format(self.stk["STK"][tr]["COMPTAGE"]))
+                                await self.bot.send_typing(channel)
+                                await self.bot.send_message(channel, embed=em)
                         else:
                             continue
                     elif img["AFFICHAGE"] == 'upload':
