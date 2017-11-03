@@ -690,12 +690,11 @@ class Systex:
                         await self.bot.send_typing(channel)
                         return
                     if tr == "halloween":
-                        if stk in self.list_stk():
-                            chemin = os.listdir("data/systex/halimg/")
-                            chemin = "data/systex/halimg/" + random.choice(chemin)
-                            await self.bot.send_typing(channel)
-                            await self.bot.send_file(channel, chemin)
-                        return #EVENT HALLOWEEN
+                        chemin = os.listdir("data/systex/halimg/")
+                        chemin = "data/systex/halimg/" + random.choice(chemin)
+                        await self.bot.send_typing(channel)
+                        await self.bot.send_file(channel, chemin)
+                        return #Restes de l'event Halloween 2017
 
                     if img["CONTENANT"] is False:
                         if tr in self.list_stk():
