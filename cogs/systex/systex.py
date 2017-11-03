@@ -652,8 +652,7 @@ class Systex:
                            "URL": None,
                            "AFFICHAGE": None,
                            "CONTENANT": False,
-                           "SECRET": False,
-                           "HALLOWEEN": True} #EVENT HALLOWEEN
+                           "SECRET": False}
                     if "/" in stk:
                         tr = stk.split("/")[1]
                         pr = stk.split("/")[0]
@@ -663,10 +662,10 @@ class Systex:
                             img["AFFICHAGE"] = "upload"
                         elif "b" in pr:
                             img["AFFICHAGE"] = "billet"
+                        elif "i" in pr:
+                            img["AFFICHAGE"] = "infos"
                         else:
                             pass
-                        if "n" in pr:
-                            img["HALLOWEEN"] = False
                         if "s" in pr:
                             img["SECRET"] = True
                         if "?" in pr:
@@ -690,7 +689,7 @@ class Systex:
                         await asyncio.sleep(0.25)
                         await self.bot.send_typing(channel)
                         return
-                    if img["HALLOWEEN"]:
+                    if tr == "halloween":
                         if stk in self.list_stk():
                             chemin = os.listdir("data/systex/halimg/")
                             chemin = "data/systex/halimg/" + random.choice(chemin)
@@ -773,6 +772,17 @@ class Systex:
                         except:
                             print("L'URL de :{}: est indisponible. Je ne peux pas l'envoyer. (Format: billet)"
                                   "".format(img["NOM"]))
+                    elif img["AFFICHAGE"] == 'infos':
+                        for r in self.stk["STK"]:
+                            if tr == self.stl["STK"][r]["NOM"]:
+                                tr = r
+                                txt = "Importé depuis la V3" if self.stk["STK"][tr]["IMPORT"] else "Ajouté par {}".format(
+                                    self.stk["STK"][tr]["AUTEUR"])
+                                em = discord.Embed(title= img["NOM"], description=txt, color=author.color)
+                                em.set_image(url=img["URL"])
+                                em.set_footer(text="Invoqué {} fois".format(self.stk["STK"][tr]["COMPTAGE"]))
+                        else:
+                            continue
                     elif img["AFFICHAGE"] == 'upload':
                         try:
                             await self.bot.send_typing(channel)
