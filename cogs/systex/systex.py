@@ -773,7 +773,7 @@ class Systex:
                                   "".format(img["NOM"]))
                     elif img["AFFICHAGE"] == 'infos':
                         for r in self.stk["STK"]:
-                            if tr == self.stl["STK"][r]["NOM"]:
+                            if tr == self.stk["STK"][r]["NOM"]:
                                 tr = r
                                 txt = "Importé depuis la V3" if self.stk["STK"][tr]["IMPORT"] else "Ajouté par {}".format(
                                     self.stk["STK"][tr]["AUTEUR"])
