@@ -776,7 +776,7 @@ class Systex:
                             if tr == self.stk["STK"][r]["NOM"]:
                                 tr = r
                                 txt = "Importé depuis la V3" if self.stk["STK"][tr]["IMPORT"] else "Ajouté par {}".format(
-                                    self.stk["STK"][tr]["AUTEUR"])
+                                    self.bot.get_user_info(self.stk["STK"][tr]["AUTEUR"]).mention)
                                 em = discord.Embed(title= img["NOM"], description=txt, color=author.color)
                                 em.set_image(url=img["URL"])
                                 em.set_footer(text="Invoqué {} fois".format(self.stk["STK"][tr]["COMPTAGE"]))
