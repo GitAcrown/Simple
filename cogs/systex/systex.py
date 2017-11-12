@@ -22,7 +22,7 @@ from .utils import checks
 from .utils.dataIO import fileIO, dataIO
 
 
-# Affichages : Web/Upload/Billet (W.U.B)
+# Affichages : Web/Upload/Billet/Infos (W.U.B.I.)
 
 class Systex:
     """Gestion des stickers et autres fonctions à l'écrit"""
@@ -347,6 +347,11 @@ class Systex:
         """Commandes de gestion des stickers"""
         if ctx.invoked_subcommand is None:
             await send_cmd_help(ctx)
+
+    @_stk.command(pass_context=True)
+    async def taille(self, ctx):
+        """Renvoie la taille du fichier de stockage des stickers en bytes"""
+        await self.bot.say(str(os.path.getsize("data/systex/img/")) + "B")
 
     @_stk.command(pass_context=True)
     async def custom(self, ctx, url):
