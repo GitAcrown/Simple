@@ -5,8 +5,8 @@ import os
 import random
 import re
 import time
+import zipfile
 from urllib import request
-import shutil
 
 import discord
 from __main__ import send_cmd_help
@@ -30,6 +30,32 @@ class Outils:
             await self.bot.send_file(ctx.message.channel, chemin)
         except:
             await self.bot.say("Impossible d'upload ce fichier")
+
+    def make_zipfile(self, output_filename, source_dir):
+        relroot = os.path.abspath(os.path.join(source_dir, os.pardir))
+        with zipfile.ZipFile(output_filename, "w", zipfile.ZIP_DEFLATED) as zip:
+            for root, dirs, files in os.walk(source_dir):
+                # add directory (needed for empty dirs)
+                zip.write(root, os.path.relpath(root, relroot))
+                for file in files:
+                    filename = os.path.join(root, file)
+                    if os.path.isfile(filename):  # regular files only
+                        arcname = os.path.join(os.path.relpath(root, relroot), file)
+                        zip.write(filename, arcname)
+
+    @commands.command(pass_context=True)
+    @checks.admin_or_permissions(manage_server=True)
+    async def zip(self, ctx, chemin):
+        """Permet de zipper un fichier et de l'Upload"""
+        al = random.randint(0, 999)
+        output = "data/outils/zipped_{}.zip".format(al)
+        self.make_zipfile(output, chemin)
+        await self.bot.say("Upload en cours... **Patientez**")
+        try:
+            await self.bot.send_file(ctx.message.channel, output)
+            os.remove(output)
+        except:
+            await self.bot.say("Impossible d'upload le fichier...")
 
     @commands.command(pass_context=True)
     async def ureset(self, ctx, chemin):
@@ -103,20 +129,6 @@ class Outils:
         try:
             await self.bot.send_file(ctx.message.channel, "data/outils/{}.txt".format(filename))
             os.remove("data/outils/{}.txt".format(filename))
-        except:
-            await self.bot.say("Impossible d'upload le fichier...")
-            
-    @commands.command(pass_context=True)
-    @checks.admin_or_permissions(manage_server=True)
-    async def zip(self, ctx, chemin):
-        """Permet de zipper un fichier et de l'Upload"""
-        al = random.randint(0, 999)
-        output = "data/outils/zipped_{}.zip".format(al)
-        shutil.make_archive(output, 'zip', chemin)
-        await self.bot.say("Upload en cours... **Patientez**")
-        try:
-            await self.bot.send_file(ctx.message.channel, output)
-            os.remove(output)
         except:
             await self.bot.say("Impossible d'upload le fichier...")
 
