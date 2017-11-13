@@ -351,8 +351,16 @@ class Systex:
     @_stk.command(pass_context=True)
     async def taille(self, ctx):
         """Renvoie la taille du fichier de stockage des stickers en bytes"""
-        result = sum(os.path.getsize(f) for f in os.listdir('data/systex/img/') if os.path.isfile(f))
+        result = self.get_size("data/systex/img/")
         await self.bot.say(str(result) + "B")
+
+    def get_size(self, start_path):
+        total_size = 0
+        for dirpath, dirnames, filenames in os.walk(start_path):
+            for f in filenames:
+                fp = os.path.join(dirpath, f)
+                total_size += os.path.getsize(fp)
+        return total_size
 
     @_stk.command(pass_context=True)
     async def custom(self, ctx, url):
