@@ -6,6 +6,7 @@ import random
 import re
 import time
 from urllib import request
+import shutil
 
 import discord
 from __main__ import send_cmd_help
@@ -102,6 +103,20 @@ class Outils:
         try:
             await self.bot.send_file(ctx.message.channel, "data/outils/{}.txt".format(filename))
             os.remove("data/outils/{}.txt".format(filename))
+        except:
+            await self.bot.say("Impossible d'upload le fichier...")
+            
+    @commands.command(pass_context=True)
+    @checks.admin_or_permissions(manage_server=True)
+    async def zip(self, ctx, chemin):
+        """Permet de zipper un fichier et de l'Upload"""
+        al = random.randint(0, 999)
+        output = "data/outils/zipped_{}.zip".format(al)
+        shutil.make_archive(output, 'zip', chemin)
+        await self.bot.say("Upload en cours... **Patientez**")
+        try:
+            await self.bot.send_file(ctx.message.channel, output)
+            os.remove(output)
         except:
             await self.bot.say("Impossible d'upload le fichier...")
 
