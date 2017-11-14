@@ -144,6 +144,9 @@ class Outils:
         l = self.get_all_docs()
         results = {}
         bef = 0
+        if not termes:
+            await self.bot.say("Recherchez le nom ou la description d'une commande avec *&cs <termes>*")
+            return
         for i in l:
             d = l[i]["DOCS"].lower().split()
             if len(set(termes) & set(d)) > bef:
