@@ -132,44 +132,35 @@ class Outils:
         except:
             await self.bot.say("Impossible d'upload le fichier...")
 
-    @commands.command(aliases=["com"], pass_context=True)
-    async def commandsearch(self, ctx, search_string: str):
-        """Cherche une commande"""
-        # Build commands list
-        commands_flat = {}
-        for k, v in self.bot.commands.items():
-            self._add_command(k, v, commands_flat)
+    def get_all_docs(self):
+        org = {}
+        for c, g in self.bot.commands.items():
+            org[c] = {"MODULE": g.cog_name, "DOCS" : g.short_doc}
+        return org
 
-        # Get matches
-        matches = [c for c in commands_flat if search_string in c]
-
-        # Display embed if possible
-        cmds = "\n".join(matches)
-        cogs = "\n".join([str(commands_flat[m].cog_name) for m in matches])
-        if not matches:
-            embed = discord.Embed(colour=0xcc0000, description="**Aucun résultat pour** ***{}***".format(search_string))
-            await self.bot.say(embed=embed)
-        elif len(cmds) < 900 and len(cogs) < 900:
-            embed = discord.Embed(colour=0x00cc00)
-            embed.add_field(name="Commande", value=cmds)
-            embed.add_field(name="Extension", value=cogs)
-            embed.set_footer(text="{} résultat{} pour {}".format(
-                len(matches), "" if len(matches) == 1 else "s", search_string))
-            await self.bot.say(embed=embed)
+    @commands.command(aliases=["cs"], pass_context=True)
+    async def comsearch(self, ctx, *termes):
+        """Permet de rechercher une commande dans les docs du bot"""
+        l = self.get_all_docs()
+        results = {}
+        bef = 0
+        for i in l:
+            d = l[i]["DOCS"].lower().split()
+            if len(set(termes) & set(d)) > bef:
+                results[i] = {"MODULE": l[i]["MODULE"], "DOCS": l[i]["DOCS"]}
+                bef = len(set(termes) & set(d))
+        if not results:
+            for i in l:
+                if " ".join(termes).lower() in i:
+                    results[i] = {"MODULE": l[i]["MODULE"], "DOCS": l[i]["DOCS"]}
+        if results:
+            em = discord.Embed(color=ctx.message.author.color)
+            em.add_field(name="Commande", value="\n".join([r for r in results]))
+            em.add_field(name="Extension", value="\n".join([results[u]["MODULE"] for u in results]))
+            em.set_footer(text="{} résultat{} trouvés pour \"{}\"".format(len(results), "s" if len(results) > 1 else "", " ".join(termes)))
+            await self.bot.say(embed=em)
         else:
-            maxlen = len(max(matches, key=len))
-            msg = "\n".join(["{0:{1}}  {2}".format(m, maxlen, str(commands_flat[m].cog_name)) for m in matches])
-            for page in pagify(msg):
-                await self.bot.whisper(box(page))
-
-    def _add_command(self, name, command, commands_flat, prefix=""):
-        if isinstance(command, commands.core.Group):
-            prefix += " {}".format(name)
-            for k, v in command.commands.items():
-                self._add_command(k, v, commands_flat, prefix)
-        else:
-            name = "{} {}".format(prefix, name).strip()
-            commands_flat[name] = command
+            await self.bot.say("**Aucun résultat pour votre recherche** | Essayez d'être plus précis")
 
     @commands.command(pass_context=True)
     @checks.admin_or_permissions(manage_server=True)
