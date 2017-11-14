@@ -154,7 +154,7 @@ class Outils:
                 bef = len(set(termes) & set(d))
         if not results:
             for i in l:
-                if " ".join(termes).lower() in i:
+                if " ".join(termes).lower() in i or " ".join(termes).lower() == i:
                     results[i] = {"MODULE": l[i]["MODULE"], "DOCS": l[i]["DOCS"]}
         if results:
             em = discord.Embed(color=ctx.message.author.color)
