@@ -152,9 +152,8 @@ class Outils:
             if len(set(termes) & set(d)) > bef:
                 results[i] = {"MODULE": l[i]["MODULE"], "DOCS": l[i]["DOCS"]}
                 bef = len(set(termes) & set(d))
-        if not results:
-            for i in l:
-                if " ".join(termes).lower() in i or " ".join(termes).lower() == i:
+            if " ".join(termes).lower() in i or " ".join(termes).lower() == i:
+                if i not in results:
                     results[i] = {"MODULE": l[i]["MODULE"], "DOCS": l[i]["DOCS"]}
         if results:
             em = discord.Embed(color=ctx.message.author.color)
