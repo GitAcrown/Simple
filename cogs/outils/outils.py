@@ -133,7 +133,7 @@ class Outils:
             await self.bot.say("Impossible d'upload le fichier...")
 
     @commands.command(aliases=["com"], pass_context=True)
-    async def commandsearch(self, search_string: str):
+    async def commandsearch(self, ctx, search_string: str):
         """Cherche une commande"""
         # Build commands list
         commands_flat = {}
@@ -147,8 +147,7 @@ class Outils:
         cmds = "\n".join(matches)
         cogs = "\n".join([str(commands_flat[m].cog_name) for m in matches])
         if not matches:
-            embed = discord.Embed(colour=0xcc0000)
-            embed.description = "**Aucun résultat pour** ***{}***".format(search_string)
+            embed = discord.Embed(colour=0xcc0000, description="**Aucun résultat pour** ***{}***".format(search_string))
             await self.bot.say(embed=embed)
         elif len(cmds) < 900 and len(cogs) < 900:
             embed = discord.Embed(colour=0x00cc00)
