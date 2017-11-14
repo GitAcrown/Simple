@@ -132,6 +132,46 @@ class Outils:
         except:
             await self.bot.say("Impossible d'upload le fichier...")
 
+    @commands.command(aliases=["com"], pass_context=True)
+    async def commandsearch(self, search_string: str):
+        """Cherche une commande"""
+        # Build commands list
+        commands_flat = {}
+        for k, v in self.bot.commands.items():
+            self._add_command(k, v, commands_flat)
+
+        # Get matches
+        matches = [c for c in commands_flat if search_string in c]
+
+        # Display embed if possible
+        cmds = "\n".join(matches)
+        cogs = "\n".join([str(commands_flat[m].cog_name) for m in matches])
+        if not matches:
+            embed = discord.Embed(colour=0xcc0000)
+            embed.description = "**Aucun résultat pour** ***{}***".format(search_string)
+            await self.bot.say(embed=embed)
+        elif len(cmds) < 900 and len(cogs) < 900:
+            embed = discord.Embed(colour=0x00cc00)
+            embed.add_field(name="Commande", value=cmds)
+            embed.add_field(name="Extension", value=cogs)
+            embed.set_footer(text="{} résultat{} pour {}".format(
+                len(matches), "" if len(matches) == 1 else "s", search_string))
+            await self.bot.say(embed=embed)
+        else:
+            maxlen = len(max(matches, key=len))
+            msg = "\n".join(["{0:{1}}  {2}".format(m, maxlen, str(commands_flat[m].cog_name)) for m in matches])
+            for page in pagify(msg):
+                await self.bot.whisper(box(page))
+
+    def _add_command(self, name, command, commands_flat, prefix=""):
+        if isinstance(command, commands.core.Group):
+            prefix += " {}".format(name)
+            for k, v in command.commands.items():
+                self._add_command(k, v, commands_flat, prefix)
+        else:
+            name = "{} {}".format(prefix, name).strip()
+            commands_flat[name] = command
+
     @commands.command(pass_context=True)
     @checks.admin_or_permissions(manage_server=True)
     async def activs(self, ctx, max: int, channelid):
