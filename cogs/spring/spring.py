@@ -4,6 +4,7 @@ import os
 import random
 import string
 import time
+import feedparser
 
 import discord
 from __main__ import send_cmd_help
@@ -17,10 +18,12 @@ class Spring:
     def __init__(self, bot):
         self.bot = bot
         self.data = dataIO.load_json("data/spring/data.json")
-        self.version = "Spring I"
+        self.plus = dataIO.load_json("data/spring/plus.json")
+        self.version = "Spring 1.1 InProgess"
 
     def save(self):
         fileIO("data/spring/data.json", "save", self.data)
+        fileIO("data/spring/plus.json", "save", self.plus)
         return True
 
     def u_upi(self, id):
@@ -77,20 +80,20 @@ class Spring:
             if "Oldfag" not in [r.name for r in member.roles]:
                 if days <= hab:
                     n = days / hab * 100
-                    return "**Avant Habitué**\n" + self.u_bar(n) + " *{}%*".format(int(n))
+                    return "**> Habitué**\n" + self.u_bar(n) + " *{}%*".format(int(n))
                 else:
-                    return "**Avant Habitué**\n" + self.u_bar(100) + " *100%*"
+                    return "**> Habitué**\n" + self.u_bar(100) + " *100%*"
             else:
-                return "**Rôle max.**"
+                return "**Rôle max. atteint**"
         else:
             if "Oldfag" not in [r.name for r in member.roles]:
                 if days <= old:
                     n = days / old * 100
-                    return "**Avant Oldfag**\n" + self.u_bar(n) + " *{}%*".format(int(n))
+                    return "**> Oldfag**\n" + self.u_bar(n) + " *{}%*".format(int(n))
                 else:
-                    return "**Avant Oldfag**\n" + self.u_bar(100) + " *100%*"
+                    return "**> Oldfag**\n" + self.u_bar(100) + " *100%*"
             else:
-                return "**Rôle max.**"
+                return "**Rôle max. atteint**"
 
     def open(self, user: discord.Member):
         if user.id not in self.data:
@@ -98,8 +101,9 @@ class Spring:
                                   "TS_ORIGIN": time.time(),
                                   "JEUX_NV": [],
                                   "XP": 0,
-                                  "PSEUDOS": [],
-                                  "SURNOMS": [],
+                                  "PSEUDOS": [user.name],
+                                  "SURNOMS": [user.display_name],
+                                  "FLUX": [],
                                   "OPTS": {"BIO": None, "URL": None}}
             self.save()
         return self.data[user.id]
@@ -170,8 +174,32 @@ class Spring:
              "*{}* est mort ! Il va respawn non ?", "*{}* est sorti de la Matrice !",
              "*{}* est tombé du bord de la Terre !",
              "*{}* a été banni... Non je déconne, il est parti tout seul.",
-             "*{}* a ragequit le serveur.", "/suicide *{}*"]
-        await self.bot.send_message(channel, "> " + random.choice(r).format(user.name))
+             "*{}* a ragequit le serveur.", "/suicide *{}*", "Je crois que *{}* est parti...", "*{}* a raccroché.",
+             "*{}* est en fuite...", "*{}* s'est libéré de ses chaines !", "*{}* s'est tiré une balle dans le pied.",
+             "C'est ainsi que *{}* est parti..."]
+        await self.bot.send_message(channel, "**>** " + random.choice(r).format(user.name))
+
+
+    """@commands.command(aliases=["fp"], pass_context=True, no_pm=True, hidden=True)
+    async def fastpoll(self, ctx, *arg):
+        Permet de créer, modifier et paramétrer une interface de vote
+        [arg] = Question ?;Réponse1;Réponse2;RéponseN...
+        Exemple: Allez-vous bien ?;Oui;Non;Peut-être
+
+        Il est possible de faire un poll avancé avec &sp | &smartpoll
+        arg = " ".join(arg)
+        q = arg.split(";")[0]
+        r = arg.split(";")[1:]
+        emojis = [s for s in "🇦🇧🇨🇩🇪🇫🇬🇭🇮🇯🇰🇱🇲🇳🇴🇵🇶🇷🇸🇹🇺🇻🇼🇽🇾🇿"]
+        r = lambda: random.randint(0, 255)
+        rcolor = int('0x%02X%02X%02X' % (r(), r(), r()), 16)
+        return
+
+    async def l_reactadd(self, reaction, user):
+        return
+
+    async def l_reactrem(self, reaction, user):
+        return"""
 
 def check_folders():
     if not os.path.exists("data/spring"):
@@ -191,4 +219,6 @@ def setup(bot):
     n = Spring(bot)
     bot.add_listener(n.l_profil, "on_member_update")
     bot.add_listener(n.l_leave, "on_member_remove")
+    # bot.add_listener(n.l_reactadd, "on_reaction_add")
+    # bot.add_listener(n.l_reactrem, "on_reaction_remove")
     bot.add_cog(n)
