@@ -17,12 +17,10 @@ class Spring:
     def __init__(self, bot):
         self.bot = bot
         self.data = dataIO.load_json("data/spring/data.json")
-        self.plus = dataIO.load_json("data/spring/plus.json")
         self.version = "Spring 1.1 InProgess"
 
     def save(self):
         fileIO("data/spring/data.json", "save", self.data)
-        fileIO("data/spring/plus.json", "save", self.plus)
         return True
 
     def u_upi(self, id):
