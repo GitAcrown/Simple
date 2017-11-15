@@ -4,7 +4,6 @@ import os
 import random
 import string
 import time
-import feedparser
 
 import discord
 from __main__ import send_cmd_help
