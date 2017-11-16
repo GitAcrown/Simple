@@ -9,6 +9,7 @@ import time
 import aiohttp
 from urllib import request
 
+import Image
 import PIL
 import discord
 from PIL import Image
@@ -30,7 +31,6 @@ class Systex:
         self.bot = bot
         self.stk = dataIO.load_json("data/systex/stk.json")
         self.user = dataIO.load_json("data/systex/user.json")
-        self.old = dataIO.load_json("data/charm/stk.json")  # Temporaire
 
     def save(self):
         fileIO("data/systex/stk.json", "save", self.stk)
