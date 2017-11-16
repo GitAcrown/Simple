@@ -9,7 +9,6 @@ import time
 import aiohttp
 from urllib import request
 
-import Image
 import PIL
 import discord
 from PIL import Image
