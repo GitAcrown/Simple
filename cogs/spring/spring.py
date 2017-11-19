@@ -143,7 +143,7 @@ class Spring:
             await send_cmd_help(ctx)
 
     @spring.command(pass_context=True, hidden=True)
-    async def majrang(self, ctx, max):
+    async def majrang(self, ctx, max: int):
         """Permet de mettre manuellement à jour les rangs de membre en consultant les X derniers messages.
 
         ATTENTION : Processus très long ! (+30m)"""
