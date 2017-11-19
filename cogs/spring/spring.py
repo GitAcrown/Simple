@@ -210,8 +210,8 @@ class Spring:
         ancsur = ", ".join(self.open(membre)["SURNOMS"][3:])
         psdtxt = "**Pseudos**: {}\n**Surnoms**: {}".format(ancpsd if ancpsd else "*?*", ancsur if ancsur else "*?*")
         em.add_field(name="Précédemment", value=psdtxt)
-        if membre.game:
-            em.set_footer(text="Rang {} | Joue à {}".format(rang[0], membre.game), icon_url=rang[0])
+        em.set_footer(text="Rang {}{}".format(rang[0], "| Joue à {}".format(membre.game) if membre.game else ""),
+                      icon_url=rang[1])
         await self.bot.say(embed=em)
 
     async def l_profil(self, avant, apres):
@@ -242,6 +242,22 @@ class Spring:
         author = message.author
         u = self.open(author)
         u["XP"] += 1
+        self.save()
+
+    async def l_msgdel(self, message):
+        author = message.author
+        u = self.open(author)
+        u["XP"] -= 1
+        self.save()
+
+    async def l_leave(self, member):
+        u = self.open(member)
+        u["XP"] = u["XP"] - 100 if u["XP"] > 100 else u["XP"] = 0
+        self.save()
+
+    async def l_ban(self, member):
+        u = self.open(member)
+        u["XP"] = 0
         self.save()
 
     """@commands.command(aliases=["fp"], pass_context=True, no_pm=True, hidden=True)
@@ -284,6 +300,9 @@ def setup(bot):
     bot.add_listener(n.l_profil, "on_member_update")
     bot.add_listener(n.l_leave, "on_member_remove")
     bot.add_listener(n.l_msg, "on_message")
+    bot.add_listener(n.l_msgdel, "on_message_delete")
+    bot.add_listener(n.l_leave, "on_member_remove")
+    bot.add_listener(n.l_ban, "on_member_ban")
     # bot.add_listener(n.l_reactadd, "on_reaction_add")
     # bot.add_listener(n.l_reactrem, "on_reaction_remove")
     bot.add_cog(n)
