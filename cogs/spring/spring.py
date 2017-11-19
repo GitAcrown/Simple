@@ -252,7 +252,10 @@ class Spring:
 
     async def l_leave(self, member):
         u = self.open(member)
-        u["XP"] = u["XP"] - 100 if u["XP"] > 100 else u["XP"] = 0
+        if u["XP"] > 100:
+            u["XP"] -= 100
+        else:
+            u["XP"] = 0
         self.save()
 
     async def l_ban(self, member):
