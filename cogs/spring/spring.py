@@ -92,6 +92,26 @@ class Spring:
             else:
                 return "**Rôle max. atteint**"
 
+    def rang(self, val: int):
+        if val < 50:
+            return ["Carton", "https://i.imgur.com/n4K3gA1.png"]
+        elif 50 <= val < 200:
+            return ["Bronze", "https://i.imgur.com/ImkwEnq.png"]
+        elif 200 <= val < 1000:
+            return ["Argent", "https://i.imgur.com/okx622l.png"]
+        elif 1000 <= val < 10000:
+            return ["Or", "https://i.imgur.com/IVCFd5I.png"]
+        elif 10000 <= val < 30000:
+            return ["Rubis", "https://i.imgur.com/Ll4wxdp.png"]
+        elif 30000 <= val < 75000:
+            return ["Saphir", "https://i.imgur.com/pYnXGQ5.png"]
+        elif 75000 <= val < 150000:
+            return ["Emeraude", "https://i.imgur.com/OL88Skm.png"]
+        elif 150000 <= val:
+            return ["Diamant", "https://i.imgur.com/ttndZiR.png"]
+        else:
+            return ["Inconnu", "?"]
+
     def open(self, user: discord.Member):
         if user.id not in self.data:
             self.data[user.id] = {"SPRID": self.u_sprid(),
@@ -100,16 +120,57 @@ class Spring:
                                   "XP": 0,
                                   "PSEUDOS": [user.name],
                                   "SURNOMS": [user.display_name],
-                                  "FLUX": [],
                                   "OPTS": {"BIO": None, "URL": None}}
             self.save()
         return self.data[user.id]
+
+    def open_id(self, id):
+        if id not in self.data:
+            self.data[id] = {"SPRID": self.u_sprid(),
+                                  "TS_ORIGIN": time.time(),
+                                  "JEUX_NV": [],
+                                  "XP": 0,
+                                  "PSEUDOS": [],
+                                  "SURNOMS": [],
+                                  "OPTS": {"BIO": None, "URL": None}}
+            self.save()
+        return self.data[id]
 
     @commands.group(aliases=["spr"], pass_context=True)
     async def spring(self, ctx):
         """Gestion des profils Spring Gen. I"""
         if ctx.invoked_subcommand is None:
             await send_cmd_help(ctx)
+
+    @spring.command(pass_context=True, hidden=True)
+    async def majrang(self, ctx):
+        """Permet de mettre manuellement à jour les rangs de membre.
+
+        ATTENTION : Processus très long ! (+30m)"""
+        id = "204585334925819904"
+        await self.bot.say("**Mise à jour en cours** | Ce processus peut prendre plusieures minutes...")
+        channel = self.bot.get_channel(id)
+        data = {}
+        n = 0
+        async for msg in self.bot.logs_from(channel, limit=max):
+            if n == (0.25 * max):
+                await self.bot.say("**Analyse** | Env. 25%")
+            if n == (0.50 * max):
+                await self.bot.say("**Analyse** | Env. 50%")
+            if n == (0.75 * max):
+                await self.bot.say("**Analyse** | Env. 75%")
+            if n == (0.90 * max):
+                await self.bot.say("**Analyse** | Env. 90%")
+            n += 1
+            user = msg.author
+            if user.id not in data:
+                data[user.id] = 0
+            data[user.id] += 1
+        for u in data:
+            g = self.open_id(u)
+            g["XP"] = data[u]
+        self.save()
+        await self.bot.say("**Mise à jour terminée** | Vous pouvez consulter vos rangs sur vos cartes (*&c*)")
 
     @spring.command(pass_context=True)
     async def bio(self, ctx, *txt):
@@ -130,6 +191,7 @@ class Spring:
         usertxt = membre.name if membre.display_name == membre.name else "{} «{}»".format(membre.name,
                                                                                           membre.display_name)
         desctxt = self.open(membre)["OPTS"]["BIO"]
+        rang = self.rang(self.open(membre)["XP"])
         if membre == ctx.message.author and self.open(membre)["OPTS"]["BIO"] is None:
             desctxt = "Ajoutez une description avec &spr bio"
         em = discord.Embed(title=usertxt, description=desctxt, color=self.u_cd(membre),
@@ -149,7 +211,7 @@ class Spring:
         psdtxt = "**Pseudos**: {}\n**Surnoms**: {}".format(ancpsd if ancpsd else "*?*", ancsur if ancsur else "*?*")
         em.add_field(name="Précédemment", value=psdtxt)
         if membre.game:
-            em.set_footer(text="Joue à {}".format(membre.game))
+            em.set_footer(text="Rang {} | Joue à {}".format(rang[0], membre.game), icon_url=rang[0])
         await self.bot.say(embed=em)
 
     async def l_profil(self, avant, apres):
@@ -176,6 +238,11 @@ class Spring:
              "C'est ainsi que *{}* est parti..."]
         await self.bot.send_message(channel, "**>** " + random.choice(r).format(user.name))
 
+    async def l_msg(self, message):
+        author = message.author
+        u = self.open(author)
+        u["XP"] += 1
+        self.save()
 
     """@commands.command(aliases=["fp"], pass_context=True, no_pm=True, hidden=True)
     async def fastpoll(self, ctx, *arg):
@@ -216,6 +283,7 @@ def setup(bot):
     n = Spring(bot)
     bot.add_listener(n.l_profil, "on_member_update")
     bot.add_listener(n.l_leave, "on_member_remove")
+    bot.add_listener(n.l_msg, "on_message")
     # bot.add_listener(n.l_reactadd, "on_reaction_add")
     # bot.add_listener(n.l_reactrem, "on_reaction_remove")
     bot.add_cog(n)
