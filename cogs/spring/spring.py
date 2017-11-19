@@ -94,21 +94,21 @@ class Spring:
 
     def rang(self, val: int):
         if val < 50:
-            return ["Carton", "https://i.imgur.com/n4K3gA1.png"]
+            return ["Carton", "https://i.imgur.com/EOlpHHK.png"]
         elif 50 <= val < 200:
-            return ["Bronze", "https://i.imgur.com/ImkwEnq.png"]
+            return ["Bronze", "https://i.imgur.com/G1QTkM8.png"]
         elif 200 <= val < 1000:
-            return ["Argent", "https://i.imgur.com/okx622l.png"]
+            return ["Argent", "https://i.imgur.com/Z5RXSQC.png"]
         elif 1000 <= val < 10000:
-            return ["Or", "https://i.imgur.com/IVCFd5I.png"]
+            return ["Or", "https://i.imgur.com/UZvAWYX.png"]
         elif 10000 <= val < 30000:
-            return ["Rubis", "https://i.imgur.com/Ll4wxdp.png"]
+            return ["Rubis", "https://i.imgur.com/28D3N8W.png"]
         elif 30000 <= val < 75000:
-            return ["Saphir", "https://i.imgur.com/pYnXGQ5.png"]
+            return ["Saphir", "https://i.imgur.com/pH86yq2.png"]
         elif 75000 <= val < 150000:
-            return ["Emeraude", "https://i.imgur.com/OL88Skm.png"]
+            return ["Emeraude", "https://i.imgur.com/bWTO5jl.png"]
         elif 150000 <= val:
-            return ["Diamant", "https://i.imgur.com/ttndZiR.png"]
+            return ["Diamant", "https://i.imgur.com/hYyZuZQ.png"]
         else:
             return ["Inconnu", "?"]
 
