@@ -115,15 +115,15 @@ class Spring:
     def rang_actif(self, jours: int, msg: int):
         if jours == 0: jours = 1
         ratio = msg / jours
-        if ratio < 10:
+        if ratio < 25:
             return "I"
-        elif 10 <= ratio < 25:
+        elif 25 <= ratio < 75:
             return "II"
-        elif 25 <= ratio < 45:
+        elif 150 <= ratio < 275:
             return "III"
-        elif 45 <= ratio < 70:
+        elif 275 <= ratio < 450:
             return "IV"
-        elif 70 <= ratio:
+        elif 450 <= ratio:
             return "V"
         else:
             return False
