@@ -227,7 +227,7 @@ class Spring:
         ancsur = ", ".join(self.open(membre)["SURNOMS"][3:])
         psdtxt = "**Pseudos**: {}\n**Surnoms**: {}".format(ancpsd if ancpsd else "*?*", ancsur if ancsur else "*?*")
         em.add_field(name="Précédemment", value=psdtxt)
-        em.set_footer(text="Rang {} ({}){}".format(rang[0], activ, " | Joue à {}".format(membre.game) if membre.game else ""),
+        em.set_footer(text="Rang {} {}{}".format(rang[0], activ, " | Joue à {}".format(membre.game) if membre.game else ""),
                       icon_url=rang[1])
         await self.bot.say(embed=em)
 
