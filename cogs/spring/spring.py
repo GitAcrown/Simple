@@ -117,13 +117,13 @@ class Spring:
         ratio = msg / jours
         if ratio < 5:
             return "I"
-        elif 5 <= ratio < 10:
+        elif 5 <= ratio < 15:
             return "II"
-        elif 10 <= ratio < 20:
+        elif 15 <= ratio < 30:
             return "III"
-        elif 20 <= ratio < 40:
+        elif 30 <= ratio < 50:
             return "IV"
-        elif 40 <= ratio:
+        elif 50 <= ratio:
             return "V"
         else:
             return False
