@@ -112,6 +112,22 @@ class Spring:
         else:
             return ["Inconnu", "?"]
 
+    def rang_actif(self, jours: int, msg: int):
+        if jours == 0: jours = 1
+        ratio = msg / jours
+        if ratio < 5:
+            return "I"
+        elif 5 <= ratio < 10:
+            return "II"
+        elif 10 <= ratio < 20:
+            return "III"
+        elif 20 <= ratio < 40:
+            return "IV"
+        elif 40 <= ratio:
+            return "V"
+        else:
+            return False
+
     def open(self, user: discord.Member):
         if user.id not in self.data:
             self.data[user.id] = {"SPRID": self.u_sprid(),
@@ -192,6 +208,7 @@ class Spring:
                                                                                           membre.display_name)
         desctxt = self.open(membre)["OPTS"]["BIO"]
         rang = self.rang(self.open(membre)["XP"])
+        activ = self.rang_actif((ctx.message.timestamp - membre.joined_at).days, self.open(membre)["XP"])
         if membre == ctx.message.author and self.open(membre)["OPTS"]["BIO"] is None:
             desctxt = "Ajoutez une description avec &spr bio"
         em = discord.Embed(title=usertxt, description=desctxt, color=self.u_cd(membre),
@@ -210,7 +227,7 @@ class Spring:
         ancsur = ", ".join(self.open(membre)["SURNOMS"][3:])
         psdtxt = "**Pseudos**: {}\n**Surnoms**: {}".format(ancpsd if ancpsd else "*?*", ancsur if ancsur else "*?*")
         em.add_field(name="Précédemment", value=psdtxt)
-        em.set_footer(text="Rang {}{}".format(rang[0], " | Joue à {}".format(membre.game) if membre.game else ""),
+        em.set_footer(text="Rang {} ({}){}".format(rang[0], activ, " | Joue à {}".format(membre.game) if membre.game else ""),
                       icon_url=rang[1])
         await self.bot.say(embed=em)
 
@@ -227,16 +244,16 @@ class Spring:
     async def l_leave(self, user):
         id = "204585334925819904" #Hall
         channel = self.bot.get_channel(id)
-        r = ["Au revoir, *{}* petit ange.", "*{}* a quitté notre monde.", "*{}* a quitté la partie.",
-             "*{}* s'est déconnecté un peu trop violemment", "RIP *{}* :cry:", "Bye bye *{}*",
-             "*{}* a appuyé sur le mauvais bouton...", "*{}* a quitté la secte.",
-             "*{}* est mort ! Il va respawn non ?", "*{}* est sorti de la Matrice !",
-             "*{}* est tombé du bord de la Terre !",
-             "*{}* a été banni... Non je déconne, il est parti tout seul.",
-             "*{}* a ragequit le serveur.", "/suicide *{}*", "Je crois que *{}* est parti...", "*{}* a raccroché.",
-             "*{}* est en fuite...", "*{}* s'est libéré de ses chaines !", "*{}* s'est tiré une balle dans le pied.",
-             "C'est ainsi que *{}* est parti..."]
-        await self.bot.send_message(channel, "**>** " + random.choice(r).format(user.name))
+        r = ["Au revoir, {} petit ange.", "{} a quitté notre monde.", "{} a quitté la partie.",
+             "{} s'est déconnecté un peu trop violemment", "RIP {} :cry:", "Bye bye *{}*",
+             "{} a appuyé sur le mauvais bouton...", "{} a quitté la secte.",
+             "{} est mort ! Il va respawn non ?", "{} est sorti de la Matrice !",
+             "{} est tombé du bord de la Terre !",
+             "{} a été banni... Non je déconne, il est parti tout seul.",
+             "{} a ragequit le serveur.", "/suicide {}", "Je crois que {} est parti...", "{} a raccroché.",
+             "{} est en fuite...", "{} s'est libéré de ses chaines !", "{} s'est tiré une balle dans le pied.",
+             "C'est ainsi que {} est parti..."]
+        await self.bot.send_message(channel, "**>** " + random.choice(r).format("<@" + str(user.id) + ">"))
 
     async def l_msg(self, message):
         author = message.author
