@@ -22,6 +22,13 @@ class Outils:
         self.bot = bot
         self.results = dataIO.load_json("data/outils/results.json")
 
+    @commands.command(pass_context=True, hidden=True)
+    async def send(self, ctx, id, *msg:str):
+        """Envoie un message sur un channel spécifié"""
+        channel = self.bot.get_channel(id)
+        msg = " ".join(msg)
+        await self.bot.send_message(channel, msg)
+
     @commands.command(pass_context=True)
     async def udbg(self, ctx, chemin):
         """Permet d'obtenir les fichiers d'un module."""
