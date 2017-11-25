@@ -244,16 +244,17 @@ class Spring:
     async def l_leave(self, user):
         id = "204585334925819904" #Hall
         channel = self.bot.get_channel(id)
-        r = ["Au revoir, {} petit ange.", "{} a quitté notre monde.", "{} a quitté la partie.",
-             "{} s'est déconnecté un peu trop violemment", "RIP {} :cry:", "Bye bye *{}*",
-             "{} a appuyé sur le mauvais bouton...", "{} a quitté la secte.",
-             "{} est mort ! Il va respawn non ?", "{} est sorti de la Matrice !",
-             "{} est tombé du bord de la Terre !",
-             "{} a été banni... Non je déconne, il est parti tout seul.",
-             "{} a ragequit le serveur.", "/suicide {}", "Je crois que {} est parti...", "{} a raccroché.",
-             "{} est en fuite...", "{} s'est libéré de ses chaines !", "{} s'est tiré une balle dans le pied.",
-             "C'est ainsi que {} est parti..."]
-        await self.bot.send_message(channel, "**>** " + random.choice(r).format("<@" + str(user.id) + ">"))
+        r = ["Au revoir, ***{}*** petit ange.", "***{}*** a quitté notre monde.", "***{}*** a quitté la partie.",
+             "***{}*** s'est déconnecté un peu trop violemment", "RIP ***{}*** :cry:", "Bye bye *{}*",
+             "***{}*** a appuyé sur le mauvais bouton...", "***{}*** a quitté la secte.",
+             "***{}*** est mort ! Il va respawn non ?", "***{}*** est sorti de la Matrice !",
+             "***{}*** est tombé du bord de la Terre !",
+             "***{}*** a été banni... Non je déconne, il est parti tout seul.",
+             "***{}*** a ragequit le serveur.", "/suicide ***{}***",
+             "Je crois que ***{}*** est parti...", "***{}*** a raccroché.",
+             "***{}*** est en fuite...", "***{}*** s'est libéré de ses chaines !",
+             "***{}*** s'est suicidé de deux balles dans le dos."]
+        await self.bot.send_message(channel, "**>** " + random.choice(r).format(user.name))
 
     async def l_msg(self, message):
         author = message.author
