@@ -98,7 +98,7 @@ class SquidApp:
                 else:
                     return "**Progression:** *Habitué*\n" + self.u_bar(100) + " *100%*"
             else:
-                return "**Progression:** *?*"
+                return "**Progression:** *Maximum*"
         else:
             if "Oldfag" not in [r.name for r in member.roles]:
                 if days <= old:
@@ -107,7 +107,7 @@ class SquidApp:
                 else:
                     return "**Progression:** *Oldfag*\n" + self.u_bar(100) + " *100%*"
             else:
-                return "**Progression:** *?*"
+                return "**Progression:** *Maximum*"
 
     def color_status(self, user) -> hex:
         s = user.status
@@ -245,8 +245,6 @@ class Squid:
         id = "204585334925819904"
         channel = self.bot.get_channel(id)
         await self.bot.say("**Mise à jour en cours** | Ce processus peut prendre plusieures minutes...")
-        await self.bot.send_message(channel, "**Récupération de statistiques** | "
-                                             "Mon temps de réaction peut sensiblement diminuer durant le processus")
         data = {}
         n = 0
         async for msg in self.bot.logs_from(channel, limit=max):
@@ -379,8 +377,9 @@ class Squid:
                 self.app.add_past(user, "identite", "Est désormais surnommé **{}**".format(after.display_name))
         if after.avatar_url != before.avatar_url:
             heure = time.strftime("%H:%M", time.localtime())
-            if p["PAST"][-1][0] == heure:
-                return
+            if p["PAST"]:
+                if p["PAST"][-1][0] == heure:
+                    return
             self.app.add_past(user, "identite", "A changé son avatar: [Avant]({}) > [Après]({})".format(
                 before.avatar_url, after.avatar_url))
             return
