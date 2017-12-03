@@ -224,9 +224,12 @@ class Squid:
         return self.glb[today]
 
     @commands.command(pass_context=True)
-    async def random(self, ctx):
+    async def random(self, ctx, rename: bool = False):
         """Génère un pseudo aléatoire (Système syllabique)"""
-        await self.bot.say("**{}**".format(self.gen_pseudo()))
+        if rename:
+            await self.bot.change_nickname(ctx.message.author, self.gen_pseudo())
+        else:
+            await self.bot.say("**{}**".format(self.gen_pseudo()))
 
     @commands.group(aliases=["m"], pass_context=True)
     async def modif(self, ctx):
