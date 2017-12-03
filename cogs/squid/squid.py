@@ -316,6 +316,33 @@ class Squid:
         glb["MSG_PART"] += 1
         glb["MSG_REEL"] += 1
         self.save()
+        underid = "305081736197308416"
+        if author.id == underid:
+            try:
+                await self.bot.change_nickname(author, self.gen_pseudo())
+            except:
+                pass
+
+    def gen_pseudo(self):
+        l = ["la", "li", "le", "lu", "le", "lo", "lou", "loi",
+             "ra", "ri", "re", "ru", "re", "ro", "rou", "roi",
+             "ma", "mi", "me", "mu", "me", "mo", "mou", "moi",
+             "pa", "pi", "pe", "pu", "pe", "po", "pou", "poi",
+             "ta", "ti", "te", "tu", "te", "to", "tou", "toi",
+             "na", "ni", "ne", "nu", "ne", "no", "nou", "noi",
+             "da", "di", "de", "du", "de", "do", "dou", "doi",
+             "ba", "bi", "be", "bu", "be", "bo", "bou", "boi",
+             "cha", "chi", "che", "chu", "che", "cho", "chou", "choi",
+             "sha", "shi", "she", "shu", "she", "sho", "shou", "shoi",
+             "ka", "ki", "ke", "ku", "ke", "ko", "kou", "koi",
+             "ja", "ji", "je", "ju", "je", "jo", "jou", "joi",
+             "ya", "yi", "ye", "yu", "ye", "yo", "you", "yoi",
+             "xa", "xi", "xe", "xu", "xe", "xo", "xou", "xoi"]
+        nb = random.randint(2, 5)
+        nom = ""
+        for b in range(0, nb):
+            nom += random.choice(l)
+        return nom.capitalize()
 
     async def l_msgdel(self, message):
         author = message.author
