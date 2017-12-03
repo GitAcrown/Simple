@@ -60,7 +60,7 @@ class SquidApp:
                    ["JOIN", 0],
                    ["QUIT", 0],
                    ["BAN", 0]]
-        majsimple = []
+        majsimple = [["AUTOPSEUDO", False]]
         p = self.data[user.id]
         for u in majdata:
             if u[0] not in p["DATA"]:
@@ -223,11 +223,42 @@ class Squid:
         self.save()
         return self.glb[today]
 
+    @commands.command(pass_context=True)
+    async def random(self, ctx):
+        """Génère un pseudo aléatoire (Système syllabique)"""
+        await self.bot.say("**{}**".format(self.gen_pseudo()))
+
     @commands.group(aliases=["m"], pass_context=True)
     async def modif(self, ctx):
         """Paramètres Squid personnels"""
         if ctx.invoked_subcommand is None:
             await send_cmd_help(ctx)
+
+    @modif.command(pass_context=True, hidden=True)
+    async def autopseudo(self, ctx):
+        """Permet d'activer/désactiver le changement automatique de pseudos à chaque message"""
+        u = self.app.open(ctx.message.author)
+        if u["AUTOPSEUDO"] is False:
+            u["AUTOPSEUDO"] = True
+            await self.bot.say("Votre pseudo changera automatiquement à chaque nouveau message. N'en abusez pas...")
+        else:
+            u["AUTOPSEUDO"] = False
+            await self.bot.say("Votre pseudo ne changera plus à chaque nouveau message.")
+        self.save()
+
+    @modif.command(pass_context=True, hidden=True)
+    @checks.admin_or_permissions(manage_nicknames=True)
+    async def modautopseudo(self, ctx, user: discord.Member):
+        """Permet d'activer/Désactiver le changement automatique de pseudo pour un autre membre
+        (Modération seulement)"""
+        u = self.app.open(user)
+        if u["AUTOPSEUDO"] is False:
+            u["AUTOPSEUDO"] = True
+            await self.bot.say("Son pseudo changera désormais à chaque nouveau message.")
+        else:
+            u["AUTOPSEUDO"] = False
+            await self.bot.say("Son pseudo ne changera plus à chaque nouveau message.")
+        self.save()
 
     @modif.command(pass_context=True)
     async def bio(self, ctx, *texte: str):
@@ -316,8 +347,7 @@ class Squid:
         glb["MSG_PART"] += 1
         glb["MSG_REEL"] += 1
         self.save()
-        underid = "305081736197308416"
-        if author.id == underid:
+        if p["AUTOPSEUDO"] is True:
             try:
                 await self.bot.change_nickname(author, self.gen_pseudo())
             except:
