@@ -29,7 +29,7 @@ class Agora:
                         txt += "\{} - **{}**\n".format(data["REPONSES"][r]["EMOJI"], r)
                         tot = sum([self.sys["POLLS"][idp]["REPONSES"][p]["NB"] for p in self.sys["POLLS"][idp]["REPONSES"]])
                         prc = data["REPONSES"][r]["NB"] / tot if int(tot) > 0 else 0
-                        val += "**{}** (*{}*%)\n".format(data["REPONSES"][r]["NB"], (prc * 100))
+                        val += "**{}** (*{}*%)\n".format(data["REPONSES"][r]["NB"], round(prc * 100, 2))
                         n += 1
             em.add_field(name="Réponses", value=txt)
             em.add_field(name="Statistiques", value=val)
