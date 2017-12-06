@@ -68,8 +68,8 @@ class Agora:
     @commands.command(pass_context=True, hidden=True)
     async def resetpoll(self, ctx):
         """Permet de reset le fichier de FancyPoll en cas de problèmes"""
-        del self.sys["POLL"]
-        self.sys = {"POLL": {}}
+        del self.sys["POLLS"]
+        self.sys = {"POLLS": {}}
         fileIO("data/agora/sys.json", "save", self.sys)
         await self.bot.say("**Succès** | Tous les polls en cours ont été tués et le fichier a été reset.")
 
