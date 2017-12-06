@@ -65,6 +65,14 @@ class Agora:
         else:
             return False
 
+    @commands.command(pass_context=True, hidden=True)
+    async def resetpoll(self, ctx):
+        """Permet de reset le fichier de FancyPoll en cas de problèmes"""
+        del self.sys["POLL"]
+        self.sys = {"POLL": {}}
+        fileIO("data/agora/sys.json", "save", self.sys)
+        await self.bot.say("**Succès** | Tous les polls en cours ont été tués et le fichier a été reset.")
+
     @commands.command(aliases=["fp", "vote"], pass_context=True, no_pm=True)
     async def fancypoll(self, ctx, *qr: str):
         """Lance un FancyPoll sur le channel en cours et épingle celui-ci
@@ -106,20 +114,18 @@ class Agora:
                                       "AUTEURIMG": ctx.message.author.avatar_url,
                                       "MSGID": None,
                                       "ACTIF": False}
-            await self.bot.say("**Patientez** | Génération du sondage...")
             msg = self.gen_txt(idp)
-            msg.set_footer(text="Chargement... | Patientez pendant que j'organise le sondage")
+            msg.set_footer(text="CHARGEMENT... | Patientez pendant que j'organise le sondage")
             menu = await self.bot.say(embed=msg)
             await self.bot.pin_message(menu)
             self.sys["POLLS"][idp]["MSGID"] = menu.id
+            self.sys["POLLS"][idp]["ACTIF"] = True
+            fileIO("data/agora/sys.json", "save", self.sys)
             for r in emos:
                 try:
                     await self.bot.add_reaction(menu, r)
                 except:
                     pass
-            await asyncio.sleep(0.25)
-            self.sys["POLLS"][idp]["ACTIF"] = True
-            fileIO("data/agora/sys.json", "save", self.sys)
             await self.bot.edit_message(menu, embed=self.gen_txt(idp))
         else:
             await self.bot.say("**Format** | *Question;Réponse1;Réponse2;RéponseN...*")
@@ -128,21 +134,22 @@ class Agora:
         message = reaction.message
         save = lambda: fileIO("data/agora/sys.json", "save", self.sys)
         idp = self.find_idp(message.id)
-        if idp:
-            data = self.sys["POLLS"][idp]
-            if reaction.emoji in [data["REPONSES"][r]["EMOJI"] for r in data["REPONSES"]]:
-                if user.id not in data["VOTES"]:
-                    r = self.find_reponse(idp, reaction.emoji)
-                    data["REPONSES"][r]["NB"] += 1
-                    data["VOTES"][user.id] = r
-                    fileIO("data/agora/sys.json", "save", self.sys)
-                    await self.bot.send_message(user, "**#{}** | Merci d'avoir voté \{} !".format(idp, reaction.emoji))
-                    await self.bot.edit_message(message, embed=self.gen_txt(idp))
+        if not user.bot:
+            if idp:
+                data = self.sys["POLLS"][idp]
+                if reaction.emoji in [data["REPONSES"][r]["EMOJI"] for r in data["REPONSES"]]:
+                    if user.id not in data["VOTES"]:
+                        r = self.find_reponse(idp, reaction.emoji)
+                        data["REPONSES"][r]["NB"] += 1
+                        data["VOTES"][user.id] = r
+                        fileIO("data/agora/sys.json", "save", self.sys)
+                        await self.bot.send_message(user, "**#{}** | Merci d'avoir voté \{} !".format(idp, reaction.emoji))
+                        await self.bot.edit_message(message, embed=self.gen_txt(idp))
+                    else:
+                        await self.bot.send_message(user, "**#{}** | Vous avez déjà voté !".format(idp))
+                        await self.bot.remove_reaction(message, reaction.emoji, user)
                 else:
-                    await self.bot.send_message(user, "**#{}** | Vous avez déjà voté !".format(idp))
                     await self.bot.remove_reaction(message, reaction.emoji, user)
-            else:
-                await self.bot.remove_reaction(message, reaction.emoji, user)
 
     async def fp_listen_rem(self, reaction, user):
         message = reaction.message
