@@ -147,7 +147,7 @@ class Agora:
                                 return
                         r = self.find_reponse(idp, reaction.emoji)
                         data["REPONSES"][r]["NB"] += 1
-                        data["ABUS"][user.id] = data["ABUS"][user.id] + 1 if data["ABUS"][user.id] else 0
+                        data["ABUS"][user.id] = data["ABUS"][user.id] + 1 if user.id in data["ABUS"] else 0
                         data["VOTES"][user.id] = r
                         fileIO("data/agora/sys.json", "save", self.sys)
                         await self.bot.send_message(user, "**#{}** | Merci d'avoir voté \{} !".format(idp, reaction.emoji))
@@ -171,7 +171,7 @@ class Agora:
                             await self.bot.send_message(user, "**#{}** | ABUS - Vous ne pouvez pas retirer "
                                                               "votre vote.".format(idp))
                             return
-                    data["ABUS"][user.id] = data["ABUS"][user.id] + 1 if data["ABUS"][user.id] else 0
+                    data["ABUS"][user.id] = data["ABUS"][user.id] + 1 if user.id in data["ABUS"] else 0
                     r = self.find_reponse(idp, reaction.emoji)
                     if data["VOTES"][user.id] == r:
                         data["REPONSES"][r]["NB"] -= 1
