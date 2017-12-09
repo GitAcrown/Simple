@@ -113,7 +113,8 @@ class Agora:
                                       "COLOR": rcolor,
                                       "AUTEURIMG": ctx.message.author.avatar_url,
                                       "MSGID": None,
-                                      "ACTIF": False}
+                                      "ACTIF": False,
+                                      "SECOND" : []}
             msg = self.gen_txt(idp)
             msg.set_footer(text="CHARGEMENT... | Patientez pendant que j'organise le sondage")
             menu = await self.bot.say(embed=msg)
@@ -159,16 +160,20 @@ class Agora:
             data = self.sys["POLLS"][idp]
             if reaction.emoji in [data["REPONSES"][r]["EMOJI"] for r in data["REPONSES"]]:
                 if user.id in data["VOTES"]:
-                    r = self.find_reponse(idp, reaction.emoji)
-                    if data["VOTES"][user.id] == r:
-                        data["REPONSES"][r]["NB"] -= 1
-                        del data["VOTES"][user.id]
+                    if user.id not in data["SECOND"]:
+                        data["SECOND"].append(user.id)
+                        r = self.find_reponse(idp, reaction.emoji)
+                        if data["VOTES"][user.id] == r:
+                            data["REPONSES"][r]["NB"] -= 1
+                            del data["VOTES"][user.id]
+                        else:
+                            return
+                        fileIO("data/agora/sys.json", "save", self.sys)
+                        await self.bot.send_message(user, "**#{}** | Vous avez retiré votre vote \{}".format(idp,
+                                                                                                            reaction.emoji))
+                        await self.bot.edit_message(message, embed=self.gen_txt(idp))
                     else:
-                        return
-                    fileIO("data/agora/sys.json", "save", self.sys)
-                    await self.bot.send_message(user, "**#{}** | Vous avez retiré votre vote \{}".format(idp,
-                                                                                                        reaction.emoji))
-                    await self.bot.edit_message(message, embed=self.gen_txt(idp))
+                        await self.bot.send_message(user, "**#{}** | **Abus** - Vous ne pouvez pas retirer votre vote.")
 
     async def fp_listen_pin(self, before, after):
         save = lambda: fileIO("data/agora/sys.json", "save", self.sys)
