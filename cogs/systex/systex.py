@@ -607,25 +607,26 @@ class Systex:
                     rep = await self.bot.wait_for_message(channel=m.channel,
                                                           author=ctx.message.author,
                                                           timeout=60)
-                    if rep.content is None:
+                    if rep is None:
                         em.set_footer(text="**Session annulée** | Bye :wave:")
                         await self.bot.edit_message(m, embed=em)
                         return
-                    if rep.content.lower() is "pass":
+                    if rep.content.lower() == "pass":
+                        valid = True
                         continue
-                    elif rep.content.lower() is "stop":
+                    elif rep.content.lower() == "stop":
                         await self.bot.whisper("**Session annulée** | Bye :wave:")
                         return
-                    else:
-                        tags = rep.content.lower().split(",")
-                        correcttags = []
-                        for t in tags:
-                            if t.startswith(" "):
-                                t = t[1:]
-                            if t.endswith(" "):
-                                t = t[:-1]
-                            correcttags.append(t)
-                        tags = correcttags
+
+                    tags = rep.content.lower().split(",")
+                    correcttags = []
+                    for t in tags:
+                        if t.startswith(" "):
+                            t = t[1:]
+                        if t.endswith(" "):
+                            t = t[:-1]
+                        correcttags.append(t)
+                    tags = correcttags
                     if tags:
                         self.stk["STK"][s]["TAGS"] = tags
                         self.save()
