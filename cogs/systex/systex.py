@@ -119,9 +119,13 @@ class Systex:
             await asyncio.sleep(10)  # Temps de mise en route
             channel = self.bot.get_channel("228154509946388480")
             while True:
-                if self.stk["OPT"]["APPROB"]:
-                    await self.bot.send_message(channel, "@Modérateur **Rappel** | Des stickers sont en "
-                                                         "attente approbation")
+                if "RAPPEL" not in self.stk["OPT"]:
+                    self.stk["OPT"]["RAPPEL"] = False
+                    self.save()
+                if self.stk["OPT"]["RAPPEL"]:
+                    if self.stk["OPT"]["APPROB"]:
+                        await self.bot.send_message(channel, "@Modérateur **Rappel** | Des stickers sont en "
+                                                             "attente approbation")
                 await asyncio.sleep(86400)
         except asyncio.CancelledError:
             pass
@@ -300,6 +304,19 @@ class Systex:
             self.user[user.id]["STK_STOP"] = True
             self.save()
             await self.bot.say("**L'utilisateur n'a plus le droit d'utiliser des stickers**")
+
+    @_stkmod.command()
+    async def rappel(self):
+        """Active/Désactive le rappel d'approbation des stickers en attente"""
+        if "RAPPEL" not in self.stk["OPT"]:
+            self.stk["OPT"]["RAPPEL"] = False
+        if self.stk["OPT"]["RAPPEL"]:
+            self.stk["OPT"]["RAPPEL"] = False
+            await self.bot.say("**Rappel désactivé**")
+        else:
+            self.stk["OPT"]["RAPPEL"] = True
+            await self.bot.say("**Rappel activé**")
+        self.save()
 
     @_stkmod.command()
     async def customstop(self, user: discord.Member):
@@ -590,6 +607,10 @@ class Systex:
                     rep = await self.bot.wait_for_message(channel=m.channel,
                                                           author=ctx.message.author,
                                                           timeout=60)
+                    if rep.content is None:
+                        em.set_footer(text="**Session annulée** | Bye :wave:")
+                        await self.bot.edit_message(m, embed=em)
+                        return
                     if rep.content.lower() is "pass":
                         continue
                     elif rep.content.lower() is "stop":
@@ -605,14 +626,11 @@ class Systex:
                                 t = t[:-1]
                             correcttags.append(t)
                         tags = correcttags
-                    if rep.content is None:
-                        em.set_footer(text="**Session annulée** | Bye :wave:")
-                        await self.bot.edit_message(m, embed=em)
-                        return
-                    elif tags:
+                    if tags:
                         self.stk["STK"][s]["TAGS"] = tags
                         self.save()
-                        await self.bot.say("**Tags ajoutés** | Merci ! Au suivant...")
+                        await self.bot.whisper("**Tags ajoutés** | Merci ! Au suivant...")
+                        valid = True
                         continue
                     else:
                         await self.bot.say("**Erreur** | Il faut au moins un tag...")
