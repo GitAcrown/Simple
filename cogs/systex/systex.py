@@ -610,10 +610,10 @@ class Systex:
                         await self.bot.edit_message(m, embed=em)
                         return
                     elif tags:
-                        self.stk["STK"][r]["TAGS"] = tags
+                        self.stk["STK"][s]["TAGS"] = tags
                         self.save()
                         await self.bot.say("**Tags ajoutés** | Merci ! Au suivant...")
-                        valid = True
+                        continue
                     else:
                         await self.bot.say("**Erreur** | Il faut au moins un tag...")
         else:
