@@ -561,9 +561,9 @@ class Systex:
         else:
             results = []
             if len(termes) == 1:
-                termes = termes[0]
+                tem = termes[0]
                 for s in self.stk["STK"]:
-                    if termes in self.stk["STK"][s]["NOM"]:
+                    if tem in self.stk["STK"][s]["NOM"]:
                         t = "**{}** (c)".format(self.stk["STK"][s]["NOM"])
                         results.append(t)
             for t in termes:
