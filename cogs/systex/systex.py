@@ -625,6 +625,11 @@ class Systex:
         """Accorder l'approbation du staff sur des sticker"""
         author = ctx.message.author
         server = ctx.message.server
+        if nom == "fullreset":
+            self.stk["OPT"]["APPROB"] = {}
+            self.save()
+            await self.bot.say("**Succès** | Le reset total des stickers en approbation a été réalisé")
+            return
         if not nom:
             msg = "\n".join([self.stk["OPT"]["APPROB"][r]["NOM"] for r in self.stk["OPT"]["APPROB"]])
             em = discord.Embed(title="STK| En attente d'approbation", description=msg, color=0x7af442)
