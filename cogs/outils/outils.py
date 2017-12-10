@@ -17,7 +17,7 @@ from .utils.dataIO import fileIO, dataIO
 
 
 class Outils:
-    """Module d'outils utiles à la modération ou aux statistiques"""
+    """Module d'outils utiles à la modération ou aux statistiques | Depuis Décembre 2017"""
     def __init__(self, bot):
         self.bot = bot
         self.results = dataIO.load_json("data/outils/results.json")
