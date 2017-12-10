@@ -108,6 +108,36 @@ class Systex:
             return True
         return False
 
+    def alive(self, rolename: str, server: discord.Server):
+        vip = []
+        for m in server.members:
+            if rolename in [r.name for r in m.roles]:
+                vip.append(m.id)
+        # FILTRES
+        select = {}
+        u = lambda x: server.get_member(x)
+        for p in vip:
+            if not u(p).bot:
+                select[p] = 0
+            else:
+                continue
+            # 1-Statut
+            if u(p).status == discord.Status.online:
+                select[p] += 3
+            elif u(p).status == discord.Status.idle:
+                select[p] += 2
+            elif u(p).status == discord.Status.dnd:
+                select[p] += 1
+            else:
+                pass
+
+            # 2-Présence en vocal
+            if u(p).voice:
+                select[p] += 2
+
+
+
+
     #MEMEMAKER
 
     def make_meme(self, topString, bottomString, filename):
