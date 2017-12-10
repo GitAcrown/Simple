@@ -236,9 +236,9 @@ class Outils:
                 for e in output:
                     if e in [i.name for i in server.emojis]:
                         if e not in data:
-                            data[e] += 1
-                        else:
                             data[e] = 1
+                        else:
+                            data[e] += 1
         txt = ""
         for e in data:
             txt += "{}\t{}\n".format(e, data[e])
