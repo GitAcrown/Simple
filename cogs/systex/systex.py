@@ -30,6 +30,7 @@ class Systex:
         self.bot = bot
         self.stk = dataIO.load_json("data/systex/stk.json")
         self.user = dataIO.load_json("data/systex/user.json")
+        self.cycle_task = bot.loop.create_task(self.systex_loop())
 
     def save(self):
         fileIO("data/systex/stk.json", "save", self.stk)
@@ -83,7 +84,9 @@ class Systex:
         else:
             return False
 
-    def add_sticker(self, clef, nom: str, chemin, auteur: discord.Member, url, autbis = None, importe = None):
+    def add_sticker(self, clef, nom: str, chemin, auteur: discord.Member, url, autbis=None, importe=None,
+                    tags=None):
+        if tags is None: tags = []
         if clef not in self.stk:
             autorise = False if not auteur.server_permissions.manage_messages else True
             if autorise:
@@ -94,7 +97,8 @@ class Systex:
                                          "TIMESTAMP": time.time(),
                                          "COMPTAGE": 0,
                                          "AFFICHAGE": "upload",
-                                         "IMPORT": importe}
+                                         "IMPORT": importe,
+                                         "TAGS": tags}
                 if "APPROB" not in self.stk["OPT"]:
                     self.stk["OPT"]["APPROB"] = {}
                 if clef in self.stk["OPT"]["APPROB"]:
@@ -103,39 +107,24 @@ class Systex:
                 self.stk["OPT"]["APPROB"][clef] = {"NOM": nom,
                                                    "CHEMIN": chemin,
                                                    "AUTEUR": auteur.id,
-                                                   "URL": url}
+                                                   "URL": url,
+                                                   "TAGS": tags}
             self.save()
             return True
         return False
 
-    def alive(self, rolename: str, server: discord.Server):
-        vip = []
-        for m in server.members:
-            if rolename in [r.name for r in m.roles]:
-                vip.append(m.id)
-        # FILTRES
-        select = {}
-        u = lambda x: server.get_member(x)
-        for p in vip:
-            if not u(p).bot:
-                select[p] = 0
-            else:
-                continue
-            # 1-Statut
-            if u(p).status == discord.Status.online:
-                select[p] += 3
-            elif u(p).status == discord.Status.idle:
-                select[p] += 2
-            elif u(p).status == discord.Status.dnd:
-                select[p] += 1
-            else:
-                pass
-
-            # 2-Présence en vocal
-            if u(p).voice:
-                select[p] += 2
-
-
+    async def systex_loop(self):
+        await self.bot.wait_until_ready()
+        try:
+            await asyncio.sleep(10)  # Temps de mise en route
+            channel = self.bot.get_channel("228154509946388480")
+            while True:
+                if self.stk["OPT"]["APPROB"]:
+                    await self.bot.send_message(channel, "@Modérateur **Rappel** | Des stickers sont en "
+                                                         "attente approbation")
+                await asyncio.sleep(86400)
+        except asyncio.CancelledError:
+            pass
 
 
     #MEMEMAKER
@@ -416,8 +405,8 @@ class Systex:
         """Permet de régler la tolérance de la correction automatique des stickers (0-3)
         0 = Désactivé
         1 = Faible
-        2 = Moyen
-        3 = Fort"""
+        2 = Moyenne
+        3 = Elevée"""
         user = ctx.message.author
         if user.id not in self.user:
             self.user[user.id] = {}
@@ -432,14 +421,19 @@ class Systex:
             await self.bot.say("**Le chiffre doit être compris entre 0 et 3**")
 
     @_stk.command(pass_context=True)
-    async def add(self, ctx, nom, url=None):
+    async def add(self, ctx, nom, url=None, *tags: str):
         """Ajouter un sticker
 
         <nom> = Nom de votre sticker
         [url] = Optionnel, permet de télécharger le sticker depuis un lien (Noelshack, Imgur ou Giphy)
-        Supporte l'upload d'image à travers Discord"""
+        [tags] = Optionnel, permet d'ajouter des tags afin de simplifier la recherche
+        Vous pouvez ajouter des tags sans mettre l'url en remplaçant celui-ci par \"\"
+        >>> Supporte l'upload d'image à travers Discord"""
         author = ctx.message.author
         server = ctx.message.server
+        if not tags: tags = []
+        if url == "":
+            url = None
         if nom not in self.list_stk():
             if author.server_permissions.manage_messages:
                 msgplus = "**Sticker ajouté avec succès !** | Il est disponible avec :{}:".format(nom)
@@ -470,7 +464,7 @@ class Systex:
                     f = open(filepath, "wb")
                     f.write(await new.read())
                     f.close()
-                self.add_sticker(clef, nom, filepath, author, url)
+                self.add_sticker(clef, nom, filepath, author, url, tags=tags)
                 await self.bot.say(msgplus)
                 return
             else:
@@ -490,7 +484,7 @@ class Systex:
                             random.SystemRandom().choice(
                                 string.ascii_lowercase + string.ascii_uppercase + string.digits) for _ in
                             range(6))
-                        self.add_sticker(clef, nom, file, author, url)
+                        self.add_sticker(clef, nom, file, author, url, tags=tags)
                         await self.bot.say(msgplus)
                         return
                     except Exception as e:
@@ -527,7 +521,104 @@ class Systex:
     def check(self, reaction, user):
         return not user.bot
 
-    @_stk.command(pass_context=True, no_pm=True)
+    @commands.command(aliases=["rs"], pass_context=True)
+    async def search(self, ctx, *termes: str):
+        """Recherche dans les stickers
+
+        Si aucun terme n'est rentré, renvoie une liste des stickers"""
+        if not termes:
+            msg = "**__Liste des stickers disponibles__**\n\n"
+            n = 1
+            listtot = [self.stk["STK"][s]["NOM"] for s in self.stk["STK"]]
+            listtot.sort()
+            for s in listtot:
+                msg += "***{}***\n".format(s)
+                if len(msg) > 1990 * n:
+                    msg += "!!"
+                    n += 1
+            else:
+                msglist = msg.split("!!")
+                for m in msglist:
+                    await self.bot.send_message(author, m)
+        else:
+            results = []
+            if len(termes) == 1:
+                termes = termes[0]
+                for s in self.stk["STK"]:
+                    if termes in self.stk["STK"][s]["NOM"]:
+                        t = "**{}** (c)".format(self.stk["STK"][s]["NOM"])
+                        results.append(t)
+            for t in termes:
+                for s in self.stk["STK"]:
+                    if "TAGS" in self.stk["STK"][s]:
+                        if t in self.stk["STK"][s]["TAGS"]:
+                            b = "**{}** (t)".format(self.stk["STK"][s]["TAGS"])
+                            results.append(b)
+            msg = "__**Résultats**__\n"
+            n = 1
+            for i in results:
+                msg += "{}\n".format(i)
+                if len(msg) > 1990 * n:
+                    msg += "!!"
+                    n += 1
+            else:
+                msglist = msg.split("!!")
+                for m in msglist:
+                    await self.bot.send_message(author, m)
+
+    @_stk.command(pass_context=True)
+    @checks.mod_or_permissions(manage_messages=True)
+    async def tag(self, ctx):
+        """Permet de taguer des stickers qui ne le sont pas encore
+
+        Ajouter des tags = meilleure recherche de stickers"""
+        for s in self.stk["STK"]:
+            if "TAGS" not in self.stk["STK"][s]:
+                self.stk["STK"][s]["TAGS"] = []
+            if not self.stk["STK"][s]["TAGS"]:
+                em = discord.Embed(title="STK| Tagguer {}".format(self.stk["STK"][s]["NOM"]),
+                                   description="**Entrez les tags de ce sticker, séparés par des virgules (,)**\n"
+                                               "- *Si l'image ne charge pas, passez avec 'pass'*\n"
+                                               "- *Stoppez cette section avec 'stop' ou en ignorant ce message "
+                                               "quelques secondes*")
+                em.set_image(url=self.stk["STK"][s]["URL"])
+                em.set_footer(text="Tapez au moins un tag | Ex: animal,fun,cool,gif")
+                m = await self.bot.whisper(embed=em)
+                valid = False
+                while valid is False:
+                    rep = await self.bot.wait_for_message(channel=m.channel,
+                                                          author=ctx.message.author,
+                                                          timeout=60)
+                    if rep.content.lower() is "pass":
+                        continue
+                    elif rep.content.lower() is "stop":
+                        await self.bot.whisper("**Session annulée** | Bye :wave:")
+                        return
+                    else:
+                        tags = rep.content.lower().split(",")
+                        correcttags = []
+                        for t in tags:
+                            if t.startswith(" "):
+                                t = t[1:]
+                            if t.endswith(" "):
+                                t = t[:-1]
+                            correcttags.append(t)
+                        tags = correcttags
+                    if rep.content is None:
+                        em.set_footer(text="**Session annulée** | Bye :wave:")
+                        await self.bot.edit_message(m, embed=em)
+                        return
+                    elif tags:
+                        self.stk["STK"][r]["TAGS"] = tags
+                        self.save()
+                        await self.bot.say("**Tags ajoutés** | Merci ! Au suivant...")
+                        valid = True
+                    else:
+                        await self.bot.say("**Erreur** | Il faut au moins un tag...")
+        else:
+            await self.bot.say("**Complet** | Il semblerait que tous les stickers soient déjà taggués. Merci !")
+
+    @_stk.command(aliases=["approuve"], pass_context=True, no_pm=True)
     @checks.mod_or_permissions(manage_messages=True)
     async def approb(self, ctx, nom: str= None):
         """Accorder l'approbation du staff sur des sticker"""
@@ -564,7 +655,8 @@ class Systex:
                                      self.stk["OPT"]["APPROB"][tr]["CHEMIN"],
                                      author,
                                      self.stk["OPT"]["APPROB"][tr]["URL"],
-                                     autbis=self.stk["OPT"]["APPROB"][tr]["AUTEUR"])
+                                     autbis=self.stk["OPT"]["APPROB"][tr]["AUTEUR"],
+                                     tags=self.stk["OPT"]["APPROB"][tr]["TAGS"])
                     await self.bot.say("**Sticker approuvé !**")
                     await asyncio.sleep(1)
                 else:
@@ -581,10 +673,13 @@ class Systex:
         for r in self.stk["STK"]:
             if nom == self.stk["STK"][r]["NOM"]:
                 stk = self.stk["STK"][r]
+                if "TAGS" not in self.stk["STK"][r]:
+                    self.stk["STK"][r]["TAGS"] = []
                 while True:
                     txt = "1/**Nom:** {}\n" \
                           "2/**URL:** {}\n" \
-                          "3/**Affichage:** {}\n".format(stk["NOM"], stk["URL"], stk["AFFICHAGE"])
+                          "3/**Affichage:** {}\n" \
+                          "4/**Tags:** {}".format(stk["NOM"], stk["URL"], stk["AFFICHAGE"], stk["TAGS"])
                     em = discord.Embed(title="STK| Modifier {}".format(r), description=txt)
                     em.set_image(url=stk["URL"])
                     em.set_footer(text="Tapez le chiffre correspondant à l'action désirée | Q pour quitter")
@@ -663,6 +758,37 @@ class Systex:
                                     valid = True
                                 else:
                                     await self.bot.say("**Erreur** | Ce format n'existe pas (web, upload ou billet)")
+                        elif rep.content == "4":
+                            em = discord.Embed(title="STK| Modifier {} > Tags".format(r),
+                                               description="**Tapez ci-dessous les tags, séparés par une virgule (,)**")
+                            em.set_footer(text="Tapez au minimum un tag | Ex: fun,cool,animal,chat")
+                            m = await self.bot.say(embed=em)
+                            valid = False
+                            while valid is False:
+                                rep = await self.bot.wait_for_message(channel=ctx.message.channel,
+                                                                      author=ctx.message.author,
+                                                                      timeout=60)
+                                if rep.content:
+                                    tags = rep.content.lower().split(",")
+                                    correcttags = []
+                                    for t in tags:
+                                        if t.startswith(" "):
+                                            t = t[1:]
+                                        if t.endswith(" "):
+                                            t = t[:-1]
+                                        correcttags.append(t)
+                                    tags = correcttags
+                                if rep.content is None:
+                                    em.set_footer(text="TIMEOUT | Bye !")
+                                    await self.bot.edit_message(m, embed=em)
+                                    return
+                                elif tags:
+                                    self.stk["STK"][r]["TAGS"] = tags
+                                    self.save()
+                                    await self.bot.say("**Modifiés** | Retour au menu...")
+                                    valid = True
+                                else:
+                                    await self.bot.say("**Erreur** | Il faut au moins un tag...")
                         else:
                             await self.bot.say("**Erreur** | Cette option n'existe pas")
         else:
@@ -718,8 +844,10 @@ class Systex:
                     if tr == "list" or tr == "liste":
                             msg = "**__Liste des stickers disponibles__**\n\n"
                             n = 1
-                            for s in self.stk["STK"]:
-                                msg += "***{}***\n".format(self.stk["STK"][s]["NOM"])
+                            listtot = [self.stk["STK"][s]["NOM"] for s in self.stk["STK"]]
+                            listtot.sort()
+                            for s in listtot:
+                                msg += "***{}***\n".format(s)
                                 if len(msg) > 1980 * n:
                                     msg += "!!"
                                     n += 1
@@ -729,7 +857,7 @@ class Systex:
                                     await self.bot.send_message(author, m)
                                 continue
                     if tr == "vent": #EE
-                        await asyncio.sleep(0.25)
+                        await asyncio.sleep(0.10)
                         await self.bot.send_typing(channel)
                         return
                     if tr == "halloween":
@@ -818,8 +946,11 @@ class Systex:
                         for r in self.stk["STK"]:
                             if tr == self.stk["STK"][r]["NOM"]:
                                 tr = r
-                                txt = "Importé depuis la V3" if self.stk["STK"][tr]["IMPORT"] else "Ajouté par <@{}>".format(
+                                txt = "**Importé depuis la V3**" if self.stk["STK"][tr]["IMPORT"] else "**Ajouté par** <@{}>".format(
                                     self.stk["STK"][tr]["AUTEUR"])
+                                if "TAGS" in self.stk["STK"][tr]:
+                                    txt += "\nTags: *Aucun tags*" if not self.stk["STK"][tr]["TAGS"] else \
+                                        "\nTags: *{}*".format(", ".join(self.stk["STK"][tr]["TAGS"]))
                                 em = discord.Embed(title= img["NOM"], description=txt, color=author.color)
                                 em.set_image(url=img["URL"])
                                 em.set_footer(text="Invoqué {} fois".format(self.stk["STK"][tr]["COMPTAGE"]))
