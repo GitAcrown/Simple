@@ -570,7 +570,7 @@ class Systex:
                 for s in self.stk["STK"]:
                     if "TAGS" in self.stk["STK"][s]:
                         if t in self.stk["STK"][s]["TAGS"]:
-                            b = "**{}** (t)".format(self.stk["STK"][s]["TAGS"])
+                            b = "**{}** (t)".format(self.stk["STK"][s]["NOM"])
                             results.append(b)
             msg = "__**Résultats**__\n"
             n = 1
