@@ -594,7 +594,7 @@ class Systex:
             if "TAGS" not in self.stk["STK"][s]:
                 self.stk["STK"][s]["TAGS"] = []
             if not self.stk["STK"][s]["TAGS"]:
-                em = discord.Embed(title="STK| Tagguer {}".format(self.stk["STK"][s]["NOM"]),
+                em = discord.Embed(title="STK| Tagguer « {} »".format(self.stk["STK"][s]["NOM"]),
                                    description="**Entrez les tags de ce sticker, séparés par des virgules (,)**\n"
                                                "- *Si l'image ne charge pas, passez avec 'pass'*\n"
                                                "- *Stoppez cette section avec 'stop' ou en ignorant ce message "
