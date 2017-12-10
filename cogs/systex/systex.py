@@ -526,6 +526,7 @@ class Systex:
         """Recherche dans les stickers
 
         Si aucun terme n'est rentré, renvoie une liste des stickers"""
+        author = ctx.message.author
         if not termes:
             msg = "**__Liste des stickers disponibles__**\n\n"
             n = 1
@@ -539,7 +540,7 @@ class Systex:
             else:
                 msglist = msg.split("!!")
                 for m in msglist:
-                    await self.bot.send_message(author, m)
+                    await self.bot.whisper(m)
         else:
             results = []
             if len(termes) == 1:
@@ -564,7 +565,7 @@ class Systex:
             else:
                 msglist = msg.split("!!")
                 for m in msglist:
-                    await self.bot.send_message(author, m)
+                    await self.bot.whisper(m)
 
     @_stk.command(pass_context=True)
     @checks.mod_or_permissions(manage_messages=True)
