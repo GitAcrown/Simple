@@ -25,7 +25,7 @@ from .utils.dataIO import fileIO, dataIO
 # Affichages : Web/Upload/Billet/Infos (W.U.B.I.)
 
 class Systex:
-    """Gestion des stickers et autres fonctions à l'écrit"""
+    """Gestion des stickers et autres fonctions à l'écrit | Corrigé"""
     def __init__(self, bot):
         self.bot = bot
         self.stk = dataIO.load_json("data/systex/stk.json")
