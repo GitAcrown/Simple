@@ -638,6 +638,15 @@ class Systex:
         else:
             await self.bot.say("**Complet** | Il semblerait que tous les stickers soient déjà taggués. Merci !")
 
+    @commands.command(pass_context=True)
+    async def pepe(self, ctx):
+        """Génère un Pepe aléatoirement"""
+        channel = ctx.message.channel
+        chemin = os.listdir("data/systex/pepeimg/")
+        chemin = "data/systex/pepeimg/" + random.choice(chemin)
+        await self.bot.send_typing(channel)
+        await self.bot.send_file(channel, chemin)
+
     @_stk.command(aliases=["approuve"], pass_context=True, no_pm=True)
     @checks.mod_or_permissions(manage_messages=True)
     async def approb(self, ctx, nom: str= None):
