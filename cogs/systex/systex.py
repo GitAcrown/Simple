@@ -855,7 +855,9 @@ class Systex:
                            "URL": None,
                            "AFFICHAGE": None,
                            "CONTENANT": False,
-                           "SECRET": False}
+                           "SECRET": False,
+                           "TAGS": False}
+                    tags = []
                     if "/" in stk:
                         tr = stk.split("/")[1]
                         pr = stk.split("/")[0]
@@ -873,6 +875,18 @@ class Systex:
                             img["SECRET"] = True
                         if "?" in pr:
                             img["CONTENANT"] = True
+                        elif "t" in pr:
+                            img["TAGS"] = True
+                            tags = tr.split(",")
+                            correcttags = []
+                            for t in tags:
+                                if t.startswith(" "):
+                                    t = t[1:]
+                                if t.endswith(" "):
+                                    t = t[:-1]
+                                correcttags.append(t)
+                            tags = correcttags
+                            tr = ""
                     else:
                         tr = stk
                     if tr == "list" or tr == "liste":
@@ -900,7 +914,14 @@ class Systex:
                         await self.bot.send_typing(channel)
                         await self.bot.send_file(channel, chemin)
                         return #Restes de l'event Halloween 2017
-
+                    if img["TAGS"]:
+                        tot = []
+                        for s in self.stk["STK"]:
+                            if "TAGS" in self.stk["STK"][s]:
+                                for t in tags:
+                                    if t.lower() in self.stk["STK"][s]["TAGS"]:
+                                        tot.append(self.stk["STK"][s]["NOM"])
+                        tr = random.choice(tot)
                     if img["CONTENANT"] is False:
                         if tr in self.list_stk():
                             for r in self.stk["STK"]:
