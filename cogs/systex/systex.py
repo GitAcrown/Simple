@@ -1,22 +1,19 @@
 import asyncio
-import operator
 import os
 import random
 import re
 import string
 import sys
 import time
-import aiohttp
 from urllib import request
 
-import PIL
+import aiohttp
 import discord
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
 from __main__ import send_cmd_help
 from discord.ext import commands
-from string import capwords
 
 from .utils import checks
 from .utils.dataIO import fileIO, dataIO
