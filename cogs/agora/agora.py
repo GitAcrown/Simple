@@ -14,6 +14,7 @@ class Agora:
     def __init__(self, bot):
         self.bot = bot
         self.sys = dataIO.load_json("data/agora/sys.json")
+        self.law = dataIO.load_json("data/agora/law.json")
 
     def gen_txt(self, idp: int):
         if idp in self.sys["POLLS"]:
@@ -64,6 +65,41 @@ class Agora:
                 return False
         else:
             return False
+
+    """"@commands.group(aliases=["lkm"], pass_context=True)
+    async def legikheysmod(self, ctx):
+        if ctx.invoked_subcommand is None:
+            await send_cmd_help(ctx)
+
+    @legikheysmod.group(pass_context=True)
+    async def sources(self, ctx):
+        if ctx.invoked_subcommand is None:
+            await send_cmd_help(ctx)
+
+    @sources.command(pass_context=True)
+    async def new(self, ctx, mini: str, url: str, *nom: str):
+        if mini in ["charte"]:
+            if mini not in self.law["SOURCES"]:
+                self.law["SOURCES"][mini] = {}
+
+    @sources.command(pass_context=True)
+    async def delete(self, ctx, mini: str = None):
+
+
+    @legikheysmod.command(pass_context=True)
+    async def add(self, ctx, source: str, date: str, num: str, *texte: str):
+
+    @legikheysmod.command(pass_context=True)
+    async def modif(self, ctx, uid: str, date: str, *texte: str):
+
+    @legikheysmod.command(pass_context=True)
+    async def remove(self, ctx, uid: str):
+
+    @commands.command(aliases=["lk"], pass_context=True)
+    async def legikheys(self, ctx, *recherche):"""
+
+
+# POLLS >>>>>>>>>>>>>>>>>
 
     @commands.command(pass_context=True, hidden=True)
     async def resetpoll(self, ctx):
@@ -210,6 +246,9 @@ def check_files():
     if not os.path.isfile("data/agora/sys.json"):
         print("Création du fichier Agora/sys.json...")
         fileIO("data/agora/sys.json", "save", {"POLLS": {}})
+    if not os.path.isfile("data/agora/law.json"):
+        print("Création du fichier Agora/law.json...")
+        fileIO("data/agora/law.json", "save", {"SOURCES": {}, "LAW" : {}})
 
 
 def setup(bot):
