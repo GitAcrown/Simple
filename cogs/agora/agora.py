@@ -1,15 +1,16 @@
-import asyncio
+import os
+import operator
 import os
 import random
-import time
-import discord
-from .utils import checks
-from .utils.dataIO import fileIO
-from discord.ext import commands
-from __main__ import send_cmd_help
-import operator
 import re
+
+import discord
+from __main__ import send_cmd_help
+from discord.ext import commands
+
+from .utils import checks
 from .utils.dataIO import fileIO, dataIO
+
 
 class Agora:
     """Fonctionnalités communautaires"""
@@ -83,7 +84,6 @@ class Agora:
         <source> - nom de la source
         <url> - lien web public de la source
         <date> - date d'application
-        <place> - chapitre, thème... (entre guillemets)
         <classt> - classement (exs: 28-3; A01/12bis...)
         [texte] - texte de l'article"""
         if classt.upper() not in self.law:
@@ -91,7 +91,6 @@ class Agora:
                 if "/" in date:
                     self.law[classt.upper()] = {"SOURCE": source.upper(),
                                                 "URL": url,
-                                                "PLACE": place,
                                                 "DATE": date,
                                                 "TEXTE": " ".join(texte),
                                                 "MODIFS": []}
@@ -116,7 +115,7 @@ class Agora:
             if "/" in date:
                 old = self.law[classt.upper()]["TEXTE"]
                 dateold = self.law[classt.upper()]["DATE"]
-                self.law[classt.classt.upper()]["MODIFS"].append([dateold, old])
+                self.law[classt.upper()]["MODIFS"].append([dateold, old])
                 self.law[classt.upper()]["TEXTE"] = " ".join(texte)
                 self.law[classt.upper()]["DATE"] = date
                 fileIO("data/agora/law.json", "save", self.law)
@@ -146,12 +145,12 @@ class Agora:
         -- Sinon : renvoie les articles contenant les termes recherchés"""
         if not recherche:
             await self.bot.say("**Vide** | Recherchez un article (*28-2*; *A01/18bis*...) ou directement"
-                               "les termes recherchés (*spoil*; *flood*; *ban*...)")
+                               " les termes recherchés (*spoil*; *flood*; *ban*...)")
             return
         elif len(recherche) == 1:
             uid = recherche[0]
             if uid.upper() in self.law:
-                em = discord.Embed(title="LégiKheys | {} ({})".format(uid.upper(), self.law[uid.upper()]["PLACE"]),
+                em = discord.Embed(title="LégiKheys | {} ({})".format(uid.upper(), self.law[uid.upper()]["SOURCE"]),
                                    description=self.law[uid.upper()]["TEXTE"], url=self.law[uid.upper()]["URL"])
                 em.set_footer(text="En date du {} | Partager: <lk|{}>".format(self.law[uid.upper()]["DATE"],
                                                                               uid.upper()))
@@ -187,7 +186,7 @@ class Agora:
                 em.set_footer(text="Du + au - pertinent | Faîtes '&lk <art>' pour voir l'article")
                 await self.bot.say(embed=em)
             else:
-                await self.bot.say("**Introuvable** | Aucun article ne contient le(e) terme(s) recherché(s)")
+                await self.bot.say("**Introuvable** | Aucun article ne contient le(s) terme(s) recherché(s)")
 
 # POLLS >>>>>>>>>>>>>>>>>
 
@@ -334,7 +333,7 @@ class Agora:
                         e.replace("lk|", "")
                         if e.upper() in self.law:
                             em = discord.Embed(
-                                title="LégiKheys | {} ({})".format(e.upper(), self.law[e.upper()]["PLACE"]),
+                                title="LégiKheys | {} ({})".format(e.upper(), self.law[e.upper()]["SOURCE"]),
                                 description=self.law[e.upper()]["TEXTE"], url=self.law[e.upper()]["URL"])
                             em.set_footer(text="En date du {} | Invoqué via Holo".format(self.law[e.upper()]["DATE"],
                                                                                           e.upper()))
