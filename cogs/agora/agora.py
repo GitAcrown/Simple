@@ -143,8 +143,20 @@ class Agora:
         -- Si le terme recherché est directement l'identifiant d'un article : renvoie l'article demandé
         -- Sinon : renvoie les articles contenant les termes recherchés"""
         if not recherche:
-            await self.bot.say("**Vide** | Recherchez un article (*28-2*; *A01/18bis*...) ou directement"
-                               " les termes recherchés (*spoil*; *flood*; *ban*...)")
+            txt = "__**Index des Articles**__\n"
+            liste = []
+            for a in self.law:
+                liste.append(a)
+            liste.sort()
+            n = 1
+            for i in liste:
+                txt += "**Art. {}**\n".format(i)
+                if len(txt) > (1990 * n):
+                    txt += "$$"
+                    n += 1
+            msgs = txt.split("$$")
+            for msg in msgs:
+                await self.bot.whisper(msg)
             return
         elif len(recherche) == 1:
             uid = recherche[0]
