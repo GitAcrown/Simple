@@ -334,7 +334,7 @@ class Agora:
                             if art.upper() in self.law:
                                 em = discord.Embed(
                                     title="LégiKheys | Art. {} ({})".format(art.upper(), self.law[art.upper()]["SOURCE"]),
-                                    description=self.law[e.upper()]["TEXTE"], url=self.law[art.upper()]["URL"])
+                                    description=self.law[art.upper()]["TEXTE"], url=self.law[art.upper()]["URL"])
                                 em.set_footer(text="En date du {} | Invoqué via Holo".format(self.law[art.upper()]["DATE"],
                                                                                               art.upper()))
                                 await self.bot.send_message(message.channel, embed=em)
