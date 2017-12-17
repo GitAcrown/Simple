@@ -155,8 +155,9 @@ class Agora:
                 if "-" in art:
                     groupe = art[:art.index("-")]
                 for a in self.law:
-                    if a.startswith(art):
-                        lie.append(a)
+                    if "-" in a:
+                        if art == a.split("-")[0]:
+                            lie.append(a)
                 if lie:
                     lie.sort()
                     lietxt = "\n\n**Articles liés**: {}".format(", ".join(lie))
@@ -167,7 +168,7 @@ class Agora:
                     description=self.law[
                                     art.upper()]["TEXTE"] + lietxt, url=self.law[art.upper()]["URL"])
                 if groupe:
-                    em.add_field(name="Art. {}", value=self.law[groupe]["TEXTE"])
+                    em.add_field(name="Art. {}".format(groupe), value=self.law[groupe]["TEXTE"])
                 em.set_footer(text="En date du {} | Partager: /lk:{}/".format(self.law[uid.upper()]["DATE"],
                                                                               uid.upper()))
                 await self.bot.say(embed=em)
@@ -365,7 +366,7 @@ class Agora:
                                     description=self.law[
                                         art.upper()]["TEXTE"] + lietxt, url=self.law[art.upper()]["URL"])
                                 if groupe:
-                                    em.add_field(name="Art. {}", value=self.law[groupe]["TEXTE"])
+                                    em.add_field(name="Art. {}".format(groupe), value=self.law[groupe]["TEXTE"])
                                 em.set_footer(text="En date du {} | Invoqué via Holo".format(self.law[art.upper()]["DATE"],
                                                                                               art.upper()))
                                 await self.bot.send_message(message.channel, embed=em)
