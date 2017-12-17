@@ -331,7 +331,7 @@ class Agora:
                     if ":" in e:
                         art = e.split(":")[1]
                         if e.split(":")[0].lower() == "lk":
-                            if e.upper() in self.law:
+                            if art.upper() in self.law:
                                 em = discord.Embed(
                                     title="LégiKheys | Art. {} ({})".format(e.upper(), self.law[e.upper()]["SOURCE"]),
                                     description=self.law[e.upper()]["TEXTE"], url=self.law[e.upper()]["URL"])
