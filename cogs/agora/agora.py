@@ -149,11 +149,16 @@ class Agora:
         elif len(recherche) == 1:
             uid = recherche[0]
             if uid.upper() in self.law:
-                em = discord.Embed(title="LégiKheys | Art. {} ({})".format(uid.upper(), self.law[uid.upper()]["SOURCE"]),
-                                   description=self.law[uid.upper()]["TEXTE"], url=self.law[uid.upper()]["URL"])
+                groupe = None
+                if "-" in uid:
+                    groupe = uid[:uid.index("-")]
+                em = discord.Embed(title="LégiKheys | Art. {}{}".format(
+                    uid.upper(), " (Groupe Art. {})".format(groupe) if groupe else ""), description=self.law[
+                    uid.upper()]["TEXTE"], url=self.law[uid.upper()]["URL"])
                 em.set_footer(text="En date du {} | Partager: /lk:{}/".format(self.law[uid.upper()]["DATE"],
                                                                               uid.upper()))
                 await self.bot.say(embed=em)
+                return
             else:
                 txt = ""
                 for art in self.law:
@@ -165,27 +170,25 @@ class Agora:
                                        description=txt)
                     em.set_footer(text="Faîtes '&lk <art>' pour voir l'article")
                     await self.bot.say(embed=em)
-                else:
-                    await self.bot.say("**Introuvable** | Aucun article ne porte ce numéro ou s'y approche")
+                    return
+        smart = {}
+        for r in recherche:
+            for art in self.law:
+                if r in self.law[art]["TEXTE"]:
+                    smart[art] = smart[art] + 1 if art in smart else 1
+        l = [[art, smart[art]] for art in smart]
+        l = sorted(l, key=operator.itemgetter(1), reverse=True)
+        txt = ""
+        for art in l:
+            txt += "**Art. {}** : *{}*\n".format(art[0], self.law[art[0]]["TEXTE"] if len(
+                        self.law[art[0]]["TEXTE"]) <= 40 else self.law[art[0]]["TEXTE"][:40] + "...")
+        if txt != "":
+            em = discord.Embed(title="LégiKheys | Recherche de {}".format(", ".join(recherche)),
+                               description=txt)
+            em.set_footer(text="Du + au - pertinent | Faîtes '&lk <art>' pour voir l'article")
+            await self.bot.say(embed=em)
         else:
-            smart = {}
-            for r in recherche:
-                for art in self.law:
-                    if r in self.law[art]["TEXTE"]:
-                        smart[art] = smart[art] + 1 if art in smart else 1
-            l = [[art, smart[art]] for art in smart]
-            l = sorted(l, key=operator.itemgetter(1), reverse=True)
-            txt = ""
-            for art in l:
-                txt += "**Art. {}** : *{}*\n".format(art[0], self.law[art[0]]["TEXTE"] if len(
-                            self.law[art[0]]["TEXTE"]) <= 40 else self.law[art[0]]["TEXTE"][:40] + "...")
-            if txt != "":
-                em = discord.Embed(title="LégiKheys | Recherche de {}".format(", ".join(recherche)),
-                                   description=txt)
-                em.set_footer(text="Du + au - pertinent | Faîtes '&lk <art>' pour voir l'article")
-                await self.bot.say(embed=em)
-            else:
-                await self.bot.say("**Introuvable** | Aucun article ne contient le(s) terme(s) recherché(s)")
+            await self.bot.say("**Introuvable** | Aucun article ne contient le(s) terme(s) recherché(s)")
 
 # POLLS >>>>>>>>>>>>>>>>>
 
@@ -332,9 +335,13 @@ class Agora:
                         art = e.split(":")[1]
                         if e.split(":")[0].lower() == "lk":
                             if art.upper() in self.law:
-                                em = discord.Embed(
-                                    title="LégiKheys | Art. {} ({})".format(art.upper(), self.law[art.upper()]["SOURCE"]),
-                                    description=self.law[art.upper()]["TEXTE"], url=self.law[art.upper()]["URL"])
+                                groupe = None
+                                if "-" in art:
+                                    groupe = art[:art.index("-")]
+                                em = discord.Embed(title="LégiKheys | Art. {}{}".format(
+                                    art.upper(), " (Groupe Art. {})".format(groupe) if groupe else ""),
+                                    description=self.law[
+                                        art.upper()]["TEXTE"], url=self.law[art.upper()]["URL"])
                                 em.set_footer(text="En date du {} | Invoqué via Holo".format(self.law[art.upper()]["DATE"],
                                                                                               art.upper()))
                                 await self.bot.send_message(message.channel, embed=em)
