@@ -151,7 +151,7 @@ class Agora:
             if uid.upper() in self.law:
                 em = discord.Embed(title="LégiKheys | Art. {} ({})".format(uid.upper(), self.law[uid.upper()]["SOURCE"]),
                                    description=self.law[uid.upper()]["TEXTE"], url=self.law[uid.upper()]["URL"])
-                em.set_footer(text="En date du {} | Partager: <lk|{}>".format(self.law[uid.upper()]["DATE"],
+                em.set_footer(text="En date du {} | Partager: /lk:{}/".format(self.law[uid.upper()]["DATE"],
                                                                               uid.upper()))
                 await self.bot.say(embed=em)
             else:
@@ -324,19 +324,20 @@ class Agora:
                 fileIO("data/agora/sys.json", "save", self.sys)
 
     async def hologram_spawn(self, message):
-        if "<" and ">" in message.content:
-            output = re.compile('<(.*?)>', re.DOTALL | re.IGNORECASE).findall(message.content)
+        if "/" in message.content:
+            output = re.compile('/(.*?)/', re.DOTALL | re.IGNORECASE).findall(message.content)
             if output:
                 for e in output:
-                    if "|" in e:
-                        art = e.split("|")[1]
-                        if e.upper() in self.law:
-                            em = discord.Embed(
-                                title="LégiKheys | Art. {} ({})".format(e.upper(), self.law[e.upper()]["SOURCE"]),
-                                description=self.law[e.upper()]["TEXTE"], url=self.law[e.upper()]["URL"])
-                            em.set_footer(text="En date du {} | Invoqué via Holo".format(self.law[e.upper()]["DATE"],
-                                                                                          e.upper()))
-                            await self.bot.send_message(message.channel, embed=em)
+                    if ":" in e:
+                        art = e.split(":")[1]
+                        if e.split(":")[0].lower() == "lk":
+                            if e.upper() in self.law:
+                                em = discord.Embed(
+                                    title="LégiKheys | Art. {} ({})".format(e.upper(), self.law[e.upper()]["SOURCE"]),
+                                    description=self.law[e.upper()]["TEXTE"], url=self.law[e.upper()]["URL"])
+                                em.set_footer(text="En date du {} | Invoqué via Holo".format(self.law[e.upper()]["DATE"],
+                                                                                              e.upper()))
+                                await self.bot.send_message(message.channel, embed=em)
 
 def check_folders():
     if not os.path.exists("data/agora"):
