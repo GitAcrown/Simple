@@ -149,7 +149,7 @@ class Agora:
         elif len(recherche) == 1:
             uid = recherche[0]
             if uid.upper() in self.law:
-                em = discord.Embed(title="LégiKheys | {} ({})".format(uid.upper(), self.law[uid.upper()]["SOURCE"]),
+                em = discord.Embed(title="LégiKheys | Art. {} ({})".format(uid.upper(), self.law[uid.upper()]["SOURCE"]),
                                    description=self.law[uid.upper()]["TEXTE"], url=self.law[uid.upper()]["URL"])
                 em.set_footer(text="En date du {} | Partager: <lk|{}>".format(self.law[uid.upper()]["DATE"],
                                                                               uid.upper()))
@@ -158,7 +158,7 @@ class Agora:
                 txt = ""
                 for art in self.law:
                     if uid.upper() in art:
-                        txt += "**{}** : *{}*\n".format(art, self.law[art]["TEXTE"] if len(
+                        txt += "**Art. {}** : *{}*\n".format(art, self.law[art]["TEXTE"] if len(
                             self.law[art]["TEXTE"]) <= 40 else self.law[art]["TEXTE"][:40] + "...")
                 if txt != "":
                     em = discord.Embed(title="LégiKheys | Similaire à {}".format(uid.upper()),
@@ -177,7 +177,7 @@ class Agora:
             l = sorted(l, key=operator.itemgetter(1), reverse=True)
             txt = ""
             for art in l:
-                txt += "**{}** : *{}*\n".format(art[0], self.law[art[0]]["TEXTE"] if len(
+                txt += "**Art. {}** : *{}*\n".format(art[0], self.law[art[0]]["TEXTE"] if len(
                             self.law[art[0]]["TEXTE"]) <= 40 else self.law[art[0]]["TEXTE"][:40] + "...")
             if txt != "":
                 em = discord.Embed(title="LégiKheys | Recherche de {}".format(", ".join(recherche)),
@@ -328,11 +328,11 @@ class Agora:
             output = re.compile('<(.*?)>', re.DOTALL | re.IGNORECASE).findall(message.content)
             if output:
                 for e in output:
-                    if e.startswith("lk|"):
-                        e.replace("lk|", "")
+                    if "|" in e:
+                        art = e.split("|")[1]
                         if e.upper() in self.law:
                             em = discord.Embed(
-                                title="LégiKheys | {} ({})".format(e.upper(), self.law[e.upper()]["SOURCE"]),
+                                title="LégiKheys | Art. {} ({})".format(e.upper(), self.law[e.upper()]["SOURCE"]),
                                 description=self.law[e.upper()]["TEXTE"], url=self.law[e.upper()]["URL"])
                             em.set_footer(text="En date du {} | Invoqué via Holo".format(self.law[e.upper()]["DATE"],
                                                                                           e.upper()))
