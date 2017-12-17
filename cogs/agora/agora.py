@@ -353,35 +353,37 @@ class Agora:
                 fileIO("data/agora/sys.json", "save", self.sys)
 
     async def hologram_spawn(self, message):
-        if "/" in message.content:
-            output = re.compile('/(.*?)/', re.DOTALL | re.IGNORECASE).findall(message.content)
-            if output:
-                for e in output:
-                    if ":" in e:
-                        art = e.split(":")[1]
-                        if e.split(":")[0].lower() == "lk":
-                            if art.upper() in self.law:
-                                groupe = None
-                                lie = []
-                                if "-" in art:
-                                    groupe = art[:art.index("-")]
-                                for a in self.law:
-                                    if a.startswith(art):
-                                        lie.append(a)
-                                if lie:
-                                    lie.sort()
-                                    lietxt = "\n\n**Articles liés**: {}".format(", ".join(lie))
-                                else:
-                                    lietxt = ""
-                                em = discord.Embed(title="LégiKheys | Art. {}{}".format(
-                                    art.upper(), " (Groupe art. {})".format(groupe) if groupe else ""),
-                                    description=self.law[
-                                        art.upper()]["TEXTE"] + lietxt, url=self.law[art.upper()]["URL"])
-                                if groupe:
-                                    em.add_field(name="Art. {}".format(groupe), value=self.law[groupe]["TEXTE"])
-                                em.set_footer(text="En date du {} | Invoqué via Holo".format(self.law[art.upper()]["DATE"],
-                                                                                              art.upper()))
-                                await self.bot.send_message(message.channel, embed=em)
+        if "Habitué" or "Oldfag" or "Modérateur" or "Malsain" in [r.name for r in message.author.roles]:
+            if "/" in message.content:
+                output = re.compile('/(.*?)/', re.DOTALL | re.IGNORECASE).findall(message.content)
+                if output:
+                    for e in output:
+                        if ":" in e:
+                            art = e.split(":")[1]
+                            if e.split(":")[0].lower() == "lk":
+                                if art.upper() in self.law:
+                                    groupe = None
+                                    lie = []
+                                    if "-" in art:
+                                        groupe = art[:art.index("-")]
+                                    for a in self.law:
+                                        if "-" in a:
+                                            if art == a.split("-")[0]:
+                                                lie.append(a)
+                                    if lie:
+                                        lie.sort()
+                                        lietxt = "\n\n**Articles liés**: {}".format(", ".join(lie))
+                                    else:
+                                        lietxt = ""
+                                    em = discord.Embed(title="LégiKheys | Art. {}{}".format(
+                                        art.upper(), " (Groupe art. {})".format(groupe) if groupe else ""),
+                                        description=self.law[
+                                                        art.upper()]["TEXTE"] + lietxt, url=self.law[art.upper()]["URL"])
+                                    if groupe:
+                                        em.add_field(name="Art. {}".format(groupe), value=self.law[groupe]["TEXTE"])
+                                    em.set_footer(text="En date du {} | Invoqué via Holo".format(self.law[art.upper()]["DATE"],
+                                                                                                  art.upper()))
+                                    await self.bot.send_message(message.channel, embed=em)
 
 def check_folders():
     if not os.path.exists("data/agora"):
