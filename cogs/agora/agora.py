@@ -149,12 +149,25 @@ class Agora:
         elif len(recherche) == 1:
             uid = recherche[0]
             if uid.upper() in self.law:
+                art = uid
                 groupe = None
-                if "-" in uid:
-                    groupe = uid[:uid.index("-")]
+                lie = []
+                if "-" in art:
+                    groupe = art[:art.index("-")]
+                for a in self.law:
+                    if a.startswith(art):
+                        lie.append(a)
+                if lie:
+                    lie.sort()
+                    lietxt = "\n\n**Articles liés**: {}".format(", ".join(lie))
+                else:
+                    lietxt = ""
                 em = discord.Embed(title="LégiKheys | Art. {}{}".format(
-                    uid.upper(), " (Groupe Art. {})".format(groupe) if groupe else ""), description=self.law[
-                    uid.upper()]["TEXTE"], url=self.law[uid.upper()]["URL"])
+                    art.upper(), " (Groupe art. {})".format(groupe) if groupe else ""),
+                    description=self.law[
+                                    art.upper()]["TEXTE"] + lietxt, url=self.law[art.upper()]["URL"])
+                if groupe:
+                    em.add_field(name="Art. {}", value=self.law[groupe]["TEXTE"])
                 em.set_footer(text="En date du {} | Partager: /lk:{}/".format(self.law[uid.upper()]["DATE"],
                                                                               uid.upper()))
                 await self.bot.say(embed=em)
@@ -164,7 +177,7 @@ class Agora:
                 for art in self.law:
                     if uid.upper() in art:
                         txt += "**Art. {}** : *{}*\n".format(art, self.law[art]["TEXTE"] if len(
-                            self.law[art]["TEXTE"]) <= 40 else self.law[art]["TEXTE"][:40] + "...")
+                            self.law[art]["TEXTE"]) <= 60 else self.law[art]["TEXTE"][:60] + "...")
                 if txt != "":
                     em = discord.Embed(title="LégiKheys | Similaire à {}".format(uid.upper()),
                                        description=txt)
@@ -336,12 +349,23 @@ class Agora:
                         if e.split(":")[0].lower() == "lk":
                             if art.upper() in self.law:
                                 groupe = None
+                                lie = []
                                 if "-" in art:
                                     groupe = art[:art.index("-")]
+                                for a in self.law:
+                                    if a.startswith(art):
+                                        lie.append(a)
+                                if lie:
+                                    lie.sort()
+                                    lietxt = "\n\n**Articles liés**: {}".format(", ".join(lie))
+                                else:
+                                    lietxt = ""
                                 em = discord.Embed(title="LégiKheys | Art. {}{}".format(
-                                    art.upper(), " (Groupe Art. {})".format(groupe) if groupe else ""),
+                                    art.upper(), " (Groupe art. {})".format(groupe) if groupe else ""),
                                     description=self.law[
-                                        art.upper()]["TEXTE"], url=self.law[art.upper()]["URL"])
+                                        art.upper()]["TEXTE"] + lietxt, url=self.law[art.upper()]["URL"])
+                                if groupe:
+                                    em.add_field(name="Art. {}", value=self.law[groupe]["TEXTE"])
                                 em.set_footer(text="En date du {} | Invoqué via Holo".format(self.law[art.upper()]["DATE"],
                                                                                               art.upper()))
                                 await self.bot.send_message(message.channel, embed=em)
