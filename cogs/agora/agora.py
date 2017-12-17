@@ -333,10 +333,10 @@ class Agora:
                         if e.split(":")[0].lower() == "lk":
                             if art.upper() in self.law:
                                 em = discord.Embed(
-                                    title="LégiKheys | Art. {} ({})".format(e.upper(), self.law[e.upper()]["SOURCE"]),
-                                    description=self.law[e.upper()]["TEXTE"], url=self.law[e.upper()]["URL"])
-                                em.set_footer(text="En date du {} | Invoqué via Holo".format(self.law[e.upper()]["DATE"],
-                                                                                              e.upper()))
+                                    title="LégiKheys | Art. {} ({})".format(art.upper(), self.law[art.upper()]["SOURCE"]),
+                                    description=self.law[e.upper()]["TEXTE"], url=self.law[art.upper()]["URL"])
+                                em.set_footer(text="En date du {} | Invoqué via Holo".format(self.law[art.upper()]["DATE"],
+                                                                                              art.upper()))
                                 await self.bot.send_message(message.channel, embed=em)
 
 def check_folders():
