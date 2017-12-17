@@ -7,6 +7,8 @@ from .utils import checks
 from .utils.dataIO import fileIO
 from discord.ext import commands
 from __main__ import send_cmd_help
+import operator
+import re
 from .utils.dataIO import fileIO, dataIO
 
 class Agora:
@@ -66,38 +68,126 @@ class Agora:
         else:
             return False
 
-    """"@commands.group(aliases=["lkm"], pass_context=True)
+# LEGIKHEYS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+    @commands.group(aliases=["lkm"], pass_context=True)
+    @checks.admin_or_permissions(ban_members=True)
     async def legikheysmod(self, ctx):
         if ctx.invoked_subcommand is None:
             await send_cmd_help(ctx)
 
-    @legikheysmod.group(pass_context=True)
-    async def sources(self, ctx):
-        if ctx.invoked_subcommand is None:
-            await send_cmd_help(ctx)
+    @legikheysmod.command(pass_context=True)
+    async def add(self, ctx, source: str, url: str, date: str, place:str, classt: str, *texte: str):
+        """Ajoute un texte à LégiKheys
 
-    @sources.command(pass_context=True)
-    async def new(self, ctx, mini: str, url: str, *nom: str):
-        if mini in ["charte"]:
-            if mini not in self.law["SOURCES"]:
-                self.law["SOURCES"][mini] = {}
-
-    @sources.command(pass_context=True)
-    async def delete(self, ctx, mini: str = None):
+        <source> - nom de la source
+        <url> - lien web public de la source
+        <date> - date d'application
+        <place> - chapitre, thème... (entre guillemets)
+        <classt> - classement (exs: 28-3; A01/12bis...)
+        [texte] - texte de l'article"""
+        if classt.upper() not in self.law:
+            if url.startswith("http"):
+                if "/" in date:
+                    self.law[classt.upper()] = {"SOURCE": source.upper(),
+                                                "URL": url,
+                                                "PLACE": place,
+                                                "DATE": date,
+                                                "TEXTE": " ".join(texte),
+                                                "MODIFS": []}
+                    fileIO("data/agora/law.json", "save", self.law)
+                    await self.bot.say("**Succès** | Texte ajouté !")
+                else:
+                    await self.bot.say("**Erreur** | La date doit être au format jj/mm/aaaa")
+            else:
+                await self.bot.say("**Erreur** | L'URL n'est pas valide")
+        else:
+            await self.bot.say("**Déjà existant** | Il semblerait que cet article existe déjà")
 
 
     @legikheysmod.command(pass_context=True)
-    async def add(self, ctx, source: str, date: str, num: str, *texte: str):
+    async def modif(self, ctx, classt: str, date: str, *texte: str):
+        """Modifie un texte LégiKheys
+
+        <classt> - classement (exs: 28-3; A01/12bis...)
+        <date> - date du changement
+        [texte] - nouveau texte de l'article"""
+        if classt.upper() in self.law:
+            if "/" in date:
+                old = self.law[classt.upper()]["TEXTE"]
+                dateold = self.law[classt.upper()]["DATE"]
+                self.law[classt.classt.upper()]["MODIFS"].append([dateold, old])
+                self.law[classt.upper()]["TEXTE"] = " ".join(texte)
+                self.law[classt.upper()]["DATE"] = date
+                fileIO("data/agora/law.json", "save", self.law)
+                await self.bot.say("**Succès** | Texte modifié !")
+            else:
+                await self.bot.say("**Erreur** | La date doit être au format jj/mm/aaaa")
+        else:
+            await self.bot.say("**Introuvable** | Vérifiez l'identifiant fourni")
 
     @legikheysmod.command(pass_context=True)
-    async def modif(self, ctx, uid: str, date: str, *texte: str):
+    async def remove(self, ctx, classt: str):
+        """Supprime un texte LégiKheys
 
-    @legikheysmod.command(pass_context=True)
-    async def remove(self, ctx, uid: str):
+        <classt> - classement (exs: 28-3; A01/12bis...)"""
+        if classt.upper() in self.law:
+            del self.law[classt.upper()]
+            fileIO("data/agora/law.json", "save", self.law)
+            await self.bot.say("**Succès** | Texte supprimé !")
+        else:
+            await self.bot.say("**Introuvable** | Vérifiez l'identifiant fourni")
 
     @commands.command(aliases=["lk"], pass_context=True)
-    async def legikheys(self, ctx, *recherche):"""
+    async def legikheys(self, ctx, *recherche):
+        """Recherche dans la base de données LégiKheys
 
+        -- Si le terme recherché est directement l'identifiant d'un article : renvoie l'article demandé
+        -- Sinon : renvoie les articles contenant les termes recherchés"""
+        if not recherche:
+            await self.bot.say("**Vide** | Recherchez un article (*28-2*; *A01/18bis*...) ou directement"
+                               "les termes recherchés (*spoil*; *flood*; *ban*...)")
+            return
+        elif len(recherche) == 1:
+            uid = recherche[0]
+            if uid.upper() in self.law:
+                em = discord.Embed(title="LégiKheys | {} ({})".format(uid.upper(), self.law[uid.upper()]["PLACE"]),
+                                   description=self.law[uid.upper()]["TEXTE"], url=self.law[uid.upper()]["URL"])
+                em.set_footer(text="En date du {} | Partager: <lk|{}>".format(self.law[uid.upper()]["DATE"],
+                                                                              uid.upper()))
+                await self.bot.say(embed=em)
+            else:
+                txt = ""
+                for art in self.law:
+                    if uid.upper() in art:
+                        txt += "**{}** : *{}*\n".format(art, self.law[art]["TEXTE"] if len(
+                            self.law[art]["TEXTE"]) <= 40 else self.law[art]["TEXTE"][:40] + "...")
+                if txt != "":
+                    em = discord.Embed(title="LégiKheys | Similaire à {}".format(uid.upper()),
+                                       description=txt)
+                    em.set_footer(text="Faîtes '&lk <art>' pour voir l'article")
+                    await self.bot.say(embed=em)
+                else:
+                    await self.bot.say("**Introuvable** | Aucun article ne porte ce numéro ou s'y approche")
+        else:
+            smart = {}
+            for r in recherche:
+                for art in self.law:
+                    if r in self.law[art]["TEXTE"]:
+                        smart[art] = smart[art] + 1 if art in smart else 1
+            l = [[art, smart[art]] for art in smart]
+            l = sorted(l, key=operator.itemgetter(1), reverse=True)
+            txt = ""
+            for art in l:
+                txt += "**{}** : *{}*\n".format(art[0], self.law[art[0]]["TEXTE"] if len(
+                            self.law[art[0]]["TEXTE"]) <= 40 else self.law[art[0]]["TEXTE"][:40] + "...")
+            if txt != "":
+                em = discord.Embed(title="LégiKheys | Recherche de {}".format(", ".join(recherche)),
+                                   description=txt)
+                em.set_footer(text="Du + au - pertinent | Faîtes '&lk <art>' pour voir l'article")
+                await self.bot.say(embed=em)
+            else:
+                await self.bot.say("**Introuvable** | Aucun article ne contient le(e) terme(s) recherché(s)")
 
 # POLLS >>>>>>>>>>>>>>>>>
 
@@ -235,6 +325,20 @@ class Agora:
                 del self.sys["POLLS"][idp]
                 fileIO("data/agora/sys.json", "save", self.sys)
 
+    async def hologram_spawn(self, message):
+        if "<" and ">" in message.content:
+            output = re.compile('<(.*?)>', re.DOTALL | re.IGNORECASE).findall(message.content)
+            if output:
+                for e in output:
+                    if e.startswith("lk|"):
+                        e.replace("lk|", "")
+                        if e.upper() in self.law:
+                            em = discord.Embed(
+                                title="LégiKheys | {} ({})".format(e.upper(), self.law[e.upper()]["PLACE"]),
+                                description=self.law[e.upper()]["TEXTE"], url=self.law[e.upper()]["URL"])
+                            em.set_footer(text="En date du {} | Invoqué via Holo".format(self.law[e.upper()]["DATE"],
+                                                                                          e.upper()))
+                            await self.bot.send_message(message.channel, embed=em)
 
 def check_folders():
     if not os.path.exists("data/agora"):
@@ -248,7 +352,7 @@ def check_files():
         fileIO("data/agora/sys.json", "save", {"POLLS": {}})
     if not os.path.isfile("data/agora/law.json"):
         print("Création du fichier Agora/law.json...")
-        fileIO("data/agora/law.json", "save", {"SOURCES": {}, "LAW" : {}})
+        fileIO("data/agora/law.json", "save", {})
 
 
 def setup(bot):
@@ -256,6 +360,7 @@ def setup(bot):
     check_files()
     n = Agora(bot)
     bot.add_cog(n)
+    bot.add_listener(n.hologram_spawn, "on_message")
     bot.add_listener(n.fp_listen_add, "on_reaction_add")
     bot.add_listener(n.fp_listen_rem, "on_reaction_remove")
     bot.add_listener(n.fp_listen_pin, "on_message_edit")
