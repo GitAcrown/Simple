@@ -1,4 +1,3 @@
-import os
 import operator
 import os
 import random
@@ -78,7 +77,7 @@ class Agora:
             await send_cmd_help(ctx)
 
     @legikheysmod.command(pass_context=True)
-    async def add(self, ctx, source: str, url: str, date: str, place:str, classt: str, *texte: str):
+    async def add(self, ctx, source: str, url: str, date: str, classt: str, *texte: str):
         """Ajoute un texte à LégiKheys
 
         <source> - nom de la source
