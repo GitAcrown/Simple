@@ -1,4 +1,3 @@
-import os
 import datetime
 import operator
 import os
@@ -332,14 +331,14 @@ class Prism:  # MODULE CONCRET =========================================
         data = self.app.get_infos(user, himself=True if user == ctx.message.author else False)
         p = self.app.open(user)
         em = discord.Embed(title=data.formatname, description=data.bio, color=data.statuscolor)
-        em.set_thumbnail(url=membre.avatar_url)
-        em.add_field(name="Identifiants", value="**ID:** {}\n**SID:** {}".format(membre.id, data.sid))
+        em.set_thumbnail(url=user.avatar_url)
+        em.add_field(name="Identifiants", value="**ID:** {}\n**SID:** {}".format(user.id, data.sid))
         em.add_field(name="Dates", value="**Création:** {} (**{}** jours)\n"
                                          "**Arrivée:** {} (**{}** jours)".format(data.date_creation,
                                                                                  data.creation,
                                                                                  data.date_depuis, data.depuis))
         em.add_field(name="Rôles", value="***{}***\n\n{}".format(data.roles if data.roles else "***Aucun***",
-                                                                 self.app.rolebarre(membre)))
+                                                                 self.app.rolebarre(user)))
         psd = data.liste_pseudos[-3:]
         psd.reverse()
         srn = data.liste_surnoms[-3:]
@@ -361,7 +360,7 @@ class Prism:  # MODULE CONCRET =========================================
             txt = "Aucune action"
         em.add_field(name="Historique", value=txt)
         em.set_footer(text="Rang {} {}{}".format(data.rang, data.qualif,
-                                                 " | Joue à {}".format(membre.game) if membre.game else ""),
+                                                 " | Joue à {}".format(user.game) if user.game else ""),
                       icon_url=data.rangimg)
         await self.bot.say(embed=em)
 
@@ -399,8 +398,9 @@ class Prism:  # MODULE CONCRET =========================================
                 return
         glb = self.get_glb()
         heure = time.strftime("%H", time.localtime())
-        author = ctx.message.author
-        channel = ctx.message.channel
+        author = message.author
+        channel = message.channel
+        server = message.server
         p = self.app.open(author)
         p["DATA"]["MSG_REEL"] += 1
         p["DATA"]["MSG_PART"] += 1
@@ -423,8 +423,8 @@ class Prism:  # MODULE CONCRET =========================================
             if message.server.id is not "204585334925819904":
                 return
         glb = self.get_glb()
-        author = ctx.message.author
-        channel = ctx.message.channel
+        author = message.author
+        channel = message.channel
         p = self.app.open(author)
         p["DATA"]["MSG_REEL"] -= 1
         glb["MSG_REEL"] -= 1
@@ -435,6 +435,7 @@ class Prism:  # MODULE CONCRET =========================================
         if message.server:
             if message.server.id is not "204585334925819904":
                 return
+        server = message.server
         glb = self.get_glb()
         p = self.app.open(author)
         if type(reaction.emoji) is str:
@@ -448,9 +449,7 @@ class Prism:  # MODULE CONCRET =========================================
 
     async def prism_join(self, user: discord.Member):
         glb = self.get_glb()
-        author = ctx.message.author
-        channel = ctx.message.channel
-        p = self.app.open(author, "DATA")
+        p = self.app.open(user, "DATA")
         p["JOIN"] += 1
         glb["JOIN"] += 1
         if p["QUIT"] > 0:
@@ -462,9 +461,7 @@ class Prism:  # MODULE CONCRET =========================================
 
     async def prism_quit(self, user: discord.Member):
         glb = self.get_glb()
-        author = ctx.message.author
-        channel = ctx.message.channel
-        p = self.app.open(author)
+        p = self.app.open(user)
         p["DATA"]["QUIT"] += 1
         p["SYS"]["QUIT_SAVE"] = [r.name for r in user.roles]
         glb["QUIT"] += 1
