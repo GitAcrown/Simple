@@ -164,6 +164,8 @@ class PrismAPI:
         ch3 = "█"
         nb = int(prc / 10)
         bar = ""
+        if prc > 100:
+            return self.u_bar(100)
         while len(bar) < nb:
             bar += ch3
         if len(bar) < 10:
@@ -181,17 +183,20 @@ class PrismAPI:
         if "Habitué" and "Oldfag" in roles:
             return ""
         elif "Habitué" in roles and "Oldfag" not in roles:
-            n = days / old * 100
+            n = (days / old) * 100
+            if n > 100: n = 100
             barre = "`{} {}%`".format(self.u_bar(n), int(n))
-            return "\n\n-> **Oldfag**\n" + barre
+            return "-> **Oldfag**\n" + barre
         elif "Oldfag" in roles and "Habitué" not in roles:
-            n = days / hab * 100
+            n = (days / hab) * 100
+            if n > 100: n = 100
             barre = "`{} {}%`".format(self.u_bar(n), int(n))
-            return "\n\n-> **re-Habitué**\n" + barre
+            return "-> **re-Habitué**\n" + barre
         elif "Oldfag" not in roles and "Habitué" not in roles:
-            n = days / hab * 100
+            n = (days / hab) * 100
+            if n > 100: n = 100
             barre = "`{} {}%`".format(self.u_bar(n), int(n))
-            return "\n\n-> **Habitué**\n" + barre
+            return "-> **Habitué**\n" + barre
         else:
             return ""
 
