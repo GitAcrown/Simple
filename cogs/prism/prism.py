@@ -1,17 +1,18 @@
-import asyncio
 import os
-from .utils import checks
-import discord
-from collections import namedtuple
-from __main__ import send_cmd_help
-from discord.ext import commands
-import time
-import operator
-import random
-from .utils.dataIO import fileIO, dataIO
-import re
 import datetime
+import operator
+import os
+import random
+import re
 import string
+import time
+from collections import namedtuple
+
+import discord
+from discord.ext import commands
+
+from .utils.dataIO import fileIO, dataIO
+
 
 class PrismAPI:
     """API PRISM | Pont système du module PRISM"""
@@ -54,7 +55,7 @@ class PrismAPI:
         return self.data[user.id]
 
     def update(self, user: discord.Member) -> bool:
-        app = self.open(user)
+        app = self.data[user.id]
         maj_eco = [["SOLDE", 0],
                    ["TRS", []]]  # >>ECO
         for m in maj_eco:
