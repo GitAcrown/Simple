@@ -38,7 +38,7 @@ class PrismAPI:
                                   "SYS": {},
                                   "PAST": [],
                                   "JEUX": {}}
-            if self.old[user.id]:
+            if user.id in self.old:
                 self.update(user)
                 self.data[user.id]["SID"] = self.old[user.id]["SID"]
                 self.data[user.id]["SYS"]["BIO"] = self.old[user.id]["BIO"]
@@ -358,9 +358,9 @@ class Prism:  # MODULE CONCRET =========================================
             b.reverse()
             for e in b:
                 if e[1] == today:
-                    txt += "**{}** - *{}*\n".format(e[0], e[3])
+                    txt += "**{}** - *{}*\n".format(e[0], e[2])
                 else:
-                    txt += "**{}** - *{}*\n".format(e[1], e[3])
+                    txt += "**{}** - *{}*\n".format(e[1], e[2])
         else:
             txt = "Aucune action"
         em.add_field(name="Historique", value=txt)
@@ -385,7 +385,11 @@ class Prism:  # MODULE CONCRET =========================================
         """Affiche les jeux possédés par le membre"""
         if not user: user = ctx.message.author
         txt = add = ""
-        for e in self.app.library(user):
+        lib = self.app.library(user)
+        if not lib:
+            await self.bot.say("**Bibliothèque vide** | Aucun jeu vérifié n'est possédé par l'utilisateur")
+            return
+        for e in lib:
             if len(txt) < 1960:
                 txt += "`{}`\n"
             else:
@@ -513,7 +517,7 @@ class Prism:  # MODULE CONCRET =========================================
 
     async def prism_ban(self, user):
         p = self.app.open(user)
-        glb = self.getglb()
+        glb = self.get_glb()
         p["DATA"]["QUIT"] += 1
         p["DATA"]["BAN"] += 1
         p["SYS"]["QUIT_SAVE"] = [r.name for r in user.roles]
