@@ -137,7 +137,7 @@ class PrismAPI:
                         dispo.append(g)
         return dispo
 
-    def library(self, user:discord.Member) -> list or bool:
+    def library(self, user: discord.Member) -> list or bool:
         p = self.open(user)
         dispo = self.jeux_verif()
         if p["JEUX"]:
@@ -396,7 +396,7 @@ class Prism:  # MODULE CONCRET =========================================
         self.save(True)
 
     @prism_card.command(pass_context=True)
-    async def jeux(self, ctx, user: discord.Member = True):
+    async def jeux(self, ctx, user: discord.Member = None):
         """Affiche les jeux possédés par le membre"""
         if not user: user = ctx.message.author
         txt = add = ""
