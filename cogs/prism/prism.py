@@ -258,7 +258,8 @@ class PrismAPI:
         if p["EMOJIS"]:
             liste = [[r, p["EMOJIS"][r]] for r in p["EMOJIS"]]
             liste = sorted(liste, key=operator.itemgetter(1), reverse=True)
-            return liste[:top]
+            nl = liste[:top]
+            return nl
         return False
 
 # MODIFIERS ----------------------------
@@ -360,7 +361,10 @@ class Prism:  # MODULE CONCRET =========================================
         srn = data.liste_surnoms[-3:]
         srn.reverse()
         top = self.app.top_emote_perso(user, 3)
-        emo = "\n**Emojis fav.** *{}*".format(" ;".join(top)) if top else ""
+        clt = []
+        for t in top:
+            clt.append("{} ({})".format(t[0], t[1]))
+        emo = "\n**Emojis fav.** *{}*".format("; ".join(clt)) if top else ""
         timestamp = (datetime.datetime.now() - user.joined_at).days
         jours = self.app.since(user, "jour") if self.app.since(user, "jour") > timestamp else timestamp
         ecr = round(p["DATA"]["MSG_PART"] / jours, 2)
@@ -488,7 +492,7 @@ class Prism:  # MODULE CONCRET =========================================
         glb["QUIT"] += 1
         self.app.add_past(user, "Quitte le serveur")
         self.save()
-        msgchannel = self.bot.get_channel("204585334925819904")
+        msgchannel = self.bot.get_channel("204585334925819904")  # HALL
         quitmsg = self.quit_msg if not self.quit_msg_event else self.quit_msg_event
         await self.bot.send_message(msgchannel, "**>** " + random.choice(quitmsg).format(user.name))
 
