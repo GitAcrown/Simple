@@ -359,7 +359,8 @@ class Prism:  # MODULE CONCRET =========================================
         psd.reverse()
         srn = data.liste_surnoms[-3:]
         srn.reverse()
-        emo = "\n**Emojis fav.** *{}*".format(" ;".join(self.app.top_emote_perso(user, 3)))
+        top = self.app.top_emote_perso(user, 3)
+        emo = "\n**Emojis fav.** *{}*".format(" ;".join(top)) if top else ""
         ecr = round(p["DATA"]["MSG_PART"] / self.app.since(user, "jour"), 2)
         em.add_field(name="Stats", value="**{}** msg/jour{}".format(ecr, emo))
         em.add_field(name="Anciennement",
