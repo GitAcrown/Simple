@@ -361,7 +361,9 @@ class Prism:  # MODULE CONCRET =========================================
         srn.reverse()
         top = self.app.top_emote_perso(user, 3)
         emo = "\n**Emojis fav.** *{}*".format(" ;".join(top)) if top else ""
-        ecr = round(p["DATA"]["MSG_PART"] / self.app.since(user, "jour"), 2)
+        timestamp = (datetime.datetime.now() - user.joined_at).days
+        jours = self.since(user, "jour") if self.since(user, "jour") > timestamp else timestamp
+        ecr = round(p["DATA"]["MSG_PART"] / jours, 2)
         em.add_field(name="Stats", value="**{}** msg/jour{}".format(ecr, emo))
         em.add_field(name="Anciennement",
                      value="**Pseudos:** {}\n**Surnoms:** {}".format(", ".join(psd), ", ".join(srn)))
