@@ -356,9 +356,9 @@ class Prism:  # MODULE CONCRET =========================================
                                                                                  data.date_depuis, data.depuis))
         em.add_field(name="Rôles", value="***{}***\n\n{}".format(data.roles if data.roles else "***Aucun***",
                                                                  self.app.rolebarre(user)))
-        psd = data.liste_pseudos[-3:]
+        psd = data.liste_pseudos[-3:] if data.liste_pseudos != "?" else []
         psd.reverse()
-        srn = data.liste_surnoms[-3:]
+        srn = data.liste_surnoms[-3:] if data.liste_surnoms != "?" else []
         srn.reverse()
         top = self.app.top_emote_perso(user, 3)
         clt = []
@@ -370,7 +370,8 @@ class Prism:  # MODULE CONCRET =========================================
         ecr = round(p["DATA"]["MSG_PART"] / jours, 2)
         em.add_field(name="Stats", value="**{}** msg/jour{}".format(ecr, emo))
         em.add_field(name="Anciennement",
-                     value="**Pseudos:** {}\n**Surnoms:** {}".format(", ".join(psd), ", ".join(srn)))
+                     value="**Pseudos:** {}\n**Surnoms:** {}".format(", ".join(psd) if psd else "Aucun",
+                                                                     ", ".join(srn) if srn else "Aucun"))
         txt = ""
         if data.past:
             b = data.past[-3:]
