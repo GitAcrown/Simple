@@ -262,6 +262,11 @@ class PrismAPI:
             return nl
         return False
 
+    def prism_avatar(self):
+        l = ["https://i.imgur.com/oy3rtxW.png", "https://i.imgur.com/1HBokTM.png", "https://i.imgur.com/oFux3JS.png",
+             "https://i.imgur.com/yltqljv.png", "https://i.imgur.com/SN2E0Kc.png"]
+        return random.choice(l)
+
 # MODIFIERS ----------------------------
 
     def add_past(self, user: discord.Member, event:str) -> bool:
@@ -348,7 +353,7 @@ class Prism:  # MODULE CONCRET =========================================
         data = self.app.get_infos(user, himself=True if user == ctx.message.author else False)
         p = self.app.open(user)
         em = discord.Embed(title=data.formatname, description=data.bio, color=data.statuscolor)
-        em.set_thumbnail(url=user.avatar_url)
+        em.set_thumbnail(url=user.avatar_url if user.avatar_url else self.app.prism_avatar())
         em.add_field(name="Identifiants", value="**ID:** {}\n**SID:** {}".format(user.id, data.sid))
         em.add_field(name="Dates", value="**Création:** {} (**{}** jours)\n"
                                          "**Arrivée:** {} (**{}** jours)".format(data.date_creation,
