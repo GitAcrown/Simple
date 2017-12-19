@@ -34,12 +34,15 @@ class PrismAPI:
             self.data[user.id] = {"SID": c,
                                   "ORIGINE": time.time(),
                                   "ECO": {},
-                                  "DATA": {},
+                                  "DATA": {"PSEUDOS": [],
+                                           "SURNOMS": [],
+                                           "MSG_REEL": 0,
+                                           "MSG_PART": 0},
                                   "SYS": {},
                                   "PAST": [],
                                   "JEUX": {}}
-            self.update(user)
             if user.id in self.old:
+                self.update(user)
                 self.data[user.id]["SID"] = self.old[user.id]["SID"]
                 self.data[user.id]["SYS"]["BIO"] = self.old[user.id]["BIO"]
                 self.data[user.id]["DATA"]["PSEUDOS"] = self.old[user.id]["PSEUDOS"]
@@ -75,9 +78,9 @@ class PrismAPI:
 
         maj_sys = [["BIO", None],
                    ["QUIT_SAVE", []]]  # >>SYS
-        for m in maj_data:
+        for m in maj_sys:
             if m[0] not in app["SYS"]:
-                app["DATA"][m[0]] = m[1]
+                app["SYS"][m[0]] = m[1]
         self.save()
         return True
 
@@ -250,6 +253,14 @@ class PrismAPI:
         else:
             return "?"
 
+    def top_emote_perso(self, user:discord.Member, top: int = 3) -> list or bool:
+        p = self.open(user, "DATA")
+        if p["EMOJIS"]:
+            liste = [[r, p["EMOJIS"][r]] for r in p["EMOJIS"]]
+            liste = sorted(liste, key=operator.itemgetter(1), reverse=True)
+            return liste[:top]
+        return False
+
 # MODIFIERS ----------------------------
 
     def add_past(self, user: discord.Member, event:str) -> bool:
@@ -348,8 +359,9 @@ class Prism:  # MODULE CONCRET =========================================
         psd.reverse()
         srn = data.liste_surnoms[-3:]
         srn.reverse()
+        emo = "\n**Emojis fav.** *{}*".format(" ;".join(self.app.top_emote_perso(user, 3)))
         ecr = round(p["DATA"]["MSG_PART"] / self.app.since(user, "jour"), 2)
-        em.add_field(name="Activité", value="**{}** msg/jour".format(ecr))
+        em.add_field(name="Stats", value="**{}** msg/jour{}".format(ecr, emo))
         em.add_field(name="Anciennement",
                      value="**Pseudos:** {}\n**Surnoms:** {}".format(", ".join(psd), ", ".join(srn)))
         txt = ""
