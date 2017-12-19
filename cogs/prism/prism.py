@@ -38,8 +38,8 @@ class PrismAPI:
                                   "SYS": {},
                                   "PAST": [],
                                   "JEUX": {}}
+            self.update()
             if user.id in self.old:
-                self.update(user)
                 self.data[user.id]["SID"] = self.old[user.id]["SID"]
                 self.data[user.id]["SYS"]["BIO"] = self.old[user.id]["BIO"]
                 self.data[user.id]["DATA"]["PSEUDOS"] = self.old[user.id]["PSEUDOS"]
@@ -402,9 +402,8 @@ class Prism:  # MODULE CONCRET =========================================
 # TRIGGERS ----------------------------------------------
 
     async def prism_msg(self, message):
-        if message.server:
-            if message.server.id is not "204585334925819904":
-                return
+        if not message.server:
+            return
         glb = self.get_glb()
         heure = time.strftime("%H", time.localtime())
         author = message.author
@@ -428,9 +427,8 @@ class Prism:  # MODULE CONCRET =========================================
         self.save()
 
     async def prism_msgdel(self, message):
-        if message.server:
-            if message.server.id is not "204585334925819904":
-                return
+        if not message.server:
+            return
         glb = self.get_glb()
         author = message.author
         channel = message.channel
@@ -441,9 +439,8 @@ class Prism:  # MODULE CONCRET =========================================
 
     async def prism_react(self, reaction, author):
         message = reaction.message
-        if message.server:
-            if message.server.id is not "204585334925819904":
-                return
+        if not message.server:
+            return
         server = message.server
         glb = self.get_glb()
         p = self.app.open(author)
