@@ -38,7 +38,7 @@ class PrismAPI:
                                   "SYS": {},
                                   "PAST": [],
                                   "JEUX": {}}
-            self.update()
+            self.update(user)
             if user.id in self.old:
                 self.data[user.id]["SID"] = self.old[user.id]["SID"]
                 self.data[user.id]["SYS"]["BIO"] = self.old[user.id]["BIO"]
@@ -143,7 +143,7 @@ class PrismAPI:
             return liste if liste else False
         return False
 
-    def since(self, user: discord.Member, format=None) -> int:
+    def since(self, user: discord.Member, format=None) -> float:
         origine = self.open(user)["ORIGINE"]
         s = time.time() - origine
         if s < 86401:
