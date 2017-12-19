@@ -361,10 +361,13 @@ class Prism:  # MODULE CONCRET =========================================
         srn = data.liste_surnoms[-3:] if data.liste_surnoms != "?" else []
         srn.reverse()
         top = self.app.top_emote_perso(user, 3)
-        clt = []
-        for t in top:
-            clt.append("{} ({})".format(t[0], t[1]))
-        emo = "\n**Emojis fav.** *{}*".format("; ".join(clt)) if top else ""
+        if top:
+            clt = []
+            for t in top:
+                clt.append("{} ({})".format(t[0], t[1]))
+            emo = "\n**Emojis fav.** *{}*".format("; ".join(clt))
+        else:
+            emo = ""
         timestamp = (datetime.datetime.now() - user.joined_at).days
         jours = self.app.since(user, "jour") if self.app.since(user, "jour") > timestamp else timestamp
         ecr = round(p["DATA"]["MSG_PART"] / jours, 2)
