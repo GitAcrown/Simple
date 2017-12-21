@@ -419,7 +419,7 @@ class Prism:  # MODULE CONCRET =========================================
             return
         for e in lib:
             if len(txt) < 1960:
-                txt += "`{}`\n"
+                txt += "`{}`\n".format(e[0])
             else:
                 txt += "**...**"
         em = discord.Embed(title="Bibliothèque de {}".format(
