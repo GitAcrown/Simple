@@ -419,11 +419,11 @@ class Prism:  # MODULE CONCRET =========================================
             return
         for e in lib:
             if len(txt) < 1960:
-                txt += "`{}`\n".format(e[0])
+                txt += "`{}`\n".format(e[0].capitalize())
             else:
                 txt += "**...**"
         em = discord.Embed(title="Bibliothèque de {}".format(
-            user.name) if user == ctx.message.author else "Votre bibliothèque", description=txt)
+            user.name) if user != ctx.message.author else "Votre bibliothèque", description=txt)
         em.set_footer(text="Du plus au moins joué | Certains jeux peuvent ne pas avoir été détectés")
         await self.bot.say(embed=em)
 
