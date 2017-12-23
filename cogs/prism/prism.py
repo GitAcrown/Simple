@@ -408,7 +408,7 @@ class Prism:  # MODULE CONCRET =========================================
         self.app.add_past(ctx.message.author, "Changement de bio")
         self.save(True)
 
-    @prism_card.command(pass_context=True)
+    @prism_card.command(aliases=["j"], pass_context=True)
     async def jeux(self, ctx, user: discord.Member = None):
         """Affiche les jeux possédés par le membre"""
         if not user: user = ctx.message.author
