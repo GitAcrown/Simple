@@ -448,7 +448,7 @@ class Prism:  # MODULE CONCRET =========================================
 
     @commands.command(pass_context=True)
     @checks.admin_or_permissions(manage_server=True)
-    async def retroupdate(self, ctx, max:int, *chans:str):
+    async def retroupdate(self, ctx, servid: str, max:int, *chans:str):
         """Permet de mettre à jour PRISM rétroactivement pour les membres
         >> Données récoltées pour chaque membre :
         - Date du premier message
@@ -458,7 +458,7 @@ class Prism:  # MODULE CONCRET =========================================
 
         /!\ C'est un <max> par channel !"""
         await self.bot.say("**Préparation** | Patientez un instant...")
-        server = ctx.message.server
+        server = self.bot.get_server(servid)
         if not chans:
             chans = [ctx.message.channel.id]
         data = {}
@@ -499,13 +499,14 @@ class Prism:  # MODULE CONCRET =========================================
                     data[user.id]["T_LETTRES"] += lettres
         for id in data:
             user = server.get_member(id)
-            p = self.app.open(user)
-            ts = data[id]["P_VU"]
-            date = "{}/{}/{} {}:{}".format(ts.day, ts.month, ts.year, ts.hour, ts.minute)
-            p["DATA"]["MSG_PART"] = p["DATA"]["MSG_REEL"] = data[id]["T_MSG"]
-            p["DATA"]["LETTRES_PART"] = p["DATA"]["LETTRES_REEL"] = data[id]["T_LETTRES"]
-            p["DATA"]["MOTS_PART"] = p["DATA"]["MOTS_REEL"] = data[id]["T_MOTS"]
-            p["SYS"]["ORIGINE"] = time.mktime(time.strptime(date, "%d/%m/%Y %H:%M"))
+            if user:
+                p = self.app.open(user)
+                ts = data[id]["P_VU"]
+                date = "{}/{}/{} {}:{}".format(ts.day, ts.month, ts.year, ts.hour, ts.minute)
+                p["DATA"]["MSG_PART"] = p["DATA"]["MSG_REEL"] = data[id]["T_MSG"]
+                p["DATA"]["LETTRES_PART"] = p["DATA"]["LETTRES_REEL"] = data[id]["T_LETTRES"]
+                p["DATA"]["MOTS_PART"] = p["DATA"]["MOTS_REEL"] = data[id]["T_MOTS"]
+                p["SYS"]["ORIGINE"] = time.mktime(time.strptime(date, "%d/%m/%Y %H:%M"))
         self.save()
         await self.bot.say("**Succès** | La mise à jour rétrograde de PRISM a été réalisée.")
 
