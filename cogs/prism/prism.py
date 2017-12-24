@@ -83,7 +83,6 @@ class PrismAPI:
 
         maj_sys = [["BIO", None],
                    ["QUIT_SAVE", []],
-                   ["P_VU", None],
                    ["D_VU", None]]  # >>SYS
         for m in maj_sys:
             if m[0] not in app["SYS"]:
@@ -114,18 +113,16 @@ class PrismAPI:
         pseudoslist = p["DATA"]["PSEUDOS"] if p["DATA"]["PSEUDOS"] else "?"
         surnomslist = p["DATA"]["SURNOMS"] if p["DATA"]["SURNOMS"] else "?"
         past = p["PAST"] if p["PAST"] else None
-        origine = p["ORIGINE"]
-        datearrivecalcul = p["SYS"]["P_VU"]
-        dca_datetime = datetime.datetime.strptime(p["SYS"]["P_VU"], "%d/%m/%Y %H:%M")
-        since_dca = (timestamp - dca_datetime).days
+        origine = datetime.datetime.fromtimestamp(p["ORIGINE"])
+        strorigine = datetime.datetime.strftime(origine, "%d/%m/%Y %H:%M")
+        since_origine = (timestamp - origine).days
         derniermsg = p["SYS"]["D_VU"]
         # By compiling...
         Infos = namedtuple('Infos', ["sid", "bio", "formatname", "rang", "rangimg", "qualif", "statuscolor", "creation",
                                      "date_creation", "depuis", "date_depuis", "roles", "liste_pseudos",
-                                     "liste_surnoms", "past", "origine", "dca", "since_dca", "dmsg"])
+                                     "liste_surnoms", "past", "origine", "strorigine", "since_origine", "dmsg"])
         return Infos(sid, bio, formatname, rang, rangimg, actif, statuscolor, creation, datecreation, arrive,
-                     datearrive, roles, pseudoslist, surnomslist, past, origine, datearrivecalcul, since_dca,
-                     derniermsg)
+                     datearrive, roles, pseudoslist, surnomslist, past, origine, strorigine, since_origine, derniermsg)
 
 # OUTILS ------------------------
 
@@ -159,8 +156,8 @@ class PrismAPI:
         return False
 
     def since(self, user: discord.Member, format=None) -> float:
-        origine = self.open(user)["ORIGINE"]
-        s = time.time() - origine
+        origine = self.open(user)["P_VU"]
+        s = datetime.datetime.now() - p_vu
         if s < 86401:
             s = 86401
         sm = s / 60  # en minutes
@@ -369,10 +366,10 @@ class Prism:  # MODULE CONCRET =========================================
         em.add_field(name="Identifiants", value="**ID:** {}\n**SID:** {}".format(user.id, data.sid))
         em.add_field(name="Dates", value="**Création:** {} (**{}**j)\n"
                                          "**Arrivée:** {} (**{}**j)\n"
-                                         "**D.C.A.:** {} (**{}**j)\n"
+                                         "**Origine estimée:** {} (**{}**j)\n"
                                          "**Dernier msg:** {}".format(data.date_creation, data.creation,
-                                                                      data.date_depuis, data.depuis,
-                                                                      data.dca, data.since_dca, data.dmsg))
+                                                                      data.date_depuis, data.depuis, data.dmsg,
+                                                                      data.strorigine, data.since_origine, data.dmsg))
         em.add_field(name="Rôles", value="***{}***\n\n{}".format(data.roles if data.roles else "***Aucun***",
                                                                  self.app.rolebarre(user)))
         psd = data.liste_pseudos[-3:] if data.liste_pseudos != "?" else []
