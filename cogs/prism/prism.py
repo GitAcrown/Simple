@@ -491,15 +491,16 @@ class Prism:  # MODULE CONCRET =========================================
                         mots = len(msg.content.split(" "))
                         lettres = len(msg.content)
                         user = msg.author
-                        if user.id not in data:
-                            data[user.id] = {"P_VU": ts,
-                                             "T_MSG": 0,
-                                             "T_MOTS": 0,
-                                             "T_LETTRES": 0}
-                        if data[user.id]["P_VU"] > ts: data[user.id]["P_VU"] = ts
-                        data[user.id]["T_MSG"] += 1
-                        data[user.id]["T_MOTS"] += mots
-                        data[user.id]["T_LETTRES"] += lettres
+                        if user:
+                            if user.id not in data:
+                                data[user.id] = {"P_VU": ts,
+                                                 "T_MSG": 0,
+                                                 "T_MOTS": 0,
+                                                 "T_LETTRES": 0}
+                            if data[user.id]["P_VU"] > ts: data[user.id]["P_VU"] = ts
+                            data[user.id]["T_MSG"] += 1
+                            data[user.id]["T_MOTS"] += mots
+                            data[user.id]["T_LETTRES"] += lettres
                 else:
                     await self.bot.say("**{} ignoré** | Channel innacessible".format(channel.name))
         for id in data:
