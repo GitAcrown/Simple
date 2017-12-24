@@ -369,8 +369,9 @@ class Prism:  # MODULE CONCRET =========================================
                                          "**Arrivée:** {} (**{}**j)\n"
                                          "**Origine estimée:** {} (**{}**j)\n"
                                          "**Dernier msg:** {}".format(data.date_creation, data.creation,
-                                                                      data.date_depuis, data.depuis, data.dmsg,
-                                                                      data.strorigine, data.since_origine, data.dmsg))
+                                                                      data.date_depuis, data.depuis,
+                                                                      data.strorigine, data.since_origine,
+                                                                      data.dmsg))
         em.add_field(name="Rôles", value="***{}***\n\n{}".format(data.roles if data.roles else "***Aucun***",
                                                                  self.app.rolebarre(user)))
         psd = data.liste_pseudos[-3:] if data.liste_pseudos != "?" else []
