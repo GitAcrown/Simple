@@ -458,7 +458,7 @@ class Prism:  # MODULE CONCRET =========================================
 
         /!\ C'est un <max> par channel !"""
         await self.bot.say("**Préparation** | Patientez un instant...")
-        server = ctx.mesage.server
+        server = ctx.message.server
         if not chans:
             chans = [ctx.message.channel.id]
         else:
