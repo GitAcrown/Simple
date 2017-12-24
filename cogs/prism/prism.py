@@ -448,7 +448,7 @@ class Prism:  # MODULE CONCRET =========================================
 
     @commands.command(pass_context=True)
     @checks.admin_or_permissions(manage_server=True)
-    async def retroupdate(self, ctx, max:int, servid:str=None):
+    async def retroupdate(self, ctx, max:int, *chans:str):
         """Permet de mettre à jour PRISM rétroactivement pour les membres
         >> Données récoltées pour chaque membre :
         - Date du premier message
@@ -458,51 +458,47 @@ class Prism:  # MODULE CONCRET =========================================
 
         /!\ C'est un <max> par channel !"""
         await self.bot.say("**Préparation** | Patientez un instant...")
-        if not servid:
-            server = ctx.message.server
+        server = ctx.mesage.server
+        if not chans:
+            chans = [ctx.message.channel.id]
         else:
-            server = self.bot.get_server(servid)
-        bot = server.get_member("379397217452032011")
+            chans = " ".join(chans)
         data = {}
         n = 0
-        cn = 0
-        for channel in server.channels:
-            if channel.type.text:
-                if channel.permissions_for(bot).read_messages:
-                    statmsg = await self.bot.say("**Mise à jour** | Début de l'analyse de *{}*"
-                                                 "".format(channel.name))
-                    async for msg in self.bot.logs_from(channel, limit=max):
-                        if n == (0.5 * max):
-                            await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 5%".format(channel.name))
-                        if n == (0.15 * max):
-                            await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 15%".format(channel.name))
-                        if n == (0.30 * max):
-                            await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 30%".format(channel.name))
-                        if n == (0.45 * max):
-                            await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 45%".format(channel.name))
-                        if n == (0.60 * max):
-                            await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 60%".format(channel.name))
-                        if n == (0.75 * max):
-                            await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 75%".format(channel.name))
-                        if n == (0.90 * max):
-                            await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 90%".format(channel.name))
-                        n += 1
-                        ts = msg.timestamp
-                        mots = len(msg.content.split(" "))
-                        lettres = len(msg.content)
-                        user = msg.author
-                        if user:
-                            if user.id not in data:
-                                data[user.id] = {"P_VU": ts,
-                                                 "T_MSG": 0,
-                                                 "T_MOTS": 0,
-                                                 "T_LETTRES": 0}
-                            if data[user.id]["P_VU"] > ts: data[user.id]["P_VU"] = ts
-                            data[user.id]["T_MSG"] += 1
-                            data[user.id]["T_MOTS"] += mots
-                            data[user.id]["T_LETTRES"] += lettres
-                else:
-                    await self.bot.say("**{} ignoré** | Channel innacessible".format(channel.name))
+        for chan in chans:
+            channel = server.get_channel(chan)
+            statmsg = await self.bot.say("**Mise à jour** | Début de l'analyse de *{}*"
+                                         "".format(channel.name))
+            async for msg in self.bot.logs_from(channel, limit=max):
+                if n == (0.5 * max):
+                    await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 5%".format(channel.name))
+                if n == (0.15 * max):
+                    await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 15%".format(channel.name))
+                if n == (0.30 * max):
+                    await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 30%".format(channel.name))
+                if n == (0.45 * max):
+                    await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 45%".format(channel.name))
+                if n == (0.60 * max):
+                    await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 60%".format(channel.name))
+                if n == (0.75 * max):
+                    await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 75%".format(channel.name))
+                if n == (0.90 * max):
+                    await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 90%".format(channel.name))
+                n += 1
+                ts = msg.timestamp
+                mots = len(msg.content.split(" "))
+                lettres = len(msg.content)
+                user = msg.author
+                if user:
+                    if user.id not in data:
+                        data[user.id] = {"P_VU": ts,
+                                         "T_MSG": 0,
+                                         "T_MOTS": 0,
+                                         "T_LETTRES": 0}
+                    if data[user.id]["P_VU"] > ts: data[user.id]["P_VU"] = ts
+                    data[user.id]["T_MSG"] += 1
+                    data[user.id]["T_MOTS"] += mots
+                    data[user.id]["T_LETTRES"] += lettres
         for id in data:
             user = server.get_member(id)
             p = self.app.open(user)
