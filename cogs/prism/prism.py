@@ -461,8 +461,6 @@ class Prism:  # MODULE CONCRET =========================================
         server = ctx.message.server
         if not chans:
             chans = [ctx.message.channel.id]
-        else:
-            chans = chans.split()
         data = {}
         n = 0
         for chan in chans:
