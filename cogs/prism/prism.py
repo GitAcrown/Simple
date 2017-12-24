@@ -10,6 +10,7 @@ from collections import namedtuple
 import discord
 from discord.ext import commands
 
+from .utils import checks
 from .utils.dataIO import fileIO, dataIO
 
 
@@ -71,13 +72,19 @@ class PrismAPI:
                     ["JOIN", 0],
                     ["QUIT", 0],
                     ["BAN", 0],
-                    ["EMOJIS", {}]]  # >>DATA
+                    ["EMOJIS", {}],
+                    ["MOTS_REEL", 0],
+                    ["MOTS_PART", 0],
+                    ["LETTRES_REEL", 0],
+                    ["LETTRES_PART", 0]]  # >>DATA
         for m in maj_data:
             if m[0] not in app["DATA"]:
                 app["DATA"][m[0]] = m[1]
 
         maj_sys = [["BIO", None],
-                   ["QUIT_SAVE", []]]  # >>SYS
+                   ["QUIT_SAVE", []],
+                   ["P_VU", None],
+                   ["D_VU", None]]  # >>SYS
         for m in maj_sys:
             if m[0] not in app["SYS"]:
                 app["SYS"][m[0]] = m[1]
@@ -108,12 +115,17 @@ class PrismAPI:
         surnomslist = p["DATA"]["SURNOMS"] if p["DATA"]["SURNOMS"] else "?"
         past = p["PAST"] if p["PAST"] else None
         origine = p["ORIGINE"]
+        datearrivecalcul = p["SYS"]["P_VU"]
+        dca_datetime = datetime.datetime.strptime(p["SYS"]["P_VU"], "%d/%m/%Y %H:%M")
+        since_dca = (timestamp - dca_datetime).days
+        derniermsg = p["SYS"]["D_VU"]
         # By compiling...
         Infos = namedtuple('Infos', ["sid", "bio", "formatname", "rang", "rangimg", "qualif", "statuscolor", "creation",
                                      "date_creation", "depuis", "date_depuis", "roles", "liste_pseudos",
-                                     "liste_surnoms", "past", "origine"])
+                                     "liste_surnoms", "past", "origine", "dca", "since_dca", "dmsg"])
         return Infos(sid, bio, formatname, rang, rangimg, actif, statuscolor, creation, datecreation, arrive,
-                     datearrive, roles, pseudoslist, surnomslist, past, origine)
+                     datearrive, roles, pseudoslist, surnomslist, past, origine, datearrivecalcul, since_dca,
+                     derniermsg)
 
 # OUTILS ------------------------
 
@@ -301,7 +313,6 @@ class Prism:  # MODULE CONCRET =========================================
                                "***{}*** n'a pas cru au père Noël et s'en est allé.",
                                "Le cadeau de ***{}*** ne lui allait pas, il est parti le vendre.",
                                "***{}*** fêtera Noël tout seul cette année...",
-                               "***{}*** est parti chercher son costume de père Noël... non ?",
                                "***{}*** a fait une gastro suite à l'overdose de chocolat causé par son "
                                "calendrier de l'Avent."]
 
@@ -350,33 +361,39 @@ class Prism:  # MODULE CONCRET =========================================
         """Affiche la carte de membre d'un utilisateur ou de soi-même le cas écheant"""
         if not user: user = ctx.message.author
         today = time.strftime("%d/%m/%Y", time.localtime())
+        timestamp = (datetime.datetime.now() - user.joined_at).days
         data = self.app.get_infos(user, himself=True if user == ctx.message.author else False)
         p = self.app.open(user)
         em = discord.Embed(title=data.formatname, description=data.bio, color=data.statuscolor)
         em.set_thumbnail(url=user.avatar_url if user.avatar_url else self.app.prism_avatar())
         em.add_field(name="Identifiants", value="**ID:** {}\n**SID:** {}".format(user.id, data.sid))
-        em.add_field(name="Dates", value="**Création:** {} (**{}** jours)\n"
-                                         "**Arrivée:** {} (**{}** jours)".format(data.date_creation,
-                                                                                 data.creation,
-                                                                                 data.date_depuis, data.depuis))
+        em.add_field(name="Dates", value="**Création:** {} (**{}**j)\n"
+                                         "**Arrivée:** {} (**{}**j)\n"
+                                         "**D.C.A.:** {} (**{}**j)\n"
+                                         "**Dernier msg:** {}".format(data.date_creation, data.creation,
+                                                                      data.date_depuis, data.depuis,
+                                                                      data.dca, data.since_dca, data.dmsg))
         em.add_field(name="Rôles", value="***{}***\n\n{}".format(data.roles if data.roles else "***Aucun***",
                                                                  self.app.rolebarre(user)))
         psd = data.liste_pseudos[-3:] if data.liste_pseudos != "?" else []
         psd.reverse()
         srn = data.liste_surnoms[-3:] if data.liste_surnoms != "?" else []
         srn.reverse()
+        statstxt = ""
+        jours = self.app.since(user, "jour") if self.app.since(user, "jour") > timestamp else timestamp
+        msgjour = round(p["DATA"]["MSG_PART"] / jours, 2)
+        statstxt += "**{}** msg/jour\n".format(msgjour)
+        motsmsg = round(p["DATA"]["MOTS_PART"] / p["DATA"]["MSG_PART"], 2)
+        statstxt += "**{}** mots/msg\n".format(motsmsg)
+        ltrmsg = round(p["DATA"]["LETTRES_PART"] / p["DATA"]["MSG_PART"], 2)
+        statstxt += "**{}** lettres/msg\n".format(ltrmsg)
         top = self.app.top_emote_perso(user, 3)
         if top:
             clt = []
             for t in top:
-                clt.append("{} ({})".format(t[0], t[1]))
-            emo = "\n**Emojis fav.** *{}*".format("; ".join(clt))
-        else:
-            emo = ""
-        timestamp = (datetime.datetime.now() - user.joined_at).days
-        jours = self.app.since(user, "jour") if self.app.since(user, "jour") > timestamp else timestamp
-        ecr = round(p["DATA"]["MSG_PART"] / jours, 2)
-        em.add_field(name="Stats", value="**{}** msg/jour{}".format(ecr, emo))
+                clt.append("**{}** (*{}*)".format(t[0], t[1]))
+            statstxt += "**Emojis fav.** {}\n".format("; ".join(clt))
+        em.add_field(name="Stats", value=statstxt)
         em.add_field(name="Anciennement",
                      value="**Pseudos:** {}\n**Surnoms:** {}".format(", ".join(psd) if psd else "Aucun",
                                                                      ", ".join(srn) if srn else "Aucun"))
@@ -403,13 +420,16 @@ class Prism:  # MODULE CONCRET =========================================
 
         Laisser le texte vide enlevera le message par défaut"""
         u = self.app.open(ctx.message.author, "SYS")
-        u["BIO"] = " ".join(texte)
-        await self.bot.say("**Succès** | Votre bio s'affichera en haut de votre carte de membre")
+        if texte:
+            await self.bot.say("**Succès** | Votre bio s'affichera en haut de votre carte de membre")
+        else:
+            await self.bot.say("**Succès** | Votre bio n'affichera aucun message")
         self.app.add_past(ctx.message.author, "Changement de bio")
+        u["BIO"] = " ".join(texte)
         self.save(True)
 
-    @prism_card.command(aliases=["j"], pass_context=True)
-    async def jeux(self, ctx, user: discord.Member = None):
+    @commands.command(aliases=["jeux","j"], pass_context=True)
+    async def biblio(self, ctx, user: discord.Member = None):
         """Affiche les jeux possédés par le membre"""
         if not user: user = ctx.message.author
         txt = add = ""
@@ -427,6 +447,69 @@ class Prism:  # MODULE CONCRET =========================================
         em.set_footer(text="Du plus au moins joué | Certains jeux peuvent ne pas avoir été détectés")
         await self.bot.say(embed=em)
 
+    @commands.command(pass_context=True)
+    @checks.admin_or_permissions(manage_server=True)
+    async def retroupdate(self, ctx, max:int, servid:str=None):
+        """Permet de mettre à jour PRISM rétroactivement pour les membres
+        >> Données récoltées pour chaque membre :
+        - Date du premier message
+        - Nombre de messages REELS + PARTIELS
+        - Nombre de mots/lettres par message
+        - Différents émojis utilisés
+
+        /!\ C'est un <max> par channel !"""
+        await self.bot.say("**Préparation** | Patientez un instant...")
+        if not servid:
+            server = ctx.message.server
+        else:
+            server = self.bot.get_server(servid)
+        data = {}
+        n = 0
+        cn = 0
+        async for channel in server.channels:
+            statmsg = await self.bot.say("**Mise à jour** | Début de l'analyse de *{}* (**{}**/{} channels)"
+                                         "".format(channel.name, cn, len(server.channels)))
+            async for msg in self.bot.logs_from(channel, limit=max):
+                if n == (0.5 * max):
+                    await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 5%".format(channel.name))
+                if n == (0.15 * max):
+                    await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 15%".format(channel.name))
+                if n == (0.30 * max):
+                    await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 30%".format(channel.name))
+                if n == (0.45 * max):
+                    await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 45%".format(channel.name))
+                if n == (0.60 * max):
+                    await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 60%".format(channel.name))
+                if n == (0.75 * max):
+                    await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 75%".format(channel.name))
+                if n == (0.90 * max):
+                    await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 90%".format(channel.name))
+                n += 1
+                ts = msg.timestamp
+                mots = len(msg.content.split(" "))
+                lettres = len(msg.content)
+                user = msg.author
+                if user.id not in data:
+                    data[user.id] = {"P_VU": ts,
+                                     "T_MSG": 0,
+                                     "T_MOTS": 0,
+                                     "T_LETTRES": 0}
+                if data[user.id]["P_VU"] > ts: data[user.id]["P_VU"] = ts
+                data[user.id]["T_MSG"] += 1
+                data[user.id]["T_MOTS"] += mots
+                data[user.id]["T_LETTRES"] += lettres
+        for id in data:
+            user = server.get_member(id)
+            p = self.app.open(user)
+            ts = data[id]["P_VU"]
+            date = "{}/{}/{} {}:{}".format(ts.day, ts.month, ts.year, ts.hour, ts.minute)
+            p["DATA"]["MSG_PART"] = p["DATA"]["MSG_REEL"] = data[id]["T_MSG"]
+            p["DATA"]["LETTRES_PART"] = p["DATA"]["LETTRES_REEL"] = data[id]["T_LETTRES"]
+            p["DATA"]["MOTS_PART"] = p["DATA"]["MOTS_REEL"] = data[id]["T_MOTS"]
+            p["SYS"]["P_VU"] = date
+        self.save()
+        await self.bot.say("**Succès** | La mise à jour rétrograde de PRISM a été réalisée.")
+
 # TRIGGERS ----------------------------------------------
 
     async def prism_msg(self, message):
@@ -434,12 +517,20 @@ class Prism:  # MODULE CONCRET =========================================
             return
         glb = self.get_glb()
         heure = time.strftime("%H", time.localtime())
+        date = time.strftime("Le %d/%m/%Y à %H:%M", time.localtime())
         author = message.author
         channel = message.channel
         server = message.server
         p = self.app.open(author)
+        mots = len(message.content.split(" "))
+        lettres = len(message.content)
         p["DATA"]["MSG_REEL"] += 1
         p["DATA"]["MSG_PART"] += 1
+        p["DATA"]["MOTS_REEL"] += mots
+        p["DATA"]["MOTS_PART"] += mots
+        p["DATA"]["LETTRES_REEL"] += lettres
+        p["DATA"]["LETTRES_PART"] += lettres
+        p["SYS"]["D_VU"] = date
         glb["MSG_PART"] += 1
         glb["MSG_REEL"] += 1
         glb["SUIVI_CHANNELS"][channel.id] = glb["SUIVI_CHANNELS"][channel.id] + 1 if channel.id in glb[
@@ -461,7 +552,11 @@ class Prism:  # MODULE CONCRET =========================================
         author = message.author
         channel = message.channel
         p = self.app.open(author)
+        mots = len(message.content.split(" "))
+        lettres = len(message.content)
         p["DATA"]["MSG_REEL"] -= 1
+        p["DATA"]["MOTS_REEL"] -= mots
+        p["DATA"]["LETTRES_REEL"] -= lettres
         glb["MSG_REEL"] -= 1
         self.save()
 
