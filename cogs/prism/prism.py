@@ -462,12 +462,13 @@ class Prism:  # MODULE CONCRET =========================================
             server = ctx.message.server
         else:
             server = self.bot.get_server(servid)
+        bot = server.get_member("379397217452032011")
         data = {}
         n = 0
         cn = 0
         for channel in server.channels:
             if channel.type.text:
-                if channel.permissions_for(self.bot.user).read_messages:
+                if channel.permissions_for(bot).read_messages:
                     statmsg = await self.bot.say("**Mise à jour** | Début de l'analyse de *{}*"
                                                  "".format(channel.name))
                     async for msg in self.bot.logs_from(channel, limit=max):
