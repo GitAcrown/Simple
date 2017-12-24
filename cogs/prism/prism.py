@@ -462,7 +462,7 @@ class Prism:  # MODULE CONCRET =========================================
         if not chans:
             chans = [ctx.message.channel.id]
         else:
-            chans = " ".join(chans)
+            chans = chans.split()
         data = {}
         n = 0
         for chan in chans:
@@ -536,7 +536,8 @@ class Prism:  # MODULE CONCRET =========================================
         glb["MSG_REEL"] += 1
         glb["SUIVI_CHANNELS"][channel.id] = glb["SUIVI_CHANNELS"][channel.id] + 1 if channel.id in glb[
             "SUIVI_CHANNELS"] else 1
-        glb["HORAIRE_ECRIT"][heure] += 1
+        if heure in glb["HORAIRE_ECRIT"]:
+            glb["HORAIRE_ECRIT"][heure] += 1
         if ":" in message.content:
             output = re.compile(':(.*?):', re.DOTALL | re.IGNORECASE).findall(message.content)
             if output:
