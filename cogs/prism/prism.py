@@ -114,8 +114,8 @@ class PrismAPI:
         surnomslist = p["DATA"]["SURNOMS"] if p["DATA"]["SURNOMS"] else "?"
         past = p["PAST"] if p["PAST"] else None
         origine = datetime.datetime.fromtimestamp(p["ORIGINE"])
-        strorigine = datetime.datetime.strftime(origine, "%d/%m/%Y %H:%M")
         since_origine = (timestamp - origine).days
+        strorigine = datetime.datetime.strftime(origine, "%d/%m/%Y %H:%M")
         derniermsg = p["SYS"]["D_VU"]
         # By compiling...
         Infos = namedtuple('Infos', ["sid", "bio", "formatname", "rang", "rangimg", "qualif", "statuscolor", "creation",
@@ -390,7 +390,7 @@ class Prism:  # MODULE CONCRET =========================================
             clt = []
             for t in top:
                 clt.append("**{}** (*{}*)".format(t[0], t[1]))
-            statstxt += "**Emojis fav.** {}\n".format("; ".join(clt))
+            statstxt += "**Emojis fav.:** {}\n".format("; ".join(clt))
         em.add_field(name="Stats", value=statstxt)
         em.add_field(name="Anciennement",
                      value="**Pseudos:** {}\n**Surnoms:** {}".format(", ".join(psd) if psd else "Aucun",
