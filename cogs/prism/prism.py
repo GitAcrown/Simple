@@ -465,7 +465,7 @@ class Prism:  # MODULE CONCRET =========================================
         data = {}
         n = 0
         cn = 0
-        async for channel in server.channels:
+        for channel in server.channels:
             statmsg = await self.bot.say("**Mise à jour** | Début de l'analyse de *{}* (**{}**/{} channels)"
                                          "".format(channel.name, cn, len(server.channels)))
             async for msg in self.bot.logs_from(channel, limit=max):
