@@ -156,8 +156,9 @@ class PrismAPI:
         return False
 
     def since(self, user: discord.Member, format=None) -> float:
-        origine = self.open(user)["P_VU"]
-        s = datetime.datetime.now() - p_vu
+        origine = self.open(user)["ORIGINE"]
+        origine = datetime.datetime.fromtimestamp(origine)
+        s = (datetime.datetime.now() - origine).seconds
         if s < 86401:
             s = 86401
         sm = s / 60  # en minutes
@@ -503,7 +504,7 @@ class Prism:  # MODULE CONCRET =========================================
             p["DATA"]["MSG_PART"] = p["DATA"]["MSG_REEL"] = data[id]["T_MSG"]
             p["DATA"]["LETTRES_PART"] = p["DATA"]["LETTRES_REEL"] = data[id]["T_LETTRES"]
             p["DATA"]["MOTS_PART"] = p["DATA"]["MOTS_REEL"] = data[id]["T_MOTS"]
-            p["SYS"]["P_VU"] = date
+            p["SYS"]["ORIGINE"] = time.mktime(time.strptime(date, "%d/%m/%Y %H:%M"))
         self.save()
         await self.bot.say("**Succès** | La mise à jour rétrograde de PRISM a été réalisée.")
 
