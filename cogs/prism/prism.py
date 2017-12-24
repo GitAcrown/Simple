@@ -468,7 +468,7 @@ class Prism:  # MODULE CONCRET =========================================
             statmsg = await self.bot.say("**Mise à jour** | Début de l'analyse de *{}*"
                                          "".format(channel.name))
             async for msg in self.bot.logs_from(channel, limit=max):
-                if n == (0.5 * max):
+                if n == (0.05 * max):
                     await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 5%".format(channel.name))
                 if n == (0.15 * max):
                     await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 15%".format(channel.name))
