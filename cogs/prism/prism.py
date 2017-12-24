@@ -466,37 +466,41 @@ class Prism:  # MODULE CONCRET =========================================
         n = 0
         cn = 0
         for channel in server.channels:
-            statmsg = await self.bot.say("**Mise à jour** | Début de l'analyse de *{}* (**{}**/{} channels)"
-                                         "".format(channel.name, cn, len(server.channels)))
-            async for msg in self.bot.logs_from(channel, limit=max):
-                if n == (0.5 * max):
-                    await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 5%".format(channel.name))
-                if n == (0.15 * max):
-                    await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 15%".format(channel.name))
-                if n == (0.30 * max):
-                    await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 30%".format(channel.name))
-                if n == (0.45 * max):
-                    await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 45%".format(channel.name))
-                if n == (0.60 * max):
-                    await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 60%".format(channel.name))
-                if n == (0.75 * max):
-                    await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 75%".format(channel.name))
-                if n == (0.90 * max):
-                    await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 90%".format(channel.name))
-                n += 1
-                ts = msg.timestamp
-                mots = len(msg.content.split(" "))
-                lettres = len(msg.content)
-                user = msg.author
-                if user.id not in data:
-                    data[user.id] = {"P_VU": ts,
-                                     "T_MSG": 0,
-                                     "T_MOTS": 0,
-                                     "T_LETTRES": 0}
-                if data[user.id]["P_VU"] > ts: data[user.id]["P_VU"] = ts
-                data[user.id]["T_MSG"] += 1
-                data[user.id]["T_MOTS"] += mots
-                data[user.id]["T_LETTRES"] += lettres
+            if channel.type.text:
+                if channel.permissions_for(self.bot.user).read_messages:
+                    statmsg = await self.bot.say("**Mise à jour** | Début de l'analyse de *{}*"
+                                                 "".format(channel.name))
+                    async for msg in self.bot.logs_from(channel, limit=max):
+                        if n == (0.5 * max):
+                            await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 5%".format(channel.name))
+                        if n == (0.15 * max):
+                            await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 15%".format(channel.name))
+                        if n == (0.30 * max):
+                            await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 30%".format(channel.name))
+                        if n == (0.45 * max):
+                            await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 45%".format(channel.name))
+                        if n == (0.60 * max):
+                            await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 60%".format(channel.name))
+                        if n == (0.75 * max):
+                            await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 75%".format(channel.name))
+                        if n == (0.90 * max):
+                            await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 90%".format(channel.name))
+                        n += 1
+                        ts = msg.timestamp
+                        mots = len(msg.content.split(" "))
+                        lettres = len(msg.content)
+                        user = msg.author
+                        if user.id not in data:
+                            data[user.id] = {"P_VU": ts,
+                                             "T_MSG": 0,
+                                             "T_MOTS": 0,
+                                             "T_LETTRES": 0}
+                        if data[user.id]["P_VU"] > ts: data[user.id]["P_VU"] = ts
+                        data[user.id]["T_MSG"] += 1
+                        data[user.id]["T_MOTS"] += mots
+                        data[user.id]["T_LETTRES"] += lettres
+                else:
+                    await self.bot.say("**{} ignoré** | Channel innacessible".format(channel.name))
         for id in data:
             user = server.get_member(id)
             p = self.app.open(user)
