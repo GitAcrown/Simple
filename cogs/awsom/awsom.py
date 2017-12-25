@@ -16,7 +16,7 @@ class Awsom:
 
     async def do(self, message: discord.Message, txt: str):
         new_message = deepcopy(message)
-        new_message.content = txt
+        new_message.content = "&" + txt
         await self.bot.process_commands(new_message)
 
     async def detect(self, message):  # Regex c'est la VIE
@@ -29,19 +29,19 @@ class Awsom:
             if output:
                 u = output[0]
                 plus = " {}".format(u[1]) if u[1] else ""
-                await self.do(message, "+p <@{}>{}".format(u[0], plus))
+                await self.do(message, "p <@{}>{}".format(u[0], plus))
                 return
 
             output = re.compile(r"ban <@(.\d+)>", re.IGNORECASE | re.DOTALL).findall(msg)
             if output:
                 u = output[0]
-                await self.do(message, "+ban <@{}>".format(u))
+                await self.do(message, "ban <@{}>".format(u))
                 return
 
             output = re.compile(r"kick <@(.\d+)>", re.IGNORECASE | re.DOTALL).findall(msg)
             if output:
                 u = output[0]
-                await self.do(message, "+kick <@{}>".format(u))
+                await self.do(message, "kick <@{}>".format(u))
                 return
 
             output = re.compile(r"envoie à <@(.\d+)> (.*\w+)", re.IGNORECASE | re.DOTALL).findall(msg)
