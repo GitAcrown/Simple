@@ -126,13 +126,23 @@ class PrismAPI:
 
 # OUTILS ------------------------
 
+    def maj_origine(self, bdd):
+        for i in bdd:
+            if i in self.data:
+                ts = bdd[i]
+                date = "{}/{}/{} {}:{}".format(ts.day, ts.month, ts.year, ts.hour, ts.minute)
+                mk = time.mktime(time.strptime(date, "%d/%m/%Y %H:%M"))
+                self.data[i]["ORIGINE"] = mk
+        self.save()
+        return True
+
     def grade(self, user: discord.Member):
         roles = [r.name for r in user.roles]
         p = self.open(user, "DATA")
         timestamp = (datetime.datetime.now() - user.joined_at).days
         jours = self.since(user, "jour") if self.since(user, "jour") > timestamp else timestamp
         ratio = int(p["MSG_REEL"] / jours)
-        return None  # Todo: Faire le système de grades (rank)
+        return None
 
     def jeux_verif(self) -> list:
         verif = []
@@ -446,17 +456,10 @@ class Prism:  # MODULE CONCRET =========================================
         em.set_footer(text="Du plus au moins joué | Certains jeux peuvent ne pas avoir été détectés")
         await self.bot.say(embed=em)
 
-    @commands.command(pass_context=True)
+    @commands.command(pass_context=True, hidden=True)
     @checks.admin_or_permissions(manage_server=True)
     async def retroupdate(self, ctx, servid: str, chanid: str, max:int):
-        """Permet de mettre à jour PRISM rétroactivement pour les membres
-        >> Données récoltées pour chaque membre :
-        - Date du premier message
-        - Nombre de messages REELS + PARTIELS
-        - Nombre de mots/lettres par message
-        - Différents émojis utilisés
-
-        /!\ C'est un <max> par channel !"""
+        """Permet de mettre à jour PRISM rétroactivement pour les membres"""
         await self.bot.say("**Préparation** | Patientez un instant...")
         server = self.bot.get_server(servid)
         channel = server.get_channel(chanid)
@@ -464,47 +467,26 @@ class Prism:  # MODULE CONCRET =========================================
         n = 0
         statmsg = await self.bot.say("**Analyse** | Récolte de données du salon *{}* en cours...".format(channel.name))
         async for msg in self.bot.logs_from(channel, limit=max):
-            if n == (0.05 * max):
-                await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 5%".format(channel.name))
-            if n == (0.15 * max):
-                await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 15%".format(channel.name))
+            if n == (0.10 * max):
+                await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 10%".format(channel.name))
             if n == (0.30 * max):
                 await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 30%".format(channel.name))
-            if n == (0.45 * max):
-                await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 45%".format(channel.name))
-            if n == (0.60 * max):
-                await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 60%".format(channel.name))
-            if n == (0.75 * max):
-                await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 75%".format(channel.name))
-            if n == (0.90 * max):
-                await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 90%".format(channel.name))
+            if n == (0.50 * max):
+                await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 50%".format(channel.name))
+            if n == (0.70 * max):
+                await self.bot.edit_message(statmsg, "**Analyse de {}** | Env. 70%".format(channel.name))
+            if n == (0.95 * max):
+                await self.bot.edit_message(statmsg, "**Analyse de {}** | Bientôt terminée".format(channel.name))
             n += 1
             ts = msg.timestamp
-            mots = len(msg.content.split(" "))
-            lettres = len(msg.content)
             user = msg.author
             if user:
-                if user.id not in data:
-                    data[user.id] = {"P_VU": ts,
-                                     "T_MSG": 0,
-                                     "T_MOTS": 0,
-                                     "T_LETTRES": 0}
-                if data[user.id]["P_VU"] > ts: data[user.id]["P_VU"] = ts
-                data[user.id]["T_MSG"] += 1
-                data[user.id]["T_MOTS"] += mots
-                data[user.id]["T_LETTRES"] += lettres
-        for id in data:
-            user = server.get_member(id)
-            if user:
-                p = self.app.open(user)
-                ts = data[id]["P_VU"]
-                date = "{}/{}/{} {}:{}".format(ts.day, ts.month, ts.year, ts.hour, ts.minute)
-                p["DATA"]["MSG_PART"] = p["DATA"]["MSG_REEL"] = data[id]["T_MSG"]
-                p["DATA"]["LETTRES_PART"] = p["DATA"]["LETTRES_REEL"] = data[id]["T_LETTRES"]
-                p["DATA"]["MOTS_PART"] = p["DATA"]["MOTS_REEL"] = data[id]["T_MOTS"]
-                p["SYS"]["ORIGINE"] = time.mktime(time.strptime(date, "%d/%m/%Y %H:%M"))
-        self.save()
-        await self.bot.say("**Succès** | La mise à jour rétrograde de PRISM a été réalisée.")
+                if user.id not in data: data[user.id] = ts
+                if data[user.id] > ts: data[user.id] = ts
+        if self.app.maj_origine(data):
+            await self.bot.say("**Succès** | La mise à jour rétrograde de PRISM a été réalisée.")
+        else:
+            await self.bot.say("**Incomplet** | Une erreur à eu lieu dans la retranscription des données")
 
 # TRIGGERS ----------------------------------------------
 
