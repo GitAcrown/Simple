@@ -60,8 +60,13 @@ class Awsom:
                 return
 
             output = re.compile(r"combien (?:fait|font) (.*)", re.IGNORECASE | re.DOTALL).findall(msg)
+            output2 = re.compile(r"calcule (.*)", re.IGNORECASE | re.DOTALL).findall(msg)
             if output:
                 u = output[0]
+                await self.bot.send_message(message.channel, "Ça fait `{}`".format(str(sympify(u))))
+                return
+            elif output2:
+                u = output2[0]
                 await self.bot.send_message(message.channel, "Ça fait `{}`".format(str(sympify(u))))
                 return
 
