@@ -77,10 +77,14 @@ class Awsom:
             output = re.compile(r"(?:re)?cherche (.*)", re.IGNORECASE | re.DOTALL).findall(msg)
             if output:
                 u = output[0]
-                s = search(u)
-                suma = summary(s[0])
+                try:
+                    s = search(u)
+                    suma = summary(s[0])
+                except:
+                    await self.bot.send_message(message.channel, "**Erreur** | La recherche n'est pas assez précise")
+                    return
                 em = discord.Embed(title=s[0], description=suma)
-                em.set_footer(text="Similaire: {}".format(", ".join(s)))
+                em.set_footer(text="Similaire: {}".format(", ".join(s[:5])))
                 await self.bot.send_message(message.channel, embed=em)
                 return
 
