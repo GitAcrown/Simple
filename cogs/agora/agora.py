@@ -75,6 +75,9 @@ class Agora:
     @checks.admin_or_permissions(manage_server=True)
     async def incarne(self, ctx, identifiant: str):
         """Permet de prendre le contrôle du bot en parlant à sa place à travers une interface avancée"""
+        if ctx.message.channel.id != "395319484711305217":
+            await self.bot.say("Eheheh, bien essayé mais cette commande n'est disponible que dans la **PhoneRoom**")
+            return
         channel = self.bot.get_channel(identifiant)
         controle = self.bot.get_channel("395316684292096005")
         if channel:
