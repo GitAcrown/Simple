@@ -65,11 +65,11 @@ class PRISMApp:
         for e in tree:
             for i in tree[e]:
                 if user:
-                    if i not in self.data[user.id]:
+                    if i not in self.data[user.id][e]:
                         self.data[user.id][e][i] = tree[e][i]
                 else:
                     for u in self.data:
-                        if i not in self.data[u]:
+                        if i not in self.data[u][e]:
                             self.data[u][e][i] = tree[e][i]
         return True
 
