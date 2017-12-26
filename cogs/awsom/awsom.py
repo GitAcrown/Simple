@@ -51,12 +51,14 @@ class Awsom:
                 m = server.get_member(u[0])
                 em = discord.Embed(title=message.author.name, description=u[1])
                 await self.bot.send_message(m, embed=em)
+                await self.bot.send_message(message.author, "**Message envoyé**")
                 return
             elif output2:
                 u = output2[0]
                 m = server.get_member(u[1])
                 em = discord.Embed(title=message.author.name, description=u[0])
                 await self.bot.send_message(m, embed=em)
+                await self.bot.send_message(message.author, "**Message envoyé**")
                 return
 
             output = re.compile(r"combien (?:fait|font) (.*)", re.IGNORECASE | re.DOTALL).findall(msg)
