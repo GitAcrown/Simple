@@ -1,9 +1,10 @@
 import os
 import re
-from copy import deepcopy
+from copy import
 
 import discord
 from sympy import sympify
+from wikipedia import summary, search
 
 from .utils.dataIO import fileIO, dataIO
 
@@ -70,6 +71,16 @@ class Awsom:
             elif output2:
                 u = output2[0]
                 await self.bot.send_message(message.channel, "Ça fait `{}`".format(str(sympify(u))))
+                return
+
+            output = re.compile(r"(?:re)*cherche (.*)", re.IGNORECASE | re.DOTALL).findall(msg)
+            if output:
+                u = output[0]
+                s = search(u)
+                suma = summary(s[0])
+                em = discord.Embed(title=s[0], description=suma)
+                em.set_footer(text="Similaire: {}".format(", ".join(s)))
+                await self.bot.send_message(message.channel, embed=em)
                 return
 
 def check_folders():
