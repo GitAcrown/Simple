@@ -1,15 +1,10 @@
 import asyncio
-import datetime
-import operator
 import os
 import random
 import re
-import time
 import zipfile
-from urllib import request
 
 import discord
-from __main__ import send_cmd_help
 from discord.ext import commands
 
 from .utils import checks
@@ -26,8 +21,10 @@ class Outils:
     async def send(self, ctx, id, *msg:str):
         """Envoie un message sur un channel spécifié"""
         channel = self.bot.get_channel(id)
+        controle = self.bot.get_channel("395316684292096005")
         msg = " ".join(msg)
         await self.bot.send_message(channel, msg)
+        await self.bot.send_message(controle, "<@{}> `&send {}`".format(ctx.message.author.id, msg))
 
     @commands.command(pass_context=True)
     async def udbg(self, ctx, chemin):

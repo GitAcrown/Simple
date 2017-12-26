@@ -397,7 +397,7 @@ class Agora:
                 if "<@{}>".format(self.bot.user.id) in message.content:
                     color = 0xfab84c
                 else:
-                    color = 0x130816
+                    color = 0xd6dfe5
                 em = discord.Embed(description=message.content, color=color)
                 em.set_author(name=message.author.name, icon_url=message.author.avatar_url)
                 userchan = self.bot.get_channel(self.sys["INCARNE"]["CHANNEL_ENTREE"])
