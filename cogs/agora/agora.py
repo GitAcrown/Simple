@@ -1,3 +1,4 @@
+import asyncio
 import operator
 import os
 import random
@@ -67,6 +68,44 @@ class Agora:
                 return False
         else:
             return False
+
+# FULLCONTROL >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+    @commands.command(pass_context=True, no_pm=True, hidden=True)
+    @checks.admin_or_permissions(manage_server=True)
+    async def incarne(self, ctx, identifiant: str):
+        """Permet de prendre le contrôle du bot en parlant à sa place à travers une interface avancée"""
+        channel = self.bot.get_channel(identifiant)
+        if channel:
+            if "INCARNE" not in self.sys:
+                await self.bot.say("**Préparation** | Veuillez patienter pendant la connexion entre les deux "
+                                   "channels...")
+                await asyncio.sleep(3)
+                em = discord.Embed(title="Incarnation | {}".format(channel.name),
+                                   description="**Connexion réussie** - Les messages provenant du salon seront copiés"
+                                               " dans ce channel. Tout message que vous enverrez ici sera reproduit par"
+                                               " moi-même sur le channel *{}*.\nLa session s'arrête automatiquement au"
+                                               " bout de 2m d'inactivité. Vous seul pouvez utiliser cette session.")
+                em.set_author(name=self.bot.user.name, icon_url=self.bot.user.avatar_url)
+                await self.bot.say(embed=em)
+                await asyncio.sleep(2)
+                self.sys["INCARNE"] = {"CHANNEL_SORTIE": channel.id,
+                                       "CHANNEL_ENTREE": ctx.message.channel.id}
+                while True:
+                    msg = await self.bot.wait_for_message(channel=ctx.message.channel,
+                                                          author=ctx.message.author, timeout=120)
+                    if not msg:
+                        await self.bot.say("**Session terminée** | "
+                                           "Ce channel n'est plus connecté à *{}*".format(channel.name))
+                        del self.sys["INCARNE"]
+                        return
+                    else:
+                        await self.bot.send_typing(channel)
+                        await self.bot.send_message(channel, msg.content)
+            else:
+                await self.bot.say("**Erreur** | Une session est déjà en cours")
+        else:
+            await self.bot.say("**Erreur** | Le channel n'est pas valide/impossible à atteindre")
 
 # LEGIKHEYS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -353,6 +392,17 @@ class Agora:
                 fileIO("data/agora/sys.json", "save", self.sys)
 
     async def hologram_spawn(self, message):
+        if "INCARNE" in self.sys:
+            if message.channel.id == self.sys["INCARNE"]["CHANNEL_SORTIE"]:
+                if "<@{}>".format(self.bot.user.id) in message.content:
+                    color = 0xfab84c
+                else:
+                    color = 0x130816
+                em = discord.Embed(description=message.content, color=color)
+                em.set_author(name=message.author.name, icon_url=message.author.avatar_url)
+                userchan = self.bot.get_channel(self.sys["INCARNE"]["CHANNEL_ENTREE"])
+                await self.bot.send_message(userchan, embed=em)
+
         if "Habitué" or "Oldfag" or "Modérateur" or "Malsain" in [r.name for r in message.author.roles]:
             if "/" in message.content:
                 output = re.compile('/(.*?)/', re.DOTALL | re.IGNORECASE).findall(message.content)
