@@ -80,9 +80,12 @@ class Awsom:
                 try:
                     s = search(u)
                     suma = summary(s[0])
+                    if len(suma) > 1960:
+                        suma = suma[:1960] + "..."
                 except:
                     await self.bot.send_message(message.channel, "**Erreur** | La recherche n'est pas assez précise\n"
-                                                                 "Vouliez-vous dire *{}* ?".format(s[1]))
+                                                                 "Vouliez-vous dire *{}* ?".format(
+                        s[1] if s[1] else s[0]))
                     return
                 em = discord.Embed(title=s[0], description=suma)
                 em.set_footer(text="Similaire: {}".format(", ".join(s[:5])))
