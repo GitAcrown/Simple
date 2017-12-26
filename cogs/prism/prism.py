@@ -313,16 +313,7 @@ class Prism:  # MODULE CONCRET =========================================
                          "Je crois que ***{}*** est parti...", "***{}*** a raccroché.",
                          "***{}*** est en fuite...", "***{}*** s'est libéré de ses chaines !",
                          "***{}*** s'est suicidé de deux balles dans le dos."]
-        self.quit_msg_event = ["***{}*** s'est électrocuté avec une guirlande...",
-                               "***{}*** s'est suicidé avec une guirlande...", "***{}*** a quitté la fête.",
-                               "***{}*** a fait une overdose de sucre d'orge.",
-                               "***{}*** est parti voir au Pôle nord le père Noël.",
-                               "***{}*** n'avait de toute évidence pas l'esprit de Noël...",
-                               "***{}*** n'a pas cru au père Noël et s'en est allé.",
-                               "Le cadeau de ***{}*** ne lui allait pas, il est parti le vendre.",
-                               "***{}*** fêtera Noël tout seul cette année...",
-                               "***{}*** a fait une gastro suite à l'overdose de chocolat causé par son "
-                               "calendrier de l'Avent."]
+        self.quit_msg_event = []
 
 # FONCTIONS GLOBALES --------------------------------
 
