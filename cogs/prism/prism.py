@@ -45,8 +45,8 @@ class PRISMApp:
         return self.data[user.id][category] if category else self.data[user.id]
 
     def update(self, user: discord.Member = None):
-        tree = {"DATA": {"PSEUDOS": [user.name],
-                         "SURNOMS": [user.display_name],
+        tree = {"DATA": {"PSEUDOS": [user.name] if user else [],
+                         "SURNOMS": [user.display_name] if user else [],
                          "MSG_PART": 0,
                          "MSG_REEL": 0,
                          "JOIN": 0,
