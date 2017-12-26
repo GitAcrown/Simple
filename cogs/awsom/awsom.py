@@ -1,10 +1,10 @@
 import os
 import re
-from copy import
+from copy import deepcopy
 
 import discord
 from sympy import sympify
-from wikipedia import summary, search
+from wikipedia import summary, search, set_lang
 
 from .utils.dataIO import fileIO, dataIO
 
@@ -14,6 +14,7 @@ class Awsom:
     def __init__(self, bot):
         self.bot = bot
         self.sys = dataIO.load_json("data/awsom/sys.json")
+        set_lang("fr")
 
     async def do(self, message: discord.Message, txt: str):
         new_message = deepcopy(message)
