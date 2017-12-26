@@ -76,6 +76,7 @@ class Agora:
     async def incarne(self, ctx, identifiant: str):
         """Permet de prendre le contrôle du bot en parlant à sa place à travers une interface avancée"""
         channel = self.bot.get_channel(identifiant)
+        controle = self.bot.get_channel("395316684292096005")
         if channel:
             if "INCARNE" not in self.sys:
                 await self.bot.say("**Préparation** | Veuillez patienter pendant la connexion entre les deux "
@@ -88,6 +89,8 @@ class Agora:
                                                " bout de 2m d'inactivité. Vous seul pouvez utiliser cette session.")
                 em.set_author(name=self.bot.user.name, icon_url=self.bot.user.avatar_url)
                 await self.bot.say(embed=em)
+                await self.bot.send_message(controle, "<@{}> `a démarré une session de INCARNE`".format(
+                    ctx.message.author.id))
                 await asyncio.sleep(2)
                 self.sys["INCARNE"] = {"CHANNEL_SORTIE": channel.id,
                                        "CHANNEL_ENTREE": ctx.message.channel.id}
