@@ -73,7 +73,7 @@ class Awsom:
                 await self.bot.send_message(message.channel, "Ça fait `{}`".format(str(sympify(u))))
                 return
 
-            output = re.compile(r"(?:re)*cherche (.*)", re.IGNORECASE | re.DOTALL).findall(msg)
+            output = re.compile(r"(?:re)?cherche (.*)", re.IGNORECASE | re.DOTALL).findall(msg)
             if output:
                 u = output[0]
                 s = search(u)
