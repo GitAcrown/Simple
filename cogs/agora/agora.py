@@ -72,7 +72,6 @@ class Agora:
 # FULLCONTROL >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     @commands.command(pass_context=True, no_pm=True, hidden=True)
-    @checks.admin_or_permissions(manage_server=True)
     async def incarne(self, ctx, identifiant: str):
         """Permet de prendre le contrôle du bot en parlant à sa place à travers une interface avancée"""
         if ctx.message.channel.id != "395319484711305217":
