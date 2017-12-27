@@ -14,10 +14,12 @@ from .utils.dataIO import fileIO, dataIO
 
 class Agora:
     """Fonctionnalités communautaires"""
+
     def __init__(self, bot):
         self.bot = bot
         self.sys = dataIO.load_json("data/agora/sys.json")
         self.law = dataIO.load_json("data/agora/law.json")
+        self.instances = {}
 
     def gen_txt(self, idp: int):
         if idp in self.sys["POLLS"]:
@@ -31,7 +33,8 @@ class Agora:
                 for r in data["REPONSES"]:
                     if data["REPONSES"][r]["ORG"] == n:
                         txt += "\{} - **{}**\n".format(data["REPONSES"][r]["EMOJI"], r)
-                        tot = sum([self.sys["POLLS"][idp]["REPONSES"][p]["NB"] for p in self.sys["POLLS"][idp]["REPONSES"]])
+                        tot = sum(
+                            [self.sys["POLLS"][idp]["REPONSES"][p]["NB"] for p in self.sys["POLLS"][idp]["REPONSES"]])
                         prc = data["REPONSES"][r]["NB"] / tot if int(tot) > 0 else 0
                         val += "**{}** (*{}*%)\n".format(data["REPONSES"][r]["NB"], round(prc * 100, 2))
                         n += 1
@@ -42,14 +45,13 @@ class Agora:
         else:
             return False
 
-
     def gen_idp(self):
         r = 100
         while r in self.sys["POLLS"]:
             r = random.randint(100, 999)
         return r
 
-    def find_idp(self, msgid, ignore: bool= False):
+    def find_idp(self, msgid, ignore: bool = False):
         for i in self.sys["POLLS"]:
             if self.sys["POLLS"][i]["MSGID"] == msgid:
                 if not ignore:
@@ -69,11 +71,15 @@ class Agora:
         else:
             return False
 
-# FULLCONTROL >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        # FULLCONTROL >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     @commands.command(pass_context=True, no_pm=True, hidden=True)
     async def incarne(self, ctx, identifiant: str):
         """Permet de prendre le contrôle du bot en parlant à sa place à travers une interface avancée"""
+        if identifiant == "reset":
+            if "INCARNE" in self.sys:
+                del self.sys["INCARNE"]
+                return
         if ctx.message.channel.id != "395319484711305217":
             await self.bot.say("Eheheh, bien essayé mais cette commande n'est disponible que dans la **PhoneRoom**")
             return
@@ -88,7 +94,7 @@ class Agora:
                                    description="**Connexion réussie** - Les messages provenant du salon seront copiés"
                                                " dans ce channel. Tout message que vous enverrez ici sera reproduit par"
                                                " moi-même sur le channel *{}*.\nLa session s'arrête automatiquement au"
-                                               " bout de 2m d'inactivité. Vous seul pouvez utiliser cette session.")
+                                               " bout de 2m d'inactivité. Vous seul pouvez utiliser cette session.".format(channel.name))
                 em.set_author(name=self.bot.user.name, icon_url=self.bot.user.avatar_url)
                 await self.bot.say(embed=em)
                 await self.bot.send_message(controle, "<@{}> `a démarré une session de INCARNE`".format(
@@ -112,7 +118,7 @@ class Agora:
         else:
             await self.bot.say("**Erreur** | Le channel n'est pas valide/impossible à atteindre")
 
-# LEGIKHEYS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    # LEGIKHEYS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     @commands.group(aliases=["lkm"], pass_context=True)
     @checks.admin_or_permissions(ban_members=True)
@@ -145,7 +151,6 @@ class Agora:
                 await self.bot.say("**Erreur** | L'URL n'est pas valide")
         else:
             await self.bot.say("**Déjà existant** | Il semblerait que cet article existe déjà")
-
 
     @legikheysmod.command(pass_context=True)
     async def modif(self, ctx, classt: str, date: str, *texte: str):
@@ -210,9 +215,14 @@ class Agora:
                 lie = []
                 if "-" in art:
                     groupe = art[:art.index("-")]
+                if "bis" in art:
+                    groupe = art.lower()[:art.index("bis")]
                 for a in self.law:
                     if "-" in a:
                         if art == a.split("-")[0]:
+                            lie.append(a)
+                    if "bis" or "BIS" in a:
+                        if art.lower() == a.split("bis")[0]:
                             lie.append(a)
                 if lie:
                     lie.sort()
@@ -251,7 +261,7 @@ class Agora:
         txt = ""
         for art in l:
             txt += "**Art. {}** : *{}*\n".format(art[0], self.law[art[0]]["TEXTE"] if len(
-                        self.law[art[0]]["TEXTE"]) <= 40 else self.law[art[0]]["TEXTE"][:40] + "...")
+                self.law[art[0]]["TEXTE"]) <= 40 else self.law[art[0]]["TEXTE"][:40] + "...")
         if txt != "":
             em = discord.Embed(title="LégiKheys | Recherche de {}".format(", ".join(recherche)),
                                description=txt)
@@ -260,7 +270,7 @@ class Agora:
         else:
             await self.bot.say("**Introuvable** | Aucun article ne contient le(s) terme(s) recherché(s)")
 
-# POLLS >>>>>>>>>>>>>>>>>
+        # POLLS >>>>>>>>>>>>>>>>>
 
     @commands.command(pass_context=True, hidden=True)
     async def resetpoll(self, ctx):
@@ -311,7 +321,7 @@ class Agora:
                                       "AUTEURIMG": ctx.message.author.avatar_url,
                                       "MSGID": None,
                                       "ACTIF": False,
-                                      "ABUS" : {}}
+                                      "ABUS": {}}
             msg = self.gen_txt(idp)
             msg.set_footer(text="CHARGEMENT... | Patientez pendant que j'organise le sondage")
             menu = await self.bot.say(embed=msg)
@@ -347,7 +357,8 @@ class Agora:
                         data["ABUS"][user.id] = data["ABUS"][user.id] + 1 if user.id in data["ABUS"] else 0
                         data["VOTES"][user.id] = r
                         fileIO("data/agora/sys.json", "save", self.sys)
-                        await self.bot.send_message(user, "**#{}** | Merci d'avoir voté \{} !".format(idp, reaction.emoji))
+                        await self.bot.send_message(user,
+                                                    "**#{}** | Merci d'avoir voté \{} !".format(idp, reaction.emoji))
                         await self.bot.edit_message(message, embed=self.gen_txt(idp))
                     else:
                         await self.bot.send_message(user, "**#{}** | Vous avez déjà voté !".format(idp))
@@ -377,7 +388,7 @@ class Agora:
                         return
                     fileIO("data/agora/sys.json", "save", self.sys)
                     await self.bot.send_message(user, "**#{}** | Vous avez retiré votre vote \{}".format(idp,
-                                                                                                        reaction.emoji))
+                                                                                                         reaction.emoji))
                     await self.bot.edit_message(message, embed=self.gen_txt(idp))
 
     async def fp_listen_pin(self, before, after):
@@ -433,12 +444,15 @@ class Agora:
                                     em = discord.Embed(title="LégiKheys | Art. {}{}".format(
                                         art.upper(), " (Groupe art. {})".format(groupe) if groupe else ""),
                                         description=self.law[
-                                                        art.upper()]["TEXTE"] + lietxt, url=self.law[art.upper()]["URL"])
+                                                        art.upper()]["TEXTE"] + lietxt,
+                                        url=self.law[art.upper()]["URL"])
                                     if groupe:
                                         em.add_field(name="Art. {}".format(groupe), value=self.law[groupe]["TEXTE"])
-                                    em.set_footer(text="En date du {} | Invoqué via Holo".format(self.law[art.upper()]["DATE"],
-                                                                                                  art.upper()))
+                                    em.set_footer(
+                                        text="En date du {} | Invoqué via balise".format(self.law[art.upper()]["DATE"],
+                                                                                       art.upper()))
                                     await self.bot.send_message(message.channel, embed=em)
+
 
 def check_folders():
     if not os.path.exists("data/agora"):
@@ -464,4 +478,3 @@ def setup(bot):
     bot.add_listener(n.fp_listen_add, "on_reaction_add")
     bot.add_listener(n.fp_listen_rem, "on_reaction_remove")
     bot.add_listener(n.fp_listen_pin, "on_message_edit")
-
