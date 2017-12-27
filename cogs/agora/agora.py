@@ -224,6 +224,9 @@ class Agora:
                     if "bis" or "BIS" in a:
                         if art.lower() == a.split("bis")[0]:
                             lie.append(a)
+                for e in lie:
+                    if e == art:
+                        lie.remove(e)
                 if lie:
                     lie.sort()
                     lietxt = "\n\n**Articles liés**: {}".format(", ".join(lie))
