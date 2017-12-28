@@ -384,7 +384,7 @@ class Prism:
         await asyncio.sleep(2)
         await self.bot.say("**Upload en cours** | Ce processus peut être assez long si le fichier est volumineux")
         try:
-            await self.bot.send_file(ctx.message.channel, "data/outils/{}.txt".format(filename))
+            await self.bot.send_file(ctx.message.channel, "data/outils/{}".format(filename))
             os.remove("data/outils/{}".format(filename))
         except Exception as e:
             await self.bot.say("**Erreur dans l'Upload** | `{}`".format(e))
