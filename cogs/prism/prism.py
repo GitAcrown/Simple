@@ -345,7 +345,7 @@ class Prism:
         Le fichier est préformaté pour son utilisation sur des fichiers de traitement de données"""
         if not user: user = ctx.message.author
         p = self.app.open(user)
-        await self.bot.say("**Organisation des données** | Veuillez patienter pendant que rassemble les données...")
+        await self.bot.say("**Organisation des données** | Veuillez patienter pendant que je rassemble les données...")
         origine = datetime.datetime.fromtimestamp(p["ORIGINE"])
         strorigine = datetime.datetime.strftime(origine, "%d/%m/%Y %H:%M")
         today = datetime.datetime.strftime(ctx.message.timestamp, "%d%m%Y_%H%M")
