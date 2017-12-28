@@ -377,15 +377,15 @@ class Prism:
         for e in p["PAST"]:
             txt += "{} {}\t{}\n".format(e[0], e[1], e[2])
 
-        filename = "PStats-{}-{}".format(today, user.name)
-        file = open("data/outils/{}.txt".format(filename), "w")
+        filename = "PStats-{}-{}.txt".format(today, user.name)
+        file = open("data/outils/{}".format(filename), "w", encoding="UTF-8")
         file.write(txt)
         file.close()
         await asyncio.sleep(2)
         await self.bot.say("**Upload en cours** | Ce processus peut être assez long si le fichier est volumineux")
         try:
             await self.bot.send_file(ctx.message.channel, "data/outils/{}.txt".format(filename))
-            os.remove("data/outils/{}.txt".format(filename))
+            os.remove("data/outils/{}".format(filename))
         except Exception as e:
             await self.bot.say("**Erreur dans l'Upload** | `{}`".format(e))
 
