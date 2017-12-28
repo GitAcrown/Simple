@@ -351,22 +351,24 @@ class Prism:
         today = datetime.datetime.strftime(ctx.message.timestamp, "%d%m%Y_%H%M")
         txt = ">>> Données de {} ({}) <<<\n".format(user.name, user.id)
         txt += "System IDentificator (SID)\t{}\n".format(p["SID"])
-        txt += "Origine estimée\t{}\n".format(strorigine)
+        txt += "Origine estimee\t{}\n".format(strorigine)
         txt += "Bio\t{}\n".format(p["SYS"]["BIO"])
         txt += "\n--- Stats ---\n"
-        txt += "Nb msg réel\t{}\n".format(p["DATA"]["MSG_REEL"])
+        txt += "Nb msg reel\t{}\n".format(p["DATA"]["MSG_REEL"])
         txt += "Nb msg total\t{}\n".format(p["DATA"]["MSG_PART"])
-        txt += "Nb mots réel\t{}\n".format(p["DATA"]["MOTS_REEL"])
+        txt += "Nb mots reel\t{}\n".format(p["DATA"]["MOTS_REEL"])
         txt += "Nb mots total\t{}\n".format(p["DATA"]["MOTS_PART"])
-        txt += "Nb lettres réel\t{}\n".format(p["DATA"]["LETTRES_REEL"])
+        txt += "Nb lettres reel\t{}\n".format(p["DATA"]["LETTRES_REEL"])
         txt += "Nb lettres total\t{}\n".format(p["DATA"]["LETTRES_PART"])
-        txt += "Nb d'arrivées\t{}\n".format(p["DATA"]["JOIN"])
+        txt += "Nb d'arrivees\t{}\n".format(p["DATA"]["JOIN"])
         txt += "Nb bans\t{}\n".format(p["DATA"]["BAN"])
-        txt += "Nb de départs\t{}\n".format(p["DATA"]["QUIT"])
+        txt += "Nb de departs\t{}\n".format(p["DATA"]["QUIT"])
         txt += "Pseudos\t{}\n".format(", ".join(p["DATA"]["PSEUDOS"]) if p["DATA"]["PSEUDOS"] else "Aucun changement")
         txt += "Surnoms\t{}\n".format(", ".join(p["DATA"]["SURNOMS"]) if p["DATA"]["SURNOMS"] else "Aucun changement")
-        txt += "Jeux\t{}\n".format(", ".join(p["JEUX"]) if p["JEUX"] else "Aucun")
-        txt += "Emojis / Nb d'utilisations:\n"
+        dispo = self.app.jeux_verif()
+        jeux = [[r, p["JEUX"][r]] for r in p["JEUX"] if r in dispo]
+        txt += "Jeux\t{}\n".format(", ".join(jeux) if jeux else "Aucun detecte")
+        txt += "\n--- Emojis / Nb d'utilisations ---\n"
         order = [[r, p["DATA"]["EMOJIS"][r]] for r in p["DATA"]["EMOJIS"]]
         order = sorted(order, key=operator.itemgetter(1), reverse=True)
         for i in order:
@@ -374,7 +376,8 @@ class Prism:
         txt += "\n--- Historique ---\n"
         for e in p["PAST"]:
             txt += "{} {}\t{}\n".format(e[0], e[1], e[2])
-        filename = u"PStats-{}-{}".format(today, user.name)
+
+        filename = "PStats-{}-{}".format(today, user.name)
         file = open("data/outils/{}.txt".format(filename), "w", encoding="utf-8")
         file.write(txt)
         file.close()
