@@ -363,6 +363,54 @@ class Prism:
         em.set_footer(text="Du plus au moins joué | Certains jeux peuvent ne pas avoir été détectés")
         await self.bot.say(embed=em)
 
+    @commands.command(pass_context=True)
+    async def extract(self, ctx, user: discord.Member = None):
+        """Permet d'extraire les données personnelles d'un membre en fichier texte (.txt)
+
+        Le fichier est préformaté pour son utilisation sur des fichiers de traitement de données"""
+        if not user: user = ctx.message.author
+        p = self.app.open(user)
+        await self.bot.say("**Organisation des données** | Veuillez patienter pendant que rassemble les données...")
+        origine = datetime.datetime.fromtimestamp(p["ORIGINE"])
+        strorigine = datetime.datetime.strftime(origine, "%d/%m/%Y %H:%M")
+        today = datetime.datetime.strftime(ctx.message.timestamp, "%d%m%Y_%H%M")
+        txt = ">>> Données de {} ({}) <<<\n".format(user.name, user.id)
+        txt += "System IDentificator (SID)\t{}\n".format(p["SID"])
+        txt += "Origine estimée\t{}\n".format(strorigine)
+        txt += "Bio\t{}\n".format(p["SYS"]["BIO"])
+        txt += "\n--- Stats ---\n"
+        txt += "Nb msg réel\t{}\n".format(p["DATA"]["MSG_REEL"])
+        txt += "Nb msg total\t{}\n".format(p["DATA"]["MSG_PART"])
+        txt += "Nb mots réel\t{}\n".format(p["DATA"]["MOTS_REEL"])
+        txt += "Nb mots total\t{}\n".format(p["DATA"]["MOTS_PART"])
+        txt += "Nb lettres réel\t{}\n".format(p["DATA"]["LETTRES_REEL"])
+        txt += "Nb lettres total\t{}\n".format(p["DATA"]["LETTRES_PART"])
+        txt += "Nb d'arrivées\t{}\n".format(p["DATA"]["JOIN"])
+        txt += "Nb bans\t{}\n".format(p["DATA"]["BAN"])
+        txt += "Nb de départs\t{}\n".format(p["DATA"]["QUIT"])
+        txt += "Pseudos\t{}\n".format(", ".join(p["DATA"]["PSEUDOS"]) if p["DATA"]["PSEUDOS"] else "Aucun changement")
+        txt += "Surnoms\t{}\n".format(", ".join(p["DATA"]["SURNOMS"]) if p["DATA"]["SURNOMS"] else "Aucun changement")
+        txt += "Jeux\t{}\n".format(", ".join(p["JEUX"]) if p["JEUX"] else "Aucun")
+        txt += "Emojis / Nb d'utilisations:\n"
+        order = [[r, p["DATA"]["EMOJIS"][r]] for r in p["DATA"]["EMOJIS"]]
+        order = sorted(order, key=operator.itemgetter(1), reverse=True)
+        for i in order:
+            txt += "{}\t{}\n".format(i[0], i[1])
+        txt += "\n--- Historique ---\n"
+        for e in p["PAST"]:
+            txt += "{} {}\t{}\n".format(e[0], e[1], e[2])
+        filename = u"PStats-{}-{}".format(today, user.name)
+        file = open("data/outils/{}.txt".format(filename), "w", encoding="utf-8")
+        file.write(txt)
+        file.close()
+        await asyncio.sleep(2)
+        await self.bot.say("**Upload en cours** | Ce processus peut être assez long si le fichier est volumineux")
+        try:
+            await self.bot.send_file(ctx.message.channel, "data/outils/{}.txt".format(filename))
+            os.remove("data/outils/{}.txt".format(filename))
+        except Exception as e:
+            await self.bot.say("**Erreur dans l'Upload** | `{}`".format(e))
+
 # TRIGGERS ----------------------------------------------
 
     async def prism_msg(self, message):
