@@ -378,7 +378,7 @@ class Prism:
             txt += "{} {}\t{}\n".format(e[0], e[1], e[2])
 
         filename = "PStats-{}-{}".format(today, user.name)
-        file = open("data/outils/{}.txt".format(filename), "w", encoding="utf-8")
+        file = open("data/outils/{}.txt".format(filename), "w")
         file.write(txt)
         file.close()
         await asyncio.sleep(2)
