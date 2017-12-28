@@ -244,7 +244,7 @@ class Prism:
         else:
             return ""
 
-    @commands.group(name="card", aliases=["c"], pass_context=True, invoke_without_command=True)
+    @commands.group(name="card", aliases=["c"], pass_context=True, invoke_without_command=True, no_pm=True)
     async def prism_card(self, ctx, user: discord.Member = None):
         """Ensemble de commandes relatives à la Carte de Membre fournie par le système PRISM
 
@@ -338,32 +338,7 @@ class Prism:
         self.app.add_past(ctx.message.author, "Changement de bio")
         u["BIO"] = " ".join(texte)
 
-    @commands.command(aliases=["jeux", "j"], pass_context=True)
-    async def biblio(self, ctx, user: discord.Member = None):
-        """Affiche les jeux possédés par le membre"""
-        if not user:
-            user = ctx.message.author
-        txt = ""
-        p = self.app.open(user)
-        dispo = self.app.jeux_verif()
-        lib = []
-        if p["JEUX"]:
-            lib = [[r, p["JEUX"][r]] for r in p["JEUX"] if r in dispo]
-            lib = sorted(lib, key=operator.itemgetter(1), reverse=True)
-        if not lib:
-            await self.bot.say("**Bibliothèque vide** | Aucun jeu vérifié n'est possédé par l'utilisateur")
-            return
-        for e in lib:
-            if len(txt) < 1960:
-                txt += "`{}`\n".format(e[0].capitalize())
-            else:
-                txt += "**...**"
-        em = discord.Embed(title="Bibliothèque de {}".format(
-            user.name) if user != ctx.message.author else "Votre bibliothèque", description=txt)
-        em.set_footer(text="Du plus au moins joué | Certains jeux peuvent ne pas avoir été détectés")
-        await self.bot.say(embed=em)
-
-    @commands.command(pass_context=True)
+    @prism_card.command(pass_context=True)
     async def extract(self, ctx, user: discord.Member = None):
         """Permet d'extraire les données personnelles d'un membre en fichier texte (.txt)
 
@@ -410,6 +385,31 @@ class Prism:
             os.remove("data/outils/{}.txt".format(filename))
         except Exception as e:
             await self.bot.say("**Erreur dans l'Upload** | `{}`".format(e))
+
+    @commands.command(aliases=["jeux", "j"], pass_context=True)
+    async def biblio(self, ctx, user: discord.Member = None):
+        """Affiche les jeux possédés par le membre"""
+        if not user:
+            user = ctx.message.author
+        txt = ""
+        p = self.app.open(user)
+        dispo = self.app.jeux_verif()
+        lib = []
+        if p["JEUX"]:
+            lib = [[r, p["JEUX"][r]] for r in p["JEUX"] if r in dispo]
+            lib = sorted(lib, key=operator.itemgetter(1), reverse=True)
+        if not lib:
+            await self.bot.say("**Bibliothèque vide** | Aucun jeu vérifié n'est possédé par l'utilisateur")
+            return
+        for e in lib:
+            if len(txt) < 1960:
+                txt += "`{}`\n".format(e[0].capitalize())
+            else:
+                txt += "**...**"
+        em = discord.Embed(title="Bibliothèque de {}".format(
+            user.name) if user != ctx.message.author else "Votre bibliothèque", description=txt)
+        em.set_footer(text="Du plus au moins joué | Certains jeux peuvent ne pas avoir été détectés")
+        await self.bot.say(embed=em)
 
 # TRIGGERS ----------------------------------------------
 
