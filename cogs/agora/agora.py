@@ -291,13 +291,7 @@ class Agora:
                     poll = self.sys["POLLS"][pid]
                     mess = await self.bot.get_message(ctx.message.channel, poll["MSGID"])
                     if mess:
-                        em = self.poll_embed(poll["MSGID"])
-                        tot = sum([poll["R_STATS"][p]["NB"] for p in poll["R_STATS"]])
-                        em.set_footer(text="Sondage terminé | {} participant(s) | Merci d'y avoir participé !".format(tot))
-                        em.set_author(name="RÉSULTATS #{} | {}".format(pid, poll["TITRE"]), icon_url=poll["IMG"])
                         await self.bot.unpin_message(mess)
-                        await self.bot.send_message(ctx.message.channel, embed=em)
-                        del self.sys["POLLS"][pid]
                         return
                     else:
                         await self.bot.say("**Erreur** | Vous devez être sur le channel du sondage pour l'arrêter")
