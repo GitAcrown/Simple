@@ -3,6 +3,7 @@ import operator
 import os
 import random
 import re
+import string
 
 import discord
 from __main__ import send_cmd_help
@@ -20,56 +21,6 @@ class Agora:
         self.sys = dataIO.load_json("data/agora/sys.json")
         self.law = dataIO.load_json("data/agora/law.json")
         self.instances = {}
-
-    def gen_txt(self, idp: int):
-        if idp in self.sys["POLLS"]:
-            data = self.sys["POLLS"][idp]
-            em = discord.Embed(color=data["COLOR"])
-            em.set_author(name="#{} | {}".format(idp, data["QUESTION"]), icon_url=data["AUTEURIMG"])
-            txt = ""
-            val = ""
-            n = 0
-            while n < len(data["REPONSES"]):
-                for r in data["REPONSES"]:
-                    if data["REPONSES"][r]["ORG"] == n:
-                        txt += "\{} - **{}**\n".format(data["REPONSES"][r]["EMOJI"], r)
-                        tot = sum(
-                            [self.sys["POLLS"][idp]["REPONSES"][p]["NB"] for p in self.sys["POLLS"][idp]["REPONSES"]])
-                        prc = data["REPONSES"][r]["NB"] / tot if int(tot) > 0 else 0
-                        val += "**{}** (*{}*%)\n".format(data["REPONSES"][r]["NB"], round(prc * 100, 2))
-                        n += 1
-            em.add_field(name="Réponses", value=txt)
-            em.add_field(name="Statistiques", value=val)
-            em.set_footer(text="Votez avec les réactions correspondantes ci-dessous | Total: {}".format(tot))
-            return em
-        else:
-            return False
-
-    def gen_idp(self):
-        r = 100
-        while r in self.sys["POLLS"]:
-            r = random.randint(100, 999)
-        return r
-
-    def find_idp(self, msgid, ignore: bool = False):
-        for i in self.sys["POLLS"]:
-            if self.sys["POLLS"][i]["MSGID"] == msgid:
-                if not ignore:
-                    return i if self.sys["POLLS"][i]["ACTIF"] else False
-                else:
-                    return i
-        else:
-            return False
-
-    def find_reponse(self, idp, emoji):
-        if idp in self.sys["POLLS"]:
-            for i in self.sys["POLLS"][idp]["REPONSES"]:
-                if emoji == self.sys["POLLS"][idp]["REPONSES"][i]["EMOJI"]:
-                    return i
-            else:
-                return False
-        else:
-            return False
 
         # FULLCONTROL >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -273,142 +224,155 @@ class Agora:
         else:
             await self.bot.say("**Introuvable** | Aucun article ne contient le(s) terme(s) recherché(s)")
 
-        # POLLS >>>>>>>>>>>>>>>>>
+# POLLS >>>>>>>>>>>>>>>>>
 
-    @commands.command(pass_context=True, hidden=True)
-    async def resetpoll(self, ctx):
-        """Permet de reset le fichier de FancyPoll en cas de problèmes"""
-        del self.sys["POLLS"]
-        self.sys = {"POLLS": {}}
-        fileIO("data/agora/sys.json", "save", self.sys)
-        await self.bot.say("**Succès** | Tous les polls en cours ont été tués et le fichier a été reset.")
+    def normalize(self, txt: str):
+        if txt.startswith(" "):
+            txt = txt[1:]
+        if txt.endswith(" "):
+            txt = txt[:-1]
+        txt = txt.capitalize()
+        return txt
+
+    def msgid_to_poll(self, msgid):
+        for i in self.sys["POLLS"]:
+            if self.sys["POLLS"][i]["MSGID"] == msgid:
+                return self.sys["POLLS"][i], i
+        return False
+
+    def poll_embed(self, msgid):
+        if self.msgid_to_poll(msgid):
+            poll, pid = self.msgid_to_poll(msgid)
+            rcolor = poll["COLOR"]
+            question = poll["TITRE"]
+            avatar = poll["IMG"]
+            reponses = poll["REPONSES"]
+            strict = poll["STRICT"]
+            tot = sum([poll["R_STATS"][p]["NB"] for p in poll["R_STATS"]])
+            rtx = stx = ""
+            for r in reponses:
+                nb = poll["R_STATS"][r]["NB"]
+                emoji = poll["R_STATS"][r]["EMOJI"]
+                prc = nb / tot if int(tot) > 0 else 0
+                rtx += "\{} - **{}**\n".format(emoji, r)
+                stx += "\{} - **{}** (*{}*%)\n".format(emoji, nb, prc)
+            em = discord.Embed(color=rcolor)
+            em.set_author(name="#{} | {}".format(pid, question), icon_url=avatar)
+            em.add_field(name="Réponses", value=rtx)
+            em.add_field(name="Stats", value=stx)
+            em.set_footer(text="Votez avec une réaction ci-dessous ({}) | Total: {}".format("Vote strict" if strict else
+                                                                                            "Vote souple", tot))
+            return em
+        return False
+
+    def find_user(self, msgid, user: discord.Member):
+        if self.msgid_to_poll(msgid):
+            poll, pid = self.msgid_to_poll(msgid)
+            for p in poll["R_STATS"]:
+                if user.id in poll["R_STATS"][p]["USERS"]:
+                    return p
+        return False
 
     @commands.command(aliases=["fp", "vote"], pass_context=True, no_pm=True)
-    async def fancypoll(self, ctx, *qr: str):
+    async def fancypoll(self, ctx, *qr):
         """Lance un FancyPoll sur le channel en cours et épingle celui-ci
 
         <qr>: Question?;réponse1;réponse2;réponseN
+        Il est possible d'ajouter $ à la fin de la commande pour passer le sondage en mode 'Souple'
         L'arrêt du sondage se fait automatiquement lors du desépinglage de celui-ci"""
         rs = lambda: random.randint(0, 255)
         rcolor = int('0x%02X%02X%02X' % (rs(), rs(), rs()), 16)
+        emojis = [s for s in "🇦🇧🇨🇩🇪🇫🇬🇭🇮🇯🇰🇱🇲🇳🇴🇵🇶🇷🇸🇹🇺🇻🇼🇽🇾🇿"]
+        pid = str(''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(3)))
         if qr:
             qr = " ".join(qr)
-            split = qr.split(";")
-            q = split[0]
-            r = split[1:]
-            if len(r) > 9:
-                await self.bot.say("**Impossible** | Vous ne pouvez pas mettre plus de 9 options")
+            strict = True
+            if qr.endswith("$"):
+                strict = False
+                qr = qr.replace("$", "")
+            qr = qr.split(";")
+            question = qr[0]
+            reponses = [self.normalize(r) for r in qr[1:]]
+            if not 2 <= len(reponses) <= 9:
+                await self.bot.say("**Invalide** | Il doit y avoir entre 2 et 9 options disponibles")
                 return
-            elif len(r) < 2:
-                await self.bot.say("**Impossible** | Il faut au moins 2 options de réponse")
-                return
-            emojis = [s for s in "🇦🇧🇨🇩🇪🇫🇬🇭🇮🇯🇰🇱🇲🇳🇴🇵🇶🇷🇸🇹🇺🇻🇼🇽🇾🇿"]
-            idp = self.gen_idp()
-            parsedr = {}
+            parsed = {}
             emos = []
-            n = 0
-            for i in r:
-                if i.startswith(" "):
-                    i = i[1:]
-                if i.endswith(" "):
-                    i = i[:-1]
-                parsedr[i] = {"EMOJI": emojis[n],
-                              "NB": 0,
-                              "ORG": n}
-                emos.append(emojis[n])
-                n += 1
-            self.sys["POLLS"][idp] = {"QUESTION": q,
-                                      "REPONSES": parsedr,
-                                      "VOTES": {},
+            rtx = stx = ""
+            for i in reponses:
+                index = reponses.index(i)
+                parsed[i] = {"NB": 0,
+                             "EMOJI": emojis[index],
+                             "USERS": []}
+                rtx += "\{} - **{}**\n".format(emojis[index], i)
+                stx += "\{} - **{}** (*{}*%)\n".format(emojis[index], 0, 0)
+                emos.append(emojis[index])
+            em = discord.Embed(color=rcolor)
+            em.set_author(name="#{} | {}".format(pid, question), icon_url=ctx.message.author.avatar_url)
+            em.add_field(name="Réponses", value=rtx)
+            em.add_field(name="Stats", value=stx)
+            em.set_footer(text="Votez avec une réaction ci-dessous ({})".format("Vote strict" if strict else "Vote "
+                                                                                                             "souple"))
+            await self.bot.send_typing(ctx.message.channel)
+            msg = await self.bot.say(embed=em)
+            self.sys["POLLS"][pid] = {"TITRE": question,
+                                      "R_STATS": parsed,
+                                      "REPONSES": reponses,
                                       "COLOR": rcolor,
-                                      "AUTEURIMG": ctx.message.author.avatar_url,
-                                      "MSGID": None,
-                                      "ACTIF": False,
-                                      "ABUS": {}}
-            msg = self.gen_txt(idp)
-            msg.set_footer(text="CHARGEMENT... | Patientez pendant que j'organise le sondage")
-            menu = await self.bot.say(embed=msg)
-            await self.bot.pin_message(menu)
-            self.sys["POLLS"][idp]["MSGID"] = menu.id
-            self.sys["POLLS"][idp]["ACTIF"] = True
-            fileIO("data/agora/sys.json", "save", self.sys)
-            for r in emos:
+                                      "IMG": ctx.message.author.avatar_url,
+                                      "MSGID": msg.id,
+                                      "STRICT": strict}
+            for e in emos:
                 try:
-                    await self.bot.add_reaction(menu, r)
+                    await self.bot.add_reaction(msg, e)
                 except:
                     pass
-            await self.bot.edit_message(menu, embed=self.gen_txt(idp))
+            await self.bot.pin_message(msg)
         else:
-            await self.bot.say("**Format** | *Question;Réponse1;Réponse2;RéponseN...*")
+            await self.bot.say("**Format** | `&fp Question ?;Réponse 1;Réponse 2;Réponse N...($)`")
 
     async def fp_listen_add(self, reaction, user):
         message = reaction.message
-        save = lambda: fileIO("data/agora/sys.json", "save", self.sys)
-        idp = self.find_idp(message.id)
-        if not user.bot:
-            if idp:
-                data = self.sys["POLLS"][idp]
-                if reaction.emoji in [data["REPONSES"][r]["EMOJI"] for r in data["REPONSES"]]:
-                    if user.id not in data["VOTES"]:
-                        if user.id in data["ABUS"]:
-                            if data["ABUS"][user.id] > 3:
-                                await self.bot.send_message(user, "**#{}** | ABUS - Vous ne pouvez plus "
-                                                                  "voter.".format(idp))
-                                return
-                        r = self.find_reponse(idp, reaction.emoji)
-                        data["REPONSES"][r]["NB"] += 1
-                        data["ABUS"][user.id] = data["ABUS"][user.id] + 1 if user.id in data["ABUS"] else 0
-                        data["VOTES"][user.id] = r
-                        fileIO("data/agora/sys.json", "save", self.sys)
-                        await self.bot.send_message(user,
-                                                    "**#{}** | Merci d'avoir voté \{} !".format(idp, reaction.emoji))
-                        await self.bot.edit_message(message, embed=self.gen_txt(idp))
-                    else:
-                        await self.bot.send_message(user, "**#{}** | Vous avez déjà voté !".format(idp))
-                        await self.bot.remove_reaction(message, reaction.emoji, user)
+        if self.msgid_to_poll(message.id):
+            poll, pid = self.msgid_to_poll(message.id)
+            if not self.find_user(message.id, user):
+                if reaction.emoji in [poll["R_STATS"][r]["EMOJI"] for r in poll["R_STATS"]]:
+                    for r in poll["R_STATS"]:
+                        if reaction.emoji == poll["R_STATS"][r]["EMOJI"]:
+                            poll["R_STATS"][r]["NB"] += 1
+                            poll["R_STATS"][r]["USERS"].append(user.id)
+                            await self.bot.edit_message(message, embed=self.poll_embed(message.id))
+                            await self.bot.send_message(user, "**#{}** | Merci d'avoir voté !")
                 else:
                     await self.bot.remove_reaction(message, reaction.emoji, user)
+            else:
+                await self.bot.remove_reaction(message, reaction.emoji, user)
 
     async def fp_listen_rem(self, reaction, user):
         message = reaction.message
-        save = lambda: fileIO("data/agora/sys.json", "save", self.sys)
-        idp = self.find_idp(message.id)
-        if idp:
-            data = self.sys["POLLS"][idp]
-            if reaction.emoji in [data["REPONSES"][r]["EMOJI"] for r in data["REPONSES"]]:
-                if user.id in data["VOTES"]:
-                    if user.id in data["ABUS"]:
-                        if data["ABUS"][user.id] > 3:
-                            await self.bot.send_message(user, "**#{}** | ABUS - Vous ne pouvez pas retirer "
-                                                              "votre vote.".format(idp))
-                            return
-                    data["ABUS"][user.id] = data["ABUS"][user.id] + 1 if user.id in data["ABUS"] else 0
-                    r = self.find_reponse(idp, reaction.emoji)
-                    if data["VOTES"][user.id] == r:
-                        data["REPONSES"][r]["NB"] -= 1
-                        del data["VOTES"][user.id]
-                    else:
-                        return
-                    fileIO("data/agora/sys.json", "save", self.sys)
-                    await self.bot.send_message(user, "**#{}** | Vous avez retiré votre vote \{}".format(idp,
-                                                                                                         reaction.emoji))
-                    await self.bot.edit_message(message, embed=self.gen_txt(idp))
+        if self.msgid_to_poll(message.id):
+            poll, pid = self.msgid_to_poll(message.id)
+            if not poll["STRICT"]:
+                if self.find_user(message.id, user):
+                    if reaction.emoji in [poll["R_STATS"][r]["EMOJI"] for r in poll["R_STATS"]]:
+                        for r in poll["R_STATS"]:
+                            if reaction.emoji == poll["R_STATS"][r]["EMOJI"]:
+                                if user.id in poll["R_STATS"][r]["USERS"]:
+                                    poll["R_STATS"][r]["NB"] -= 1
+                                    poll["R_STATS"][r]["USERS"].remove(user.id)
+                                    await self.bot.edit_message(message, embed=self.poll_embed(message.id))
+                                    await self.bot.send_message(user, "**#{}** | Vous avez retiré votre vote")
 
     async def fp_listen_pin(self, before, after):
-        save = lambda: fileIO("data/agora/sys.json", "save", self.sys)
-        idp = self.find_idp(after.id, True)
-        if idp:
-            tot = sum([self.sys["POLLS"][idp]["REPONSES"][p]["NB"] for p in self.sys["POLLS"][idp]["REPONSES"]])
+        if self.msgid_to_poll(before.id):
             if before.pinned and not after.pinned:
-                em = self.gen_txt(idp)
+                poll, pid = self.msgid_to_poll(before.id)
+                em = self.poll_embed(before.id)
+                tot = sum([poll["R_STATS"][p]["NB"] for p in poll["R_STATS"]])
                 em.set_footer(text="Sondage terminé | {} participant(s) | Merci d'y avoir participé !".format(tot))
-                await self.bot.clear_reactions(after)
-                await self.bot.edit_message(after, embed=em)
-                em.set_author(name="RÉSULTATS #{} | {}".format(idp, self.sys["POLLS"][idp]["QUESTION"]),
-                              icon_url=self.sys["POLLS"][idp]["AUTEURIMG"])
+                em.set_author(name="RÉSULTATS #{} | {}".format(pid, poll["TITRE"]), icon_url=poll["IMG"])
                 await self.bot.send_message(after.channel, embed=em)
-                del self.sys["POLLS"][idp]
-                fileIO("data/agora/sys.json", "save", self.sys)
+                del self.sys["POLLS"][pid]
 
     async def hologram_spawn(self, message):
         if "INCARNE" in self.sys:
