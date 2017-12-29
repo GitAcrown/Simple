@@ -22,7 +22,10 @@ class Awsom:
         await self.bot.process_commands(new_message)
 
     async def detect(self, message):  # Regex c'est la VIE
-        server = message.channel.server
+        channel = message.channel
+        if not hasattr(channel, 'server'):
+            return
+        server = channel.server
         if message.content.startswith("<@{}>".format(self.bot.user.id)):
             msg = " ".join(message.content.split()[1:])
             msg = msg.replace("`", "")
