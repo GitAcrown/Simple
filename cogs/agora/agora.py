@@ -255,7 +255,7 @@ class Agora:
                 emoji = poll["R_STATS"][r]["EMOJI"]
                 prc = nb / tot if int(tot) > 0 else 0
                 rtx += "\{} - **{}**\n".format(emoji, r)
-                stx += "\{} - **{}** (*{}*%)\n".format(emoji, nb, prc)
+                stx += "\{} - **{}** (*{}*%)\n".format(emoji, nb, round(prc * 100, 2))
             em = discord.Embed(color=rcolor)
             em.set_author(name="#{} | {}".format(pid, question), icon_url=avatar)
             em.add_field(name="Réponses", value=rtx)
@@ -279,12 +279,32 @@ class Agora:
 
         <qr>: Question?;réponse1;réponse2;réponseN
         Il est possible d'ajouter $ à la fin de la commande pour passer le sondage en mode 'Souple'
-        L'arrêt du sondage se fait automatiquement lors du desépinglage de celui-ci"""
+        L'arrêt du sondage se fait automatiquement lors du desépinglage de celui-ci ou si vous faîtes &fp stop <id>"""
         rs = lambda: random.randint(0, 255)
         rcolor = int('0x%02X%02X%02X' % (rs(), rs(), rs()), 16)
         emojis = [s for s in "🇦🇧🇨🇩🇪🇫🇬🇭🇮🇯🇰🇱🇲🇳🇴🇵🇶🇷🇸🇹🇺🇻🇼🇽🇾🇿"]
         pid = str(''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(3)))
         if qr:
+            if qr[0].lower() == "stop":
+                if qr[1].upper() in self.sys["POLLS"]:
+                    pid = qr[1].upper()
+                    poll = self.sys["POLLS"][pid]
+                    message = self.bot.get_message(ctx.message.channel, poll["MSGID"])
+                    if message:
+                        em = self.poll_embed(poll["MSGID"])
+                        tot = sum([poll["R_STATS"][p]["NB"] for p in poll["R_STATS"]])
+                        em.set_footer(text="Sondage terminé | {} participant(s) | Merci d'y avoir participé !".format(tot))
+                        em.set_author(name="RÉSULTATS #{} | {}".format(pid, poll["TITRE"]), icon_url=poll["IMG"])
+                        await self.bot.unpin_message(message)
+                        await self.bot.send_message(ctx.message.channel, embed=em)
+                        del self.sys["POLLS"][pid]
+                        return
+                    else:
+                        await self.bot.say("**Erreur** | Vous devez être sur le channel du sondage pour l'arrêter")
+                        return
+                else:
+                    await self.bot.say("**Introuvable** | Cet identifiant est introuvable (Ne mettez pas le #)")
+                    return
             qr = " ".join(qr)
             strict = True
             if qr.endswith("$"):
@@ -334,34 +354,36 @@ class Agora:
     async def fp_listen_add(self, reaction, user):
         message = reaction.message
         if self.msgid_to_poll(message.id):
-            poll, pid = self.msgid_to_poll(message.id)
-            if not self.find_user(message.id, user):
-                if reaction.emoji in [poll["R_STATS"][r]["EMOJI"] for r in poll["R_STATS"]]:
-                    for r in poll["R_STATS"]:
-                        if reaction.emoji == poll["R_STATS"][r]["EMOJI"]:
-                            poll["R_STATS"][r]["NB"] += 1
-                            poll["R_STATS"][r]["USERS"].append(user.id)
-                            await self.bot.edit_message(message, embed=self.poll_embed(message.id))
-                            await self.bot.send_message(user, "**#{}** | Merci d'avoir voté !")
+            if not user.bot:
+                poll, pid = self.msgid_to_poll(message.id)
+                if not self.find_user(message.id, user):
+                    if reaction.emoji in [poll["R_STATS"][r]["EMOJI"] for r in poll["R_STATS"]]:
+                        for r in poll["R_STATS"]:
+                            if reaction.emoji == poll["R_STATS"][r]["EMOJI"]:
+                                poll["R_STATS"][r]["NB"] += 1
+                                poll["R_STATS"][r]["USERS"].append(user.id)
+                                await self.bot.edit_message(message, embed=self.poll_embed(message.id))
+                                await self.bot.send_message(user, "**#{}** | Merci d'avoir voté !")
+                    else:
+                        await self.bot.remove_reaction(message, reaction.emoji, user)
                 else:
                     await self.bot.remove_reaction(message, reaction.emoji, user)
-            else:
-                await self.bot.remove_reaction(message, reaction.emoji, user)
 
     async def fp_listen_rem(self, reaction, user):
         message = reaction.message
         if self.msgid_to_poll(message.id):
-            poll, pid = self.msgid_to_poll(message.id)
-            if not poll["STRICT"]:
-                if self.find_user(message.id, user):
-                    if reaction.emoji in [poll["R_STATS"][r]["EMOJI"] for r in poll["R_STATS"]]:
-                        for r in poll["R_STATS"]:
-                            if reaction.emoji == poll["R_STATS"][r]["EMOJI"]:
-                                if user.id in poll["R_STATS"][r]["USERS"]:
-                                    poll["R_STATS"][r]["NB"] -= 1
-                                    poll["R_STATS"][r]["USERS"].remove(user.id)
-                                    await self.bot.edit_message(message, embed=self.poll_embed(message.id))
-                                    await self.bot.send_message(user, "**#{}** | Vous avez retiré votre vote")
+            if not user.bot:
+                poll, pid = self.msgid_to_poll(message.id)
+                if not poll["STRICT"]:
+                    if self.find_user(message.id, user):
+                        if reaction.emoji in [poll["R_STATS"][r]["EMOJI"] for r in poll["R_STATS"]]:
+                            for r in poll["R_STATS"]:
+                                if reaction.emoji == poll["R_STATS"][r]["EMOJI"]:
+                                    if user.id in poll["R_STATS"][r]["USERS"]:
+                                        poll["R_STATS"][r]["NB"] -= 1
+                                        poll["R_STATS"][r]["USERS"].remove(user.id)
+                                        await self.bot.edit_message(message, embed=self.poll_embed(message.id))
+                                        await self.bot.send_message(user, "**#{}** | Vous avez retiré votre vote")
 
     async def fp_listen_pin(self, before, after):
         if self.msgid_to_poll(before.id):
