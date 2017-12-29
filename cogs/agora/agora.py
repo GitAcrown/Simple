@@ -289,13 +289,13 @@ class Agora:
                 if qr[1].upper() in self.sys["POLLS"]:
                     pid = qr[1].upper()
                     poll = self.sys["POLLS"][pid]
-                    message = self.bot.get_message(ctx.message.channel, poll["MSGID"])
-                    if message:
+                    mess = await self.bot.get_message(ctx.message.channel, poll["MSGID"])
+                    if mess:
                         em = self.poll_embed(poll["MSGID"])
                         tot = sum([poll["R_STATS"][p]["NB"] for p in poll["R_STATS"]])
                         em.set_footer(text="Sondage terminé | {} participant(s) | Merci d'y avoir participé !".format(tot))
                         em.set_author(name="RÉSULTATS #{} | {}".format(pid, poll["TITRE"]), icon_url=poll["IMG"])
-                        await self.bot.unpin_message(message)
+                        await self.bot.unpin_message(mess)
                         await self.bot.send_message(ctx.message.channel, embed=em)
                         del self.sys["POLLS"][pid]
                         return
@@ -363,7 +363,8 @@ class Agora:
                                 poll["R_STATS"][r]["NB"] += 1
                                 poll["R_STATS"][r]["USERS"].append(user.id)
                                 await self.bot.edit_message(message, embed=self.poll_embed(message.id))
-                                await self.bot.send_message(user, "**#{}** | Merci d'avoir voté !")
+                                await self.bot.send_message(user, "**#{}** | Merci d'avoir voté !"
+                                                                  "".format(pid))
                     else:
                         await self.bot.remove_reaction(message, reaction.emoji, user)
                 else:
@@ -383,7 +384,8 @@ class Agora:
                                         poll["R_STATS"][r]["NB"] -= 1
                                         poll["R_STATS"][r]["USERS"].remove(user.id)
                                         await self.bot.edit_message(message, embed=self.poll_embed(message.id))
-                                        await self.bot.send_message(user, "**#{}** | Vous avez retiré votre vote")
+                                        await self.bot.send_message(user, "**#{}** | Vous avez retiré votre vote"
+                                                                          "".format(pid))
 
     async def fp_listen_pin(self, before, after):
         if self.msgid_to_poll(before.id):
