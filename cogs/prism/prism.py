@@ -59,7 +59,8 @@ class PRISMApp:
                          "LETTRES_PART": 0},
                 "SYS": {"BIO": None,
                         "QUIT_SAVE": [],
-                        "D_VU": None},
+                        "D_VU": None,
+                        "SEXE": "neutre"},
                 "ECO": {"SOLDE": 0,
                         "TRS": []}}
         for e in tree:
@@ -168,6 +169,7 @@ class Prism:
         data = self.app.open(user)
         roles = [r.name for r in user.roles]
         msg = data["DATA"]["MSG_REEL"]
+        sexe = data["SYS"]["SEXE"]
         cond = {"ROLES": 1,
                 "RANG": 1}
         if "Oldfag" in roles:
@@ -182,11 +184,31 @@ class Prism:
             nb = cond["ROLES"]
         else:
             nb = cond["RANG"]
-        if nb == 1: return ["Migrant(e)", "https://i.imgur.com/6NB1e33.png"]
-        elif nb == 2: return ["Résident(e)", "https://i.imgur.com/YRu4MCm.png"]
-        elif nb == 3: return ["Citoyen(ne)", "https://i.imgur.com/O9slR25.png"]
+        nom = ""
+        if nb == 2:
+            if sexe == "masculin":
+                nom = "Résident"
+            elif sexe == "feminin":
+                nom = "Résidente"
+            else:
+                nom = "Résident(e)"
+            return [nom, "https://i.imgur.com/YRu4MCm.png"]
+        elif nb == 3:
+            if sexe == "masculin":
+                nom = "Citoyen"
+            elif sexe == "feminin":
+                nom = "Citoyenne"
+            else:
+                nom = "Citoyen(ne)"
+            return [nom, "https://i.imgur.com/O9slR25.png"]
         else:
-            return ["Migrant(e)", "https://i.imgur.com/6NB1e33.png"]
+            if sexe == "masculin":
+                nom = "Migrant"
+            elif sexe == "feminin":
+                nom = "Migrante"
+            else:
+                nom = "Migrant(e)"
+            return [nom, "https://i.imgur.com/6NB1e33.png"]
 
     def rang(self, val: int):
         if val < 50:
@@ -359,6 +381,24 @@ class Prism:
             await self.bot.say("**Succès** | Votre bio n'affichera aucun message")
         self.app.add_past(ctx.message.author, "Changement de bio")
         u["BIO"] = " ".join(texte)
+
+    @prism_card.command(pass_context=True)
+    async def sexe(self, ctx, sexe:str):
+        """Permet d'indiquer au bot son sexe, permettant d'adapter un certain nombre de fonctionnalités
+        Reconnus : neutre, feminin/femme, masculin/homme"""
+        data = self.app.open(ctx.message.author, "SYS")
+        if sexe.lower() in ["neutre", "n"]:
+            data["SEXE"] = "neutre"
+            await self.bot.say("**Succès** | Vous serez désigné de manière la plus neutre possible")
+        elif sexe.lower() in ["femme", "feminin", "f"]:
+            data["SEXE"] = "feminin"
+            await self.bot.say("**Succès** | Vous serez désignée comme une personne de sexe féminin")
+        elif sexe.lower() in ["homme", "masculin", "h"]:
+            data["SEXE"] = "masculin"
+            await self.bot.say("**Succès** | Vous serez désigné comme une personne de sexe masculin")
+        else:
+            await self.bot.say("**Inconnu** | Je ne reconnais que 3 sexes: **Neutre**, **Feminin** et **Masculin**.\n"
+                               "*Veillez à ne pas mettre d'accents !*")
 
     @prism_card.command(pass_context=True)
     async def extract(self, ctx, user: discord.Member = None):
