@@ -28,8 +28,12 @@ class Awsom:
             while do:
                 date = time.strftime("%d/%m/%Y", time.localtime())
                 heure = time.strftime("%H:%M", time.localtime())
-                if date == "31/12/2017" and heure == "17:43":
-                    await self.bot.send_message(channel, "**Bonne année !!!**")
+                if date == "31/12/2017" and heure == "17:53":
+                    await self.bot.send_message(channel, "Chers EKheysiens, je vous souhaite une excellente année 2018 "
+                                                         "(meilleure que 2017 qui était pas ouf), "
+                                                         "j'espère que vous réussirez tous à faire ce que vous désirez "
+                                                         "et j'espère passer encore d'extraordinaires moments avec vous"
+                                                         "\n**Bonne année à tous !**\n\n- Acrown")
                     do = False
                 await asyncio.sleep(10)
         except asyncio.CancelledError:
