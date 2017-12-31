@@ -191,7 +191,7 @@ class Prism:
             elif sexe == "feminin":
                 nom = "Résidente"
             else:
-                nom = "Résident(e)"
+                nom = "Résident·e"
             return [nom, "https://i.imgur.com/0krtchP.png"]
         elif nb == 3:
             if sexe == "masculin":
@@ -199,7 +199,7 @@ class Prism:
             elif sexe == "feminin":
                 nom = "Citoyenne"
             else:
-                nom = "Citoyen(ne)"
+                nom = "Citoyen·ne"
             return [nom, "https://i.imgur.com/O9slR25.png"]
         else:
             if sexe == "masculin":
@@ -207,7 +207,7 @@ class Prism:
             elif sexe == "feminin":
                 nom = "Migrante"
             else:
-                nom = "Migrant(e)"
+                nom = "Migrant·e"
             return [nom, "https://i.imgur.com/6NB1e33.png"]
 
     def rang(self, val: int):
