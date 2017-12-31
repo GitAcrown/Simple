@@ -176,9 +176,9 @@ class Prism:
             cond["ROLES"] = 2
         if "Malsain" in roles or "Modérateur" in roles or "Administrateur" in roles:
             cond["ROLES"] = 3
-        if 10000 <= msg <= 20000:
+        if 10000 <= msg <= 30000:
             cond["RANG"] = 2
-        elif 20000 < msg:
+        elif 30000 < msg:
             cond["RANG"] = 3
         if cond["ROLES"] >= cond["RANG"]:
             nb = cond["ROLES"]
