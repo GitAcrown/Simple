@@ -172,11 +172,11 @@ class Prism:
                 "RANG": 1}
         if "Oldfag" in roles:
             cond["ROLES"] = 2
-        if "Malsain" or "Modérateur" or "Administrateur" in roles:
+        if "Malsain" in roles or "Modérateur" in roles or "Administrateur" in roles:
             cond["ROLES"] = 3
-        if msg >= 10000:
+        if 10000 <= msg <= 20000:
             cond["RANG"] = 2
-        if msg >= 50000:
+        elif 20000 < msg:
             cond["RANG"] = 3
         if cond["ROLES"] >= cond["RANG"]:
             nb = cond["ROLES"]
@@ -184,7 +184,9 @@ class Prism:
             nb = cond["RANG"]
         if nb == 1: return ["Migrant(e)", "https://i.imgur.com/6NB1e33.png"]
         elif nb == 2: return ["Résident(e)", "https://i.imgur.com/YRu4MCm.png"]
-        else: return ["Citoyen(ne)", "https://i.imgur.com/O9slR25.png"]
+        elif nb == 3: return ["Citoyen(ne)", "https://i.imgur.com/O9slR25.png"]
+        else:
+            return ["Migrant(e)", "https://i.imgur.com/6NB1e33.png"]
 
     def rang(self, val: int):
         if val < 50:
