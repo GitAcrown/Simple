@@ -192,7 +192,7 @@ class Prism:
                 nom = "Résidente"
             else:
                 nom = "Résident(e)"
-            return [nom, "https://i.imgur.com/YRu4MCm.png"]
+            return [nom, "https://i.imgur.com/0krtchP.png"]
         elif nb == 3:
             if sexe == "masculin":
                 nom = "Citoyen"
