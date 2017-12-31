@@ -182,9 +182,9 @@ class Prism:
             nb = cond["ROLES"]
         else:
             nb = cond["RANG"]
-        if nb == 1: return ["Migrant", "https://i.imgur.com/9P94Z47.png"]
-        elif nb == 2: return ["Résident", "https://i.imgur.com/SQ1tTC2.png"]
-        else: return ["Citoyen", "https://i.imgur.com/yNQB7lP.png"]
+        if nb == 1: return ["Migrant(e)", "https://i.imgur.com/9P94Z47.png"]
+        elif nb == 2: return ["Résident(e)", "https://i.imgur.com/SQ1tTC2.png"]
+        else: return ["Citoyen(ne)", "https://i.imgur.com/yNQB7lP.png"]
 
     def rang(self, val: int):
         if val < 50:
@@ -340,7 +340,7 @@ class Prism:
         else:
             txt = "Aucune action"
         em.add_field(name="Historique", value=txt)
-        em.set_footer(text="Grade {}{}".format(self.grade(user)[0],
+        em.set_footer(text="{}{}".format(self.grade(user)[0],
                                                 " | Joue à {}".format(user.game) if user.game else ""),
                       icon_url=self.grade(user)[1])
         await self.bot.say(embed=em)
@@ -386,7 +386,7 @@ class Prism:
         txt += "Pseudos\t{}\n".format(", ".join(p["DATA"]["PSEUDOS"]) if p["DATA"]["PSEUDOS"] else "Aucun changement")
         txt += "Surnoms\t{}\n".format(", ".join(p["DATA"]["SURNOMS"]) if p["DATA"]["SURNOMS"] else "Aucun changement")
         dispo = self.app.jeux_verif()
-        jeux = [[r, p["JEUX"][r]] for r in p["JEUX"] if r in dispo]
+        jeux = [p["JEUX"][r] for r in p["JEUX"] if r in dispo]
         txt += "Jeux\t{}\n".format(", ".join(jeux) if jeux else "Aucun detecte")
         txt += "\n--- Emojis / Nb d'utilisations ---\n"
         order = [[r, p["DATA"]["EMOJIS"][r]] for r in p["DATA"]["EMOJIS"]]
