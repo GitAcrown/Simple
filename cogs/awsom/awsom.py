@@ -95,6 +95,12 @@ class Awsom:
                 await self.bot.send_message(message.channel, embed=em)
                 return
 
+            output = re.compile(r"(?:r[ée]p[eè]tes*|dit) (.*)", re.IGNORECASE | re.DOTALL).findall(msg)
+            if output:
+                u = output[0]
+                await self.bot.send_message(message.channel, u)
+                return
+
 def check_folders():
     if not os.path.exists("data/awsom"):
         print("Création du dossier Awsom...")
