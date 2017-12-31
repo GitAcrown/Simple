@@ -164,6 +164,28 @@ class Prism:
             return nl
         return []
 
+    def grade(self, user: discord.Member):
+        data = self.app.open(user)
+        roles = [r.name for r in user.roles]
+        msg = data["DATA"]["MSG_REEL"]
+        cond = {"ROLES": 1,
+                "RANG": 1}
+        if "Oldfag" in roles:
+            cond["ROLES"] = 2
+        if "Malsain" or "Modérateur" or "Administrateur" in roles:
+            cond["ROLES"] = 3
+        if msg >= 10000:
+            cond["RANG"] = 2
+        if msg >= 50000:
+            cond["RANG"] = 3
+        if cond["ROLES"] >= cond["RANG"]:
+            nb = cond["ROLES"]
+        else:
+            nb = cond["RANG"]
+        if nb == 1: return ["Migrant", "https://i.imgur.com/9P94Z47.png"]
+        elif nb == 2: return ["Résident", "https://i.imgur.com/SQ1tTC2.png"]
+        else: return ["Citoyen", "https://i.imgur.com/yNQB7lP.png"]
+
     def rang(self, val: int):
         if val < 50:
             return ["Carton", "https://i.imgur.com/EOlpHHK.png"]
@@ -318,11 +340,9 @@ class Prism:
         else:
             txt = "Aucune action"
         em.add_field(name="Historique", value=txt)
-        em.set_footer(text="Rang {} {}{}".format(self.rang(data["DATA"]["MSG_REEL"])[0],
-                                                 self.qualif(self.since(user, "jour") if self.since(
-                                                     user, "jour") > arrive else arrive, data["DATA"]["MSG_REEL"]),
-                                                 " | Joue à {}".format(user.game) if user.game else ""),
-                      icon_url=self.rang(data["DATA"]["MSG_REEL"])[1])
+        em.set_footer(text="Grade {}{}".format(self.grade(user)[0],
+                                                " | Joue à {}".format(user.game) if user.game else ""),
+                      icon_url=self.grade(user)[1])
         await self.bot.say(embed=em)
 
     @prism_card.command(pass_context=True)
