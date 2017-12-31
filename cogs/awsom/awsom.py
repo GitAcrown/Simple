@@ -1,5 +1,7 @@
+import asyncio
 import os
 import re
+import time
 from copy import deepcopy
 
 import discord
@@ -15,6 +17,23 @@ class Awsom:
         self.bot = bot
         self.sys = dataIO.load_json("data/awsom/sys.json")
         set_lang("fr")
+        self.cycle_task = bot.loop.create_task(self.loop())
+
+        async def loop(self):
+            await self.bot.wait_until_ready()
+            try:
+                await asyncio.sleep(5)  # Temps de mise en route
+                do = True
+                channel = self.bot.get_channel("329071582129422337")
+                while do:
+                    date = time.strftime("%d/%m/%Y", time.localtime())
+                    heure = time.strftime("%H:%M", time.localtime())
+                    if date == "31/12/2017" and heure == "17:43":
+                        await self.bot.send_message(channel, "**Bonne année !!!**")
+                        do = False
+                    await asyncio.sleep(10)
+            except asyncio.CancelledError:
+                pass
 
     async def do(self, message: discord.Message, txt: str):
         new_message = deepcopy(message)
