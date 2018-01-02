@@ -24,7 +24,7 @@ class PRISMApp:
         self.update()
 
     def save(self):
-        dataIO.save_json("data/prism/data.json", "save", self.data)
+        dataIO.save_json("data/prism/data.json", self.data)
         return True
 
     def open(self, user: discord.Member, category: str = None):
@@ -626,10 +626,10 @@ def check_folders():
 def check_files():
     if not os.path.isfile("data/prism/data.json"):
         print("Création et import de PRISM/data")
-        dataIO.save_json("data/prism/data.json", "save", {})
+        dataIO.save_json("data/prism/data.json", {})
     if not os.path.isfile("data/prism/global.json"):
         print("Création et import de PRISM/global")
-        dataIO.save_json("data/prism/global.json", "save", {})
+        dataIO.save_json("data/prism/global.json", {})
 
 
 def setup(bot):
