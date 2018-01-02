@@ -40,8 +40,10 @@ class Systex:
         return lst
 
     @commands.command(pass_context=True, hidden=True)
-    async def sysprism(self):
+    async def sysprism(self, ctx):
         """Permet de s'assurer de la connexion entre Systex et Prism"""
+        await self.bot.say("**Votre grade est {} ({})**".format(self.app.grade(ctx.message.author)[0],
+                                                                self.app.grade(ctx.message.author)[2]))
 
     def levenshtein(self, s1, s2):
         if len(s1) < len(s2):
