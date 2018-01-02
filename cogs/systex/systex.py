@@ -39,6 +39,10 @@ class Systex:
         lst = [self.stk["STK"][e]["NOM"] for e in self.stk["STK"]]
         return lst
 
+    @commands.command(pass_context=True, hidden=True)
+    async def sysprism(self):
+        """Permet de s'assurer de la connexion entre Systex et Prism"""
+
     def levenshtein(self, s1, s2):
         if len(s1) < len(s2):
             m = s1
