@@ -117,9 +117,12 @@ class Prism:
         await self.bot.wait_until_ready()
         try:
             await asyncio.sleep(6)  # Temps de mise en route
+            n = 0
             while True:
                 self.app.save()
                 await asyncio.sleep(180)
+                print("MAJ PRISM #{} réalisée avec succès".format(n))
+                n += 1
         except asyncio.CancelledError:
             pass
 
