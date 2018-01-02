@@ -91,7 +91,7 @@ class Systex:
         if tags is None: tags = []
         grade = self.app.grade(auteur)[2]
         if clef not in self.stk:
-            autorise = False if not auteur.server_permissions.manage_messages or grade >= 3 else True
+            autorise = False if not auteur.server_permissions.manage_messages or grade < 3 else True
             if autorise:
                 self.stk["STK"][clef] = {"NOM": nom,
                                          "CHEMIN": chemin,
