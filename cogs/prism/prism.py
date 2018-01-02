@@ -11,6 +11,7 @@ import time
 import discord
 from discord.ext import commands
 
+from .utils import checks
 from .utils.dataIO import dataIO
 
 
@@ -60,9 +61,9 @@ class PRISMApp:
                 "SYS": {"BIO": None,
                         "QUIT_SAVE": [],
                         "D_VU": None,
-                        "SEXE": "neutre"},
-                "ECO": {"SOLDE": 0,
-                        "TRS": []}}
+                        "SEXE": "neutre",
+                        "LIMITE_GRADE": None},
+                "ECO": {"SOLDE": 0}}
         for e in tree:
             for i in tree[e]:
                 if user:
@@ -170,6 +171,7 @@ class Prism:
         roles = [r.name for r in user.roles]
         msg = data["DATA"]["MSG_REEL"]
         sexe = data["SYS"]["SEXE"]
+        limite = data["SYS"]["LIMITE_GRADE"]
         cond = {"ROLES": 1,
                 "RANG": 1}
         if "Oldfag" in roles:
@@ -185,6 +187,8 @@ class Prism:
         else:
             nb = cond["RANG"]
         nom = ""
+        if nb >= limite:
+            nb = limite
         if nb == 2:
             if sexe == "masculin":
                 nom = "Résident"
@@ -311,7 +315,8 @@ class Prism:
         formatname = user.name if user.display_name == user.name else "{} «{}»".format(user.name, user.display_name)
         em = discord.Embed(title=formatname, description=data["SYS"]["BIO"], color=self.color_status(user))
         em.set_thumbnail(url=user.avatar_url if user.avatar_url else self.fake_avatar())
-        em.add_field(name="Identifiants", value="**ID:** {}\n**SID:** {}".format(user.id, data["SID"]))
+        em.add_field(name="Données", value="**ID:** {}\n**SID:** {}\n**Solde:** {}*BK*".format(user.id, data["SID"],
+                                                                                               data["ECO"]["SOLDE"]))
         creation = (timestamp - user.created_at).days
         datecreation = user.created_at.strftime("%d/%m/%Y")
         arrive = (timestamp - user.joined_at).days
@@ -414,6 +419,7 @@ class Prism:
         txt = ">>> Données de {} ({}) <<<\n".format(user.name, user.id)
         txt += "System IDentificator (SID)\t{}\n".format(p["SID"])
         txt += "Origine estimee\t{}\n".format(strorigine)
+        txt += "Solde BitKheys\t{}\n".format(p["ECO"]["SOLDE"])
         txt += "Bio\t{}\n".format(p["SYS"]["BIO"])
         txt += "\n--- Stats ---\n"
         txt += "Nb msg reel\t{}\n".format(p["DATA"]["MSG_REEL"])
@@ -475,6 +481,27 @@ class Prism:
             user.name) if user != ctx.message.author else "Votre bibliothèque", description=txt)
         em.set_footer(text="Du plus au moins joué | Certains jeux peuvent ne pas avoir été détectés")
         await self.bot.say(embed=em)
+
+    @commands.command(pass_context=True)
+    @checks.admin_or_permissions(kick_members=True)
+    async def limite(self, ctx, user: discord.Member, lim: int):
+        """Permet de limiter le grade du membre visé
+        1 - Migrant(e) maximum
+        2 - Résident(e) maximum
+        3 - Aucune limitation"""
+        data = self.app.open(user, "SYS")
+        limite = data["LIMITE_GRADE"]
+        if lim == 1:
+            limite = lim
+            await self.bot.say("**Succès** | Le membre sera limité au grade *Migrant*")
+        elif lim == 2:
+            limite = lim
+            await self.bot.say("**Succès** | Le membre sera limité au grade *Résident*")
+        elif lim == 3:
+            limite = None
+            await self.bot.say("**Succès** | Le membre ne sera pas limité dans son grade")
+        else:
+            await self.bot.say("**Impossible** | La valeur doit être entre 1 et 3 (Voir `&help limite`)")
 
 # TRIGGERS ----------------------------------------------
 
