@@ -95,7 +95,7 @@ class PRISMApp:
         return dispo
 
     def grade(self, user: discord.Member):
-        data = self.app.open(user)
+        data = self.open(user)
         roles = [r.name for r in user.roles]
         msg = data["DATA"]["MSG_REEL"]
         sexe = data["SYS"]["SEXE"]
