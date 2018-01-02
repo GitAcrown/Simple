@@ -455,11 +455,12 @@ class Systex:
         Supporte l'upload d'image à travers Discord"""
         author = ctx.message.author
         server = ctx.message.server
+        grade = self.app.grade(author)[2]
         if not tags: tags = []
         if url == "":
             url = None
         if nom not in self.list_stk():
-            if author.server_permissions.manage_messages:
+            if author.server_permissions.manage_messages or grade == 3:
                 msgplus = "**Sticker ajouté avec succès !** | Il est disponible avec :{}:".format(nom)
             else:
                 msgplus = "**En attente d'approbation** | Un modérateur pourra approuver le sticker avec '&stk approb {}'".format(nom)
