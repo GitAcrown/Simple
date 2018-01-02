@@ -487,21 +487,20 @@ class Prism:
 
     @commands.command(pass_context=True)
     @checks.admin_or_permissions(kick_members=True)
-    async def limite(self, ctx, user: discord.Member, lim: int):
+    async def limite(self, ctx, user: discord.Member, lim: int = 3):
         """Permet de limiter le grade du membre visé
         1 - Migrant(e) maximum
         2 - Résident(e) maximum
         3 - Aucune limitation"""
         data = self.app.open(user, "SYS")
-        limite = data["LIMITE_GRADE"]
         if lim == 1:
-            limite = lim
+            data["LIMITE_GRADE"] = lim
             await self.bot.say("**Succès** | Le membre sera limité au grade *Migrant*")
         elif lim == 2:
-            limite = lim
+            data["LIMITE_GRADE"] = lim
             await self.bot.say("**Succès** | Le membre sera limité au grade *Résident*")
         elif lim == 3:
-            limite = None
+            data["LIMITE_GRADE"] = None
             await self.bot.say("**Succès** | Le membre ne sera pas limité dans son grade")
         else:
             await self.bot.say("**Impossible** | La valeur doit être entre 1 et 3 (Voir `&help limite`)")
