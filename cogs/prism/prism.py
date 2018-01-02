@@ -12,7 +12,7 @@ import discord
 from discord.ext import commands
 
 from .utils import checks
-from .utils.dataIO import dataIO
+from .utils.dataIO import dataIO, fileIO
 
 
 class PRISMApp:
@@ -24,7 +24,7 @@ class PRISMApp:
         self.update()
 
     def save(self):
-        dataIO.save_json("data/prism/data.json", self.data)
+        fileIO("data/prism/data.json", "save", self.data)
         return True
 
     def open(self, user: discord.Member, category: str = None):
