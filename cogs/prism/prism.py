@@ -171,7 +171,7 @@ class Prism:
         roles = [r.name for r in user.roles]
         msg = data["DATA"]["MSG_REEL"]
         sexe = data["SYS"]["SEXE"]
-        limite = data["SYS"]["LIMITE_GRADE"]
+        limite = data["SYS"]["LIMITE_GRADE"] if data["SYS"]["LIMITE_GRADE"] else 3
         cond = {"ROLES": 1,
                 "RANG": 1}
         if "Oldfag" in roles:
