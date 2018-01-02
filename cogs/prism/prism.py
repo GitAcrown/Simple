@@ -116,10 +116,10 @@ class Prism:
     async def loop(self):
         await self.bot.wait_until_ready()
         try:
-            await asyncio.sleep(5)  # Temps de mise en route
+            await asyncio.sleep(6)  # Temps de mise en route
             while True:
                 self.app.save()
-                await asyncio.sleep(300)
+                await asyncio.sleep(180)
         except asyncio.CancelledError:
             pass
 
