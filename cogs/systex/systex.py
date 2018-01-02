@@ -27,6 +27,7 @@ class Systex:
         self.bot = bot
         self.stk = dataIO.load_json("data/systex/stk.json")
         self.user = dataIO.load_json("data/systex/user.json")
+        self.app = self.bot.get_cog('Prism').app
         self.cycle_task = bot.loop.create_task(self.systex_loop())
 
     def save(self):
@@ -84,8 +85,9 @@ class Systex:
     def add_sticker(self, clef, nom: str, chemin, auteur: discord.Member, url, autbis=None, importe=None,
                     tags=None):
         if tags is None: tags = []
+        grade = self.app.grade(auteur)[2]
         if clef not in self.stk:
-            autorise = False if not auteur.server_permissions.manage_messages else True
+            autorise = False if not auteur.server_permissions.manage_messages or grade < 3 else True
             if autorise:
                 self.stk["STK"][clef] = {"NOM": nom,
                                          "CHEMIN": chemin,
@@ -441,8 +443,8 @@ class Systex:
         <nom> = Nom de votre sticker
         [url] = Optionnel, permet de télécharger le sticker depuis un lien (Noelshack, Imgur ou Giphy)
         [tags] = Optionnel, permet d'ajouter des tags afin de simplifier la recherche
-        Vous pouvez ajouter des tags sans mettre l'url en remplaçant celui-ci par \"\"
-        >>> Supporte l'upload d'image à travers Discord"""
+        Vous pouvez ajouter des tags sans mettre l'url en remplaçant celui-ci par
+        Supporte l'upload d'image à travers Discord"""
         author = ctx.message.author
         server = ctx.message.server
         if not tags: tags = []

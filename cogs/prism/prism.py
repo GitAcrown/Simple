@@ -94,6 +94,54 @@ class PRISMApp:
                         dispo.append(g)
         return dispo
 
+    def grade(self, user: discord.Member):
+        data = self.app.open(user)
+        roles = [r.name for r in user.roles]
+        msg = data["DATA"]["MSG_REEL"]
+        sexe = data["SYS"]["SEXE"]
+        limite = data["SYS"]["LIMITE_GRADE"] if data["SYS"]["LIMITE_GRADE"] else 3
+        cond = {"ROLES": 1,
+                "RANG": 1}
+        if "Oldfag" in roles:
+            cond["ROLES"] = 2
+        if "Malsain" in roles or "Modérateur" in roles or "Administrateur" in roles:
+            cond["ROLES"] = 3
+        if 10000 <= msg <= 30000:
+            cond["RANG"] = 2
+        elif 30000 < msg:
+            cond["RANG"] = 3
+        if cond["ROLES"] >= cond["RANG"]:
+            nb = cond["ROLES"]
+        else:
+            nb = cond["RANG"]
+        nom = ""
+        if nb >= limite:
+            nb = limite
+        if nb == 2:
+            if sexe == "masculin":
+                nom = "Résident"
+            elif sexe == "feminin":
+                nom = "Résidente"
+            else:
+                nom = "Résident·e"
+            return [nom, "https://i.imgur.com/0krtchP.png", 2]
+        elif nb == 3:
+            if sexe == "masculin":
+                nom = "Citoyen"
+            elif sexe == "feminin":
+                nom = "Citoyenne"
+            else:
+                nom = "Citoyen·ne"
+            return [nom, "https://i.imgur.com/O9slR25.png", 3]
+        else:
+            if sexe == "masculin":
+                nom = "Migrant"
+            elif sexe == "feminin":
+                nom = "Migrante"
+            else:
+                nom = "Migrant·e"
+            return [nom, "https://i.imgur.com/6NB1e33.png", 1]
+
 
 class Prism:
     """PRISM | Système aggréateur de données et services spécialisés & personnalisés (Version light)"""
@@ -168,54 +216,6 @@ class Prism:
             nl = liste[:top]
             return nl
         return []
-
-    def grade(self, user: discord.Member):
-        data = self.app.open(user)
-        roles = [r.name for r in user.roles]
-        msg = data["DATA"]["MSG_REEL"]
-        sexe = data["SYS"]["SEXE"]
-        limite = data["SYS"]["LIMITE_GRADE"] if data["SYS"]["LIMITE_GRADE"] else 3
-        cond = {"ROLES": 1,
-                "RANG": 1}
-        if "Oldfag" in roles:
-            cond["ROLES"] = 2
-        if "Malsain" in roles or "Modérateur" in roles or "Administrateur" in roles:
-            cond["ROLES"] = 3
-        if 10000 <= msg <= 30000:
-            cond["RANG"] = 2
-        elif 30000 < msg:
-            cond["RANG"] = 3
-        if cond["ROLES"] >= cond["RANG"]:
-            nb = cond["ROLES"]
-        else:
-            nb = cond["RANG"]
-        nom = ""
-        if nb >= limite:
-            nb = limite
-        if nb == 2:
-            if sexe == "masculin":
-                nom = "Résident"
-            elif sexe == "feminin":
-                nom = "Résidente"
-            else:
-                nom = "Résident·e"
-            return [nom, "https://i.imgur.com/0krtchP.png"]
-        elif nb == 3:
-            if sexe == "masculin":
-                nom = "Citoyen"
-            elif sexe == "feminin":
-                nom = "Citoyenne"
-            else:
-                nom = "Citoyen·ne"
-            return [nom, "https://i.imgur.com/O9slR25.png"]
-        else:
-            if sexe == "masculin":
-                nom = "Migrant"
-            elif sexe == "feminin":
-                nom = "Migrante"
-            else:
-                nom = "Migrant·e"
-            return [nom, "https://i.imgur.com/6NB1e33.png"]
 
     def rang(self, val: int):
         if val < 50:
@@ -372,9 +372,9 @@ class Prism:
         else:
             txt = "Aucune action"
         em.add_field(name="Historique", value=txt)
-        em.set_footer(text="{}{}".format(self.grade(user)[0],
+        em.set_footer(text="{}{}".format(self.app.grade(user)[0],
                                                 " | Joue à {}".format(user.game) if user.game else ""),
-                      icon_url=self.grade(user)[1])
+                      icon_url=self.app.grade(user)[1])
         await self.bot.say(embed=em)
 
     @prism_card.command(pass_context=True)
