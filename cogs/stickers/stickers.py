@@ -70,7 +70,7 @@ class Stickers:
 
     def get_stk(self, server: discord.Server, nom):
         if server.id not in self.stk:
-            self.stk[server.id] = {}
+            self.stk[server.id] = {"STK": {}, "OPT": {}}
         for n in self.stk[server.id]["STK"]:
             if nom == self.stk[server.id]["STK"][n]["NOM"]:
                 return n
@@ -79,7 +79,7 @@ class Stickers:
 
     def get_stk_opt(self, server: discord.Server, nom):
         if server.id not in self.stk:
-            self.stk[server.id] = {}
+            self.stk[server.id] = {"STK": {}, "OPT": {}}
         for n in self.stk[server.id]["OPT"]["APPROB"]:
             if nom == self.stk[server.id]["OPT"]["APPROB"][n]["NOM"]:
                 return n
@@ -91,7 +91,7 @@ class Stickers:
         if tags is None: tags = []
         server = auteur.server
         if server.id not in self.stk:
-            self.stk[server.id] = {}
+            self.stk[server.id] = {"STK": {}, "OPT": {}}
         if clef not in self.stk[server.id]:
             autorise = False if not auteur.server_permissions.manage_messages else True
             if autorise:
@@ -301,7 +301,7 @@ class Stickers:
         author = ctx.message.author
         server = ctx.message.server
         if server.id not in self.stk:
-            self.stk[server.id] = {}
+            self.stk[server.id] = {"STK": {}, "OPT": {}}
         if not tags: tags = []
         if url == "":
             url = None
@@ -375,7 +375,7 @@ class Stickers:
         """Supprimer un sticker"""
         server = ctx.message.server
         if server.id not in self.stk:
-            self.stk[server.id] = {}
+            self.stk[server.id] = {"STK": {}, "OPT": {}}
         for r in self.stk[server.id]["STK"]:
             if self.stk[server.id]["STK"][r]["NOM"] == nom:
                 chemin = self.stk[server.id]["STK"][r]["CHEMIN"]
@@ -453,7 +453,7 @@ class Stickers:
         Ajouter des tags = meilleure recherche de stickers"""
         server = ctx.message.server
         if server.id not in self.stk:
-            self.stk[server.id] = {}
+            self.stk[server.id] = {"STK": {}, "OPT": {}}
         for s in self.stk[server.id]["STK"]:
             if "TAGS" not in self.stk[server.id]["STK"][s]:
                 self.stk[server.id]["STK"][s]["TAGS"] = []
@@ -509,7 +509,7 @@ class Stickers:
         author = ctx.message.author
         server = ctx.message.server
         if server.id not in self.stk:
-            self.stk[server.id] = {}
+            self.stk[server.id] = {"STK": {}, "OPT": {}}
         if nom == "fullreset":
             self.stk[server.id]["OPT"]["APPROB"] = {}
             self.save()
@@ -564,7 +564,7 @@ class Stickers:
         """Editer un sticker : Nom, Url, Affichage..."""
         server = ctx.message.server
         if server.id not in self.stk:
-            self.stk[server.id] = {}
+            self.stk[server.id] = {"STK": {}, "OPT": {}}
         for r in self.stk[server.id]["STK"]:
             if nom == self.stk[server.id]["STK"][r]["NOM"]:
                 stk = self.stk[server.id]["STK"][r]
