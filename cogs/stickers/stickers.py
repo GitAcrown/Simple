@@ -691,6 +691,8 @@ class Stickers:
 
     async def stkmsg(self, message):
         author = message.author
+        if not hasattr(message, "server"):
+            return
         server = message.server
         channel = message.channel
         if author.id in self.user:
