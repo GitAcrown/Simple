@@ -143,12 +143,13 @@ class PRISMApp:
             return [nom, "https://i.imgur.com/6NB1e33.png", 1]
 
 
-class Prism:
+class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     """PRISM | Système aggréateur de données et services spécialisés & personnalisés (Version light)"""
 
     def __init__(self, bot):
         self.bot = bot
         self.app = PRISMApp(bot, "data/prism/data.json")  # API\\PRISM
+        self.glb = dataIO.load_json("data/prism/global.json")
         self.quit_msg = ["Au revoir, ***{}*** petit ange.", "***{}*** a quitté notre monde.",
                          "***{}*** a quitté la partie.", "***{}*** s'est déconnecté un peu trop violemment",
                          "RIP ***{}*** :cry:", "Bye bye *{}*", "***{}*** a appuyé sur le mauvais bouton...",
@@ -168,11 +169,28 @@ class Prism:
             n = 0
             while True:
                 self.app.save()
-                await asyncio.sleep(180)
+                fileIO("data/prism/global.json", "save", self.glb)
+                await asyncio.sleep(300)
                 print("MAJ PRISM #{} réalisée avec succès".format(n))
                 n += 1
         except asyncio.CancelledError:
             pass
+
+    def get_glb(self, server: discord.Server):
+        date = time.strftime("%d/%m/%Y", time.localtime())
+        heure = time.strftime("%H", time.localtime())
+        if server.id not in self.glb:
+            self.glb[server.id] = {}
+        if date not in self.glb[server.id]:
+            self.glb[server.id][date] = {}
+        if heure not in self.glb[server.id][date]:
+            self.glb[server.id][date][heure] = {"CHANNELS": {},
+                                                "JOIN": 0,
+                                                "RETURN": 0,
+                                                "QUIT": 0,
+                                                "BAN": 0,
+                                                "EMOJIS": {}}
+        return self.glb[server.id][date][heure]
 
     def color_status(self, user: discord.Member):
         s = user.status
@@ -297,6 +315,46 @@ class Prism:
         else:
             return ""
 
+    def day_stats_num(self, server: discord.Server, date: str, cat: str):
+        val = 0
+        cat = cat.upper()
+        if server.id in self.glb:
+            if date in self.glb[server.id]:
+                for h in self.glb[server.id][date]:
+                    if cat in self.glb[server.id][date][h]:
+                        val += self.glb[server.id][date][h][cat]
+                return val
+            else:
+                return 0
+        else:
+            return False
+
+    def day_stats_dict(self, server: discord.Server, date: str, cat: str):
+        data = {}
+        cat = cat.upper()
+        if server.id in self.glb:
+            if date in self.glb[server.id]:
+                for h in self.glb[server.id][date]:
+                    for e in self.glb[server.id][date][h][cat]:
+                        if e not in data:
+                            data[e] = self.glb[server.id][date][h][cat][e]
+                        else:
+                            data[e] += self.glb[server.id][date][h][cat][e]
+                return data
+            else:
+                return data
+        else:
+            return False
+
+    def botmsg_count(self, server: discord.Server):
+        count = 0
+        for member in server.members:
+            if member.bot:
+                count += self.app.open(member, "DATA")["MSG_PART"]
+        return count
+
+# COMMANDES +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
     @commands.group(name="card", aliases=["c"], pass_context=True, invoke_without_command=True, no_pm=True)
     async def prism_card(self, ctx, user: discord.Member = None):
         """Ensemble de commandes relatives à la Carte de Membre fournie par le système PRISM
@@ -366,9 +424,9 @@ class Prism:
             b.reverse()
             for e in b:
                 if e[1] == today:
-                    txt += "**{}** - *{}*\n".format(e[0], e[2])
+                    txt += "**{}** - {}\n".format(e[0], e[2])
                 else:
-                    txt += "**{}** - *{}*\n".format(e[1], e[2])
+                    txt += "**{}** - {}\n".format(e[1], e[2])
         else:
             txt = "Aucune action"
         em.add_field(name="Historique", value=txt)
@@ -505,15 +563,218 @@ class Prism:
         else:
             await self.bot.say("**Impossible** | La valeur doit être entre 1 et 3 (Voir `&help limite`)")
 
+    @commands.group(name="global", aliases=["g"], pass_context=True, invoke_without_command=True, no_pm=True)
+    async def prism_global(self, ctx):
+        """Ensemble de commandes relatives aux données globales récoltées par PRISM
+
+        Par défaut, renvoie un résumé des statistiques dans le temps"""
+        if ctx.invoked_subcommand is None:
+            await ctx.invoke(self.stats)
+
+    def check(self, reaction, user):
+        return not user.bot
+
+    @prism_global.command(pass_context=True)
+    async def stats(self, ctx):
+        """Affiche un résumé clair des statistiques récoltées par PRISM"""
+        server = ctx.message.server
+        rewind = 0
+        menu = None
+        while True:
+            glb = self.glb[
+                server.id]  # On prend l'ENSEMBLE des données du serveur, pas les actuelles comme self.get_glb()
+            today = time.strftime("%d/%m/%Y", time.localtime())
+            if rewind > 0:
+                date = time.strftime("%d/%m/%Y",
+                                     time.localtime(time.mktime(time.strptime(today, "%d/%m/%Y")) - (86400 * rewind)))
+            elif rewind == -1:
+                date = "now"
+            else:
+                date = today
+
+            if date != "now":
+                if date in glb:
+                    em = discord.Embed(title="Données | **{}**".format(date if date != today else "Aujourd'hui"))
+                    em.set_thumbnail(url=server.icon_url)
+
+                    stats = self.day_stats_dict(server, date, "CHANNELS")
+                    stats = [[self.bot.get_channel(e), stats[e]] for e in stats]
+                    stats = sorted(stats, key=operator.itemgetter(1), reverse=True)
+                    msgtxt = ""
+                    total = 0
+                    for nom, num in stats:
+                        msgtxt += "**{}.** {}\n".format(nom, num)
+                        total += num
+                    msgtxt += "\n**Total.** {}\n".format(total)
+                    botmsg = self.botmsg_count(server)
+                    msgtxt += "**Bots exclus.** {}\n".format(total - botmsg)
+                    em.add_field(name="Messages", value=msgtxt)
+
+                    data = {}
+                    for h in glb[date]:
+                        if h not in data:
+                            data[h] = 0
+                        for chan in glb[date][h]["CHANNELS"]:
+                            data[h] += glb[date][h]["CHANNELS"][chan]
+                    stats = [[h, data[h]] for h in data]
+                    stats = sorted(stats, key=operator.itemgetter(1), reverse=True)[:3]
+                    msgact = ""
+                    for heure, num in stats:
+                        msgact += "**{}.** {}\n".format(heure, num)
+                    em.add_field(name="Pics d'activité", value=msgact)
+
+                    entree = self.day_stats_num(server, date, "JOIN")
+                    revenants = self.day_stats_num(server, date, "RETURN")
+                    sorties = self.day_stats_num(server, date, "QUIT")
+                    bans = self.day_stats_num(server, date, "BAN")
+                    solde = entree - sorties
+                    msgmir = "**Entrées.** {}\n" \
+                             "**- dont revenants.** {}\n" \
+                             "**Sorties.** {}\n" \
+                             "**- dont bannis.** {}\n" \
+                             "**Solde.** {}".format(entree, revenants, sorties, bans, solde)
+                    em.add_field(name="Flux migratoire", value=msgmir)
+
+                    stats = self.day_stats_dict(server, date, "EMOJIS")
+                    stats = [[e, stats[e]] for e in stats]
+                    stats = sorted(stats, key=operator.itemgetter(1), reverse=True)[:5]
+                    msgemo = ""
+                    for nom, num in stats:
+                        msgemo += "**{}** - {}\n".format(nom, num)
+                    em.add_field(name="Emojis populaires", value=msgemo)
+
+                    em.set_footer(text="Naviguez avec les réactions ci-dessous")
+                else:
+                    em = discord.Embed(title="Données | **{}**".format(date if date != today else "Aujourd'hui"),
+                                       description="Aucune donnée n'est disponible pour ce jour.")
+                    em.set_thumbnail(url=server.icon_url)
+                    em.set_footer(text="Naviguez avec les réactions ci-dessous")
+            else:
+                heure = time.strftime("%H", time.localtime())
+                now = self.get_glb(server)
+                online = str(len([m.status for m in server.members if
+                                  str(m.status) == "online" or str(m.status) == "idle" or str(m.status) == "dnd"]))
+                total_users = str(len(server.members))
+                passed = (ctx.message.timestamp - server.created_at).days
+                presmsg = "**Nom.** {}\n" \
+                          "**ID.** {}\n" \
+                          "**Région.** {}\n" \
+                          "**Propriétaire.** {}\n" \
+                          "**Membres.** {}/{}\n" \
+                          "**Age.** {}j".format(server.name, server.id, server.region, server.owner, online,
+                                                total_users, passed)
+                em = discord.Embed(title="Données | En direct ({}h)".format(heure), description=presmsg)
+                em.set_thumbnail(url=server.icon_url)
+
+                stats = [[self.bot.get_channel(e), now["CHANNELS"][e]] for e in now["CHANNELS"]]
+                stats = sorted(stats, key=operator.itemgetter(1), reverse=True)
+                msgtxt = ""
+                total = 0
+                for nom, num in stats:
+                    msgtxt += "**{}.** {}\n".format(nom, num)
+                    total += num
+                msgtxt += "\n**Total.** {}\n".format(total)
+                botmsg = self.botmsg_count(server)
+                msgtxt += "**Bots exclus.** {}\n".format(total - botmsg)
+                em.add_field(name="Messages", value=msgtxt)
+
+                entree = now["JOIN"]
+                revenants = now["RETURN"]
+                sorties = now["QUIT"]
+                bans = now["BAN"]
+                solde = entree - sorties
+                msgmir = "**Entrées.** {}\n" \
+                         "**- dont revenants.** {}\n" \
+                         "**Sorties.** {}\n" \
+                         "**- dont bannis.** {}\n" \
+                         "**Solde.** {}".format(entree, revenants, sorties, bans, solde)
+                em.add_field(name="Flux migratoire", value=msgmir)
+
+                stats = [[e, now["EMOJIS"][e]] for e in now["EMOJIS"]]
+                stats = sorted(stats, key=operator.itemgetter(1), reverse=True)[:5]
+                msgemo = ""
+                for nom, num in stats:
+                    msgemo += "**{}** - {}\n".format(nom, num)
+                em.add_field(name="Emojis populaires", value=msgemo)
+
+                em.set_footer(text="Naviguez avec les réactions ci-dessous")
+
+            if menu is None:
+                menu = await self.bot.say(embed=em)
+            else:
+                try:
+                    await self.bot.clear_reactions(menu)
+                except:
+                    pass
+                menu = await self.bot.edit_message(menu, embed=em)
+            emolist = ["⬅", "⏬", "⏺"]
+            if rewind > -1:
+                await self.bot.add_reaction(menu, "⬅")
+                await self.bot.add_reaction(menu, "⏬")
+                if rewind > 0:
+                    await self.bot.add_reaction(menu, "➡")
+                    emolist.append("➡")
+            else:
+                await self.bot.add_reaction(menu, "⏹")
+                await self.bot.add_reaction(menu, "🔄")
+                emolist = ["⏹", "🔄"]
+
+            act = await self.bot.wait_for_reaction(emolist, message=menu, timeout=60,
+                                                   check=self.check)
+            if act is None:
+                em.set_footer(text="-- Session expirée --")
+                await self.bot.edit_message(menu, embed=em)
+                try:
+                    await self.bot.clear_reactions(menu)
+                except:
+                    pass
+                return
+            elif act.reaction.emoji == "⬅":
+                rewind += 1
+            elif act.reaction.emoji == "⏬":
+                em.set_footer(text="Entrez la date désirée ci-dessous (dd/mm/aaaa)")
+                await self.bot.edit_message(menu, embed=em)
+                rep = await self.bot.wait_for_message(author=act.user, channel=menu.channel, timeout=30)
+                if rep is None:
+                    em.set_footer(text="TIMEOUT | Retour au menu...")
+                    await self.bot.edit_message(menu, embed=em)
+                    await asyncio.sleep(0.5)
+                elif len(rep.content) == 10:
+                    rewind += int((time.mktime(time.strptime(date, "%d/%m/%Y")) - time.mktime(
+                        time.strptime(rep.content, "%d/%m/%Y"))) / 86400)
+                    try:
+                        await self.bot.delete_message(rep)
+                    except:
+                        pass
+                else:
+                    em.set_footer(text="Invalide | Retour au menu...")
+                    await self.bot.edit_message(menu, embed=em)
+                    await asyncio.sleep(0.5)
+            elif act.reaction.emoji == "➡":
+                rewind -= 1
+            elif act.reaction.emoji == "⏺":
+                rewind = -1
+            elif act.reaction.emoji == "🔄":
+                continue
+            elif act.reaction.emoji == "⏹":
+                rewind = 0
+            else:
+                em.set_footer(text="Invalide !")
+                await self.bot.edit_message(menu, embed=em)
+                continue
+
+
 # TRIGGERS ----------------------------------------------
 
     async def prism_msg(self, message):
-        if not message.server:
+        if not hasattr(message, "server"):
             return
         date = time.strftime("Le %d/%m/%Y à %H:%M", time.localtime())
         author = message.author
+        channel = message.channel
         server = message.server
         p = self.app.open(author)
+        glb = self.get_glb(server)
         mots = len(message.content.split(" "))
         lettres = len(message.content)
         p["DATA"]["MSG_REEL"] += 1
@@ -523,15 +784,17 @@ class Prism:
         p["DATA"]["LETTRES_REEL"] += lettres
         p["DATA"]["LETTRES_PART"] += lettres
         p["SYS"]["D_VU"] = date
+        glb["CHANNELS"][channel.id] = glb["CHANNELS"][channel.id] + 1 if channel.id in glb["CHANNELS"] else 1
         if ":" in message.content:
             output = re.compile(':(.*?):', re.DOTALL | re.IGNORECASE).findall(message.content)
             if output:
                 for i in output:
                     if i in [e.name for e in server.emojis]:
                         p["DATA"]["EMOJIS"][i] = p["DATA"]["EMOJIS"][i] + 1 if i in p["DATA"]["EMOJIS"] else 1
+                        glb["EMOJIS"][i] = glb["EMOJIS"][i] + 1 if i in glb["EMOJIS"] else 1
 
     async def prism_msgdel(self, message):
-        if not message.server:
+        if not hasattr(message, "server"):
             return
         author = message.author
         p = self.app.open(author)
@@ -543,27 +806,36 @@ class Prism:
 
     async def prism_react(self, reaction, author):
         message = reaction.message
-        if not message.server:
+        if not hasattr(message, "server"):
             return
         server = message.server
         p = self.app.open(author)
+        glb = self.get_glb(server)
         if type(reaction.emoji) is str:
             name = reaction.emoji
         else:
             name = reaction.emoji.name
         if name in [e.name for e in server.emojis]:
             p["DATA"]["EMOJIS"][name] = p["DATA"]["EMOJIS"][name] + 1 if name in p["DATA"]["EMOJIS"] else 1
+            glb["EMOJIS"][name] = glb["EMOJIS"][name] + 1 if name in glb["EMOJIS"] else 1
 
     async def prism_join(self, user: discord.Member):
         p = self.app.open(user, "DATA")
+        server = user.server
+        glb = self.get_glb(server)
+        glb["JOIN"] += 1
         p["JOIN"] += 1
         if p["QUIT"] > 0:
             self.app.add_past(user, "Retour sur le serveur")
+            glb["RETURN"] += 1
         else:
             self.app.add_past(user, "Arrivée sur le serveur")
 
     async def prism_quit(self, user: discord.Member):
         p = self.app.open(user)
+        server = user.server
+        glb = self.get_glb(server)
+        glb["QUIT"] += 1
         p["DATA"]["QUIT"] += 1
         p["SYS"]["QUIT_SAVE"] = [r.name for r in user.roles]
         self.app.add_past(user, "Quitte le serveur")
@@ -607,6 +879,9 @@ class Prism:
 
     async def prism_ban(self, user):
         p = self.app.open(user)
+        server = user.server
+        glb = self.get_glb(server)
+        glb["BAN"] += 1
         p["DATA"]["QUIT"] += 1
         p["DATA"]["BAN"] += 1
         p["SYS"]["QUIT_SAVE"] = [r.name for r in user.roles]
