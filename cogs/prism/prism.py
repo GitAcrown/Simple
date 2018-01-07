@@ -598,17 +598,18 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                     em.set_thumbnail(url=server.icon_url)
 
                     stats = self.day_stats_dict(server, date, "CHANNELS")
-                    stats = [[self.bot.get_channel(e), stats[e]] for e in stats]
-                    stats = sorted(stats, key=operator.itemgetter(1), reverse=True)
-                    msgtxt = ""
-                    total = 0
-                    for nom, num in stats:
-                        msgtxt += "**{}.** {}\n".format(nom, num)
-                        total += num
-                    msgtxt += "\n**Total.** {}\n".format(total)
-                    botmsg = self.botmsg_count(server)
-                    msgtxt += "**Bots exclus.** {}\n".format(total - botmsg)
-                    em.add_field(name="Messages", value=msgtxt)
+                    if stats:
+                        stats = [[self.bot.get_channel(e), stats[e]] for e in stats]
+                        stats = sorted(stats, key=operator.itemgetter(1), reverse=True)
+                        msgtxt = ""
+                        total = 0
+                        for nom, num in stats:
+                            msgtxt += "**{}.** {}\n".format(nom, num)
+                            total += num
+                        msgtxt += "\n**Total.** {}\n".format(total)
+                        botmsg = self.botmsg_count(server)
+                        msgtxt += "**Bots exclus.** {}\n".format(total - botmsg)
+                        em.add_field(name="Messages", value=msgtxt)
 
                     data = {}
                     for h in glb[date]:
@@ -636,12 +637,13 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                     em.add_field(name="Flux migratoire", value=msgmir)
 
                     stats = self.day_stats_dict(server, date, "EMOJIS")
-                    stats = [[e, stats[e]] for e in stats]
-                    stats = sorted(stats, key=operator.itemgetter(1), reverse=True)[:5]
-                    msgemo = ""
-                    for nom, num in stats:
-                        msgemo += "**{}** - {}\n".format(nom, num)
-                    em.add_field(name="Emojis populaires", value=msgemo)
+                    if stats:
+                        stats = [[e, stats[e]] for e in stats]
+                        stats = sorted(stats, key=operator.itemgetter(1), reverse=True)[:5]
+                        msgemo = ""
+                        for nom, num in stats:
+                            msgemo += "**{}** - {}\n".format(nom, num)
+                        em.add_field(name="Emojis populaires", value=msgemo)
 
                     em.set_footer(text="Naviguez avec les réactions ci-dessous")
                 else:
