@@ -389,7 +389,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         dmsg = data["SYS"]["D_VU"]
         em.add_field(name="Dates", value="**Création:** {} (**{}**j)\n"
                                          "**Arrivée:** {} (**{}**j)\n"
-                                         "**Origine estimée:** {} (**{}**j)\n"
+                                         "**Enregistrement:** {} (**{}**j)\n"
                                          "**Dernier msg:** {}".format(datecreation, creation, datearrive, arrive,
                                                                       strorigine, since_origine, dmsg))
         roles = ", ".join([r.name for r in user.roles if r.name != "@everyone"])
