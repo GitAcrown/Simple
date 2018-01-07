@@ -678,7 +678,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                         msgtxt += "**{}.** {}\n".format(nom, num)
                         total += num
                     msgtxt += "\n**Total.** {}\n".format(total)
-                    botmsg = now["BOT_MSG"]
+                    botmsg = now["BOT_MSG"] if "BOT_MSG" in now else 0
                     msgtxt += "**Bots exclus.** {}\n".format(total - botmsg)
                     em.add_field(name="Messages", value=msgtxt)
 
