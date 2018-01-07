@@ -279,8 +279,8 @@ class Stickers:
     async def taille(self, ctx):
         """Renvoie la taille du fichier de stockage des stickers en bytes"""
         result = self.get_size("data/stickers/img/")
-        if result > 1000000000:
-            await self.bot.say("**+1 MB** | Taille maximale atteinte !")
+        if result > 800000000:
+            await self.bot.say("**+1 GB** | Taille maximale atteinte !")
         else:
             await self.bot.say(str(result) + "B")
 
@@ -302,8 +302,8 @@ class Stickers:
         Vous pouvez ajouter des tags sans mettre l'url en remplaçant celui-ci par
         Supporte l'upload d'image à travers Discord"""
         result = self.get_size("data/stickers/img/")
-        if result > 1000000000:
-            await self.bot.say("**Plein** | Le poids du fichier alloué à votre serveur ne peut excéder 1 MB !")
+        if result > 800000000:
+            await self.bot.say("**Plein** | Le poids du fichier alloué à votre serveur ne peut excéder 1 GB !")
             return
         author = ctx.message.author
         server = ctx.message.server
@@ -401,6 +401,7 @@ class Stickers:
                     return
                 else:
                     await self.bot.say("**Impossible** | Vous n'êtes pas l'auteur du sticker")
+                    return
         else:
             await self.bot.say("**Introuvable** | Le sticker ne semble pas exister.")
 
