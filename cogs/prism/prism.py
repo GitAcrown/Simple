@@ -189,6 +189,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                                                 "RETURN": 0,
                                                 "QUIT": 0,
                                                 "BAN": 0,
+                                                "BOT_MSG": 0,
                                                 "EMOJIS": {}}
         return self.glb[server.id][date][heure]
 
@@ -607,7 +608,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                             msgtxt += "**{}.** {}\n".format(nom, num)
                             total += num
                         msgtxt += "\n**Total.** {}\n".format(total)
-                        botmsg = self.botmsg_count(server)
+                        botmsg = self.day_stats_num(server, date, "BOT_MSG")
                         msgtxt += "**Bots exclus.** {}\n".format(total - botmsg)
                         em.add_field(name="Messages", value=msgtxt)
 
@@ -621,7 +622,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                     stats = sorted(stats, key=operator.itemgetter(1), reverse=True)[:3]
                     msgact = ""
                     for heure, num in stats:
-                        msgact += "**{}.** {}\n".format(heure, num)
+                        msgact += "**{}h.** {}\n".format(heure, num)
                     em.add_field(name="Pics d'activité", value=msgact)
 
                     entree = self.day_stats_num(server, date, "JOIN")
@@ -676,7 +677,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                     msgtxt += "**{}.** {}\n".format(nom, num)
                     total += num
                 msgtxt += "\n**Total.** {}\n".format(total)
-                botmsg = self.botmsg_count(server)
+                botmsg = now["BOT_MSG"]
                 msgtxt += "**Bots exclus.** {}\n".format(total - botmsg)
                 em.add_field(name="Messages", value=msgtxt)
 
@@ -713,6 +714,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
             if rewind > -1:
                 await self.bot.add_reaction(menu, "⬅")
                 await self.bot.add_reaction(menu, "⏬")
+                await self.bot.add_reaction(menu, "⏺")
                 if rewind > 0:
                     await self.bot.add_reaction(menu, "➡")
                     emolist.append("➡")
@@ -750,6 +752,9 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                         pass
                     if rewind < 0:
                         rewind = 0
+                        em.set_footer(text="Impossible d'aller dans le futur")
+                        await self.bot.edit_message(menu, embed=em)
+                        await asyncio.sleep(0.5)
                 else:
                     em.set_footer(text="Invalide | Retour au menu...")
                     await self.bot.edit_message(menu, embed=em)
@@ -789,6 +794,8 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         p["DATA"]["LETTRES_PART"] += lettres
         p["SYS"]["D_VU"] = date
         glb["CHANNELS"][channel.id] = glb["CHANNELS"][channel.id] + 1 if channel.id in glb["CHANNELS"] else 1
+        if author.bot:
+            glb["BOT_MSG"] += 1
         if ":" in message.content:
             output = re.compile(':(.*?):', re.DOTALL | re.IGNORECASE).findall(message.content)
             if output:
