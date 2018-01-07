@@ -748,6 +748,8 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                         await self.bot.delete_message(rep)
                     except:
                         pass
+                    if rewind < 0:
+                        rewind = 0
                 else:
                     em.set_footer(text="Invalide | Retour au menu...")
                     await self.bot.edit_message(menu, embed=em)
