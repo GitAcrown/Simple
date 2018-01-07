@@ -279,7 +279,10 @@ class Stickers:
     async def taille(self, ctx):
         """Renvoie la taille du fichier de stockage des stickers en bytes"""
         result = self.get_size("data/stickers/img/")
-        await self.bot.say(str(result) + "B")
+        if result > 1000000000:
+            await self.bot.say("**+1 MB** | Taille maximale atteinte !")
+        else:
+            await self.bot.say(str(result) + "B")
 
     def get_size(self, start_path):
         total_size = 0
@@ -298,6 +301,10 @@ class Stickers:
         [tags] = Optionnel, permet d'ajouter des tags afin de simplifier la recherche
         Vous pouvez ajouter des tags sans mettre l'url en remplaçant celui-ci par
         Supporte l'upload d'image à travers Discord"""
+        result = self.get_size("data/stickers/img/")
+        if result > 1000000000:
+            await self.bot.say("**Plein** | Le poids du fichier alloué à votre serveur ne peut excéder 1 MB !")
+            return
         author = ctx.message.author
         server = ctx.message.server
         if server.id not in self.stk:
@@ -374,6 +381,35 @@ class Stickers:
     async def delete(self, ctx, nom):
         """Supprimer un sticker"""
         server = ctx.message.server
+        author = ctx.message.author
+        if server.id not in self.stk:
+            self.stk[server.id] = {"STK": {}, "OPT": {}}
+        for r in self.stk[server.id]["STK"]:
+            if self.stk[server.id]["STK"][r]["NOM"] == nom:
+                if author.id == self.stk[server.id]["STK"][r]["AUTEUR"]:
+                    chemin = self.stk[server.id]["STK"][r]["CHEMIN"]
+                    file = self.stk[server.id]["STK"][r]["CHEMIN"].split('/')[-1]
+                    splitted = "/".join(chemin.split('/')[:-1]) + "/"
+                    if file in os.listdir(splitted):
+                        try:
+                            os.remove(chemin)
+                        except:
+                            pass
+                    del self.stk[server.id]["STK"][r]
+                    self.save()
+                    await self.bot.say("**Succès** | Sticker supprimé avec succès.")
+                    return
+                else:
+                    await self.bot.say("**Impossible** | Vous n'êtes pas l'auteur du sticker")
+        else:
+            await self.bot.say("**Introuvable** | Le sticker ne semble pas exister.")
+
+    @_stk.command(pass_context=True, hidden=True)
+    @checks.mod_or_permissions(ban_members=True)
+    async def forcedelete(self, ctx, nom):
+        """Supprimer un sticker de force en outrepassant l'obligation de propriété"""
+        server = ctx.message.server
+        author = ctx.message.author
         if server.id not in self.stk:
             self.stk[server.id] = {"STK": {}, "OPT": {}}
         for r in self.stk[server.id]["STK"]:
