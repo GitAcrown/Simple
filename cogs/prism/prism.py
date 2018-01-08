@@ -608,7 +608,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                         for nom, num in stats:
                             msgtxt += "**{}** {}\n".format(nom, num)
                             total += num
-                        botmsg = now["BOT_MSG"] if "BOT_MSG" in now else 0
+                        botmsg = self.day_stats_num(server, date, "BOT_MSG")
                         msgtxt += "\n**Total** {}\n**Bots exclus** {}".format(total, total - botmsg)
                         em.add_field(name="Messages", value=msgtxt)
 
