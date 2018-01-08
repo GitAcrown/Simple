@@ -598,11 +598,12 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                     em = discord.Embed(title="Données | **{}**".format(date if date != today else "Aujourd'hui"))
                     em.set_thumbnail(url=server.icon_url)
 
+                    msgtxt = msgact = msgemo = ""
+
                     stats = self.day_stats_dict(server, date, "CHANNELS")
                     if stats:
                         stats = [[self.bot.get_channel(e), stats[e]] for e in stats]
                         stats = sorted(stats, key=operator.itemgetter(1), reverse=True)
-                        msgtxt = ""
                         total = 0
                         for nom, num in stats:
                             msgtxt += "**{}** {}\n".format(nom, num)
@@ -620,7 +621,6 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                             data[h] += glb[date][h]["CHANNELS"][chan]
                     stats = [[h, data[h]] for h in data]
                     stats = sorted(stats, key=operator.itemgetter(1), reverse=True)[:5]
-                    msgact = ""
                     for heure, num in stats:
                         msgact += "**{}h** {}\n".format(heure, num)
                     em.add_field(name="Pics d'activité", value=msgact)
@@ -641,7 +641,6 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                     if stats:
                         stats = [[e, stats[e]] for e in stats]
                         stats = sorted(stats, key=operator.itemgetter(1), reverse=True)[:5]
-                        msgemo = ""
                         for nom, num in stats:
                             msgemo += "**{}** {}\n".format(nom, num)
                         em.add_field(name="Emojis populaires", value=msgemo)
@@ -655,6 +654,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
             else:
                 heure = time.strftime("%H", time.localtime())
                 now = self.get_glb(server)
+                msgtxt = msgact = msgemo = ""
                 online = str(len([m.status for m in server.members if
                                   str(m.status) == "online" or str(m.status) == "idle" or str(m.status) == "dnd"]))
                 total_users = str(len(server.members))
