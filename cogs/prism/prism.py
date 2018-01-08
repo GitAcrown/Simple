@@ -605,11 +605,11 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                         msgtxt = ""
                         total = 0
                         for nom, num in stats:
-                            msgtxt += "**{}.** {}\n".format(nom, num)
+                            msgtxt += "**{}** {}\n".format(nom, num)
                             total += num
-                        msgtxt += "\n**Total.** {}\n".format(total)
+                        msgtxt += "\n**Total** {}\n".format(total)
                         botmsg = self.day_stats_num(server, date, "BOT_MSG")
-                        msgtxt += "**Bots exclus.** {}\n".format(total - botmsg)
+                        msgtxt += "**Bots exclus** {}\n".format(total - botmsg)
                         em.add_field(name="Messages", value=msgtxt)
 
                     data = {}
@@ -619,10 +619,10 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                         for chan in glb[date][h]["CHANNELS"]:
                             data[h] += glb[date][h]["CHANNELS"][chan]
                     stats = [[h, data[h]] for h in data]
-                    stats = sorted(stats, key=operator.itemgetter(1), reverse=True)[:3]
+                    stats = sorted(stats, key=operator.itemgetter(1), reverse=True)[:5]
                     msgact = ""
                     for heure, num in stats:
-                        msgact += "**{}h.** {}\n".format(heure, num)
+                        msgact += "**{}h** {}\n".format(heure, num)
                     em.add_field(name="Pics d'activité", value=msgact)
 
                     entree = self.day_stats_num(server, date, "JOIN")
@@ -630,11 +630,11 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                     sorties = self.day_stats_num(server, date, "QUIT")
                     bans = self.day_stats_num(server, date, "BAN")
                     solde = entree - sorties
-                    msgmir = "**Entrées.** {}\n" \
-                             "**- dont revenants.** {}\n" \
-                             "**Sorties.** {}\n" \
-                             "**- dont bannis.** {}\n" \
-                             "**Solde.** {}".format(entree, revenants, sorties, bans, solde)
+                    msgmir = "**Entrées** {}\n" \
+                             "**- dont revenants** {}\n" \
+                             "**Sorties** {}\n" \
+                             "**- dont bannis** {}\n" \
+                             "**Solde** {}".format(entree, revenants, sorties, bans, solde)
                     em.add_field(name="Flux migratoire", value=msgmir)
 
                     stats = self.day_stats_dict(server, date, "EMOJIS")
@@ -643,10 +643,10 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                         stats = sorted(stats, key=operator.itemgetter(1), reverse=True)[:5]
                         msgemo = ""
                         for nom, num in stats:
-                            msgemo += "**{}** - {}\n".format(nom, num)
+                            msgemo += "**{}** {}\n".format(nom, num)
                         em.add_field(name="Emojis populaires", value=msgemo)
 
-                    em.set_footer(text="Naviguez avec les réactions ci-dessous")
+                    em.set_footer(text="Naviguez avec les réactions ci-dessous | Messages supprimés et réactions pris en compte")
                 else:
                     em = discord.Embed(title="Données | **{}**".format(date if date != today else "Aujourd'hui"),
                                        description="Aucune donnée n'est disponible pour ce jour.")
@@ -659,12 +659,12 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                                   str(m.status) == "online" or str(m.status) == "idle" or str(m.status) == "dnd"]))
                 total_users = str(len(server.members))
                 passed = (ctx.message.timestamp - server.created_at).days
-                presmsg = "**Nom.** {}\n" \
-                          "**ID.** {}\n" \
-                          "**Région.** {}\n" \
-                          "**Propriétaire.** {}\n" \
-                          "**Membres.** {}/{}\n" \
-                          "**Age.** {}j".format(server.name, server.id, server.region, server.owner, online,
+                presmsg = "**Nom** {}\n" \
+                          "**ID** {}\n" \
+                          "**Région** {}\n" \
+                          "**Propriétaire** {}\n" \
+                          "**Membres** {}/{}\n" \
+                          "**Age** {}j".format(server.name, server.id, server.region, server.owner, online,
                                                 total_users, passed)
                 em = discord.Embed(title="Données | En direct ({}h)".format(heure), description=presmsg)
                 em.set_thumbnail(url=server.icon_url)
@@ -675,11 +675,11 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                     msgtxt = ""
                     total = 0
                     for nom, num in stats:
-                        msgtxt += "**{}.** {}\n".format(nom, num)
+                        msgtxt += "**{}** {}\n".format(nom, num)
                         total += num
-                    msgtxt += "\n**Total.** {}\n".format(total)
+                    msgtxt += "\n**Total** {}\n".format(total)
                     botmsg = now["BOT_MSG"] if "BOT_MSG" in now else 0
-                    msgtxt += "**Bots exclus.** {}\n".format(total - botmsg)
+                    msgtxt += "**Bots exclus** {}".format(total - botmsg)
                     em.add_field(name="Messages", value=msgtxt)
 
                 entree = now["JOIN"]
@@ -687,11 +687,11 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                 sorties = now["QUIT"]
                 bans = now["BAN"]
                 solde = entree - sorties
-                msgmir = "**Entrées.** {}\n" \
-                         "**- dont revenants.** {}\n" \
-                         "**Sorties.** {}\n" \
-                         "**- dont bannis.** {}\n" \
-                         "**Solde.** {}".format(entree, revenants, sorties, bans, solde)
+                msgmir = "**Entrées** {}\n" \
+                         "**- dont revenants** {}\n" \
+                         "**Sorties** {}\n" \
+                         "**- dont bannis** {}\n" \
+                         "**Solde** {}".format(entree, revenants, sorties, bans, solde)
                 em.add_field(name="Flux migratoire", value=msgmir)
 
                 if now["EMOJIS"]:
@@ -699,10 +699,10 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                     stats = sorted(stats, key=operator.itemgetter(1), reverse=True)[:5]
                     msgemo = ""
                     for nom, num in stats:
-                        msgemo += "**{}** - {}\n".format(nom, num)
+                        msgemo += "**{}** {}\n".format(nom, num)
                     em.add_field(name="Emojis populaires", value=msgemo)
 
-                em.set_footer(text="Naviguez avec les réactions ci-dessous")
+                em.set_footer(text="Naviguez avec les réactions ci-dessous | Messages supprimés et réactions pris en compte")
 
             if menu is None:
                 menu = await self.bot.say(embed=em)
