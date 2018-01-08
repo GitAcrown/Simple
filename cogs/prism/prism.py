@@ -608,10 +608,8 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                         for nom, num in stats:
                             msgtxt += "**{}** {}\n".format(nom, num)
                             total += num
-                        msgtxt += "\n"
-                        msgtxt += "**Total** {}\n".format(total)
-                        botmsg = self.day_stats_num(server, date, "BOT_MSG")
-                        msgtxt += "**Bots exclus** {}".format(total - botmsg)
+                        botmsg = now["BOT_MSG"] if "BOT_MSG" in now else 0
+                        msgtxt += "\n**Total** {}\n**Bots exclus** {}".format(total, total - botmsg)
                         em.add_field(name="Messages", value=msgtxt)
 
                     data = {}
@@ -678,10 +676,8 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                     for nom, num in stats:
                         msgtxt += "**{}** {}\n".format(nom, num)
                         total += num
-                    msgtxt += "\n"
-                    msgtxt += "**Total** {}\n".format(total)
                     botmsg = now["BOT_MSG"] if "BOT_MSG" in now else 0
-                    msgtxt += "**Bots exclus** {}".format(total - botmsg)
+                    msgtxt += "\n**Total** {}\n**Bots exclus** {}".format(total, total - botmsg)
                     em.add_field(name="Messages", value=msgtxt)
 
                 entree = now["JOIN"]
