@@ -582,6 +582,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         rewind = 0
         menu = None
         while True:
+            msgtxt = msgact = msgemo = ""
             glb = self.glb[
                 server.id]  # On prend l'ENSEMBLE des données du serveur, pas les actuelles comme self.get_glb()
             today = time.strftime("%d/%m/%Y", time.localtime())
