@@ -374,7 +374,7 @@ class Stickers:
         for s in self.stk[server.id]["STK"]:
             if not "discordapp" in self.stk[server.id]["STK"][s]["URL"]:
                 chemin = self.stk[server.id]["STK"][s]["CHEMIN"]
-                file = self.stk[server.id]["STK"][r]["CHEMIN"].split('/')[-1]
+                file = chemin.split('/')[-1]
                 splitted = "/".join(chemin.split('/')[:-1]) + "/"
                 if file in os.listdir(splitted):
                     try:
