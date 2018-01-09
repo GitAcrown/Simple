@@ -101,7 +101,7 @@ class Stickers:
                                                     "URL": url,
                                                     "TIMESTAMP": time.time(),
                                                     "COMPTAGE": 0,
-                                                    "AFFICHAGE": "upload",
+                                                    "AFFICHAGE": "upload" if chemin else "url",
                                                     "IMPORT": importe,
                                                     "TAGS": tags}
                 if "APPROB" not in self.stk[server.id]["OPT"]:
@@ -349,17 +349,8 @@ class Stickers:
                 return
             else:
                 if url.endswith("jpg") or url.endswith("gif") or url.endswith("png") or url.endswith("jpeg"):
-                    filename = url.split('/')[-1]
-                    if filename in os.listdir("data/stickers/img"):
-                        exten = filename.split(".")[1]
-                        nomsup = random.randint(1, 999999)
-                        filename = filename.split(".")[0] + str(nomsup) + "." + exten
-                    try:
-                        f = open(filename, 'wb')
-                        f.write(request.urlopen(url).read())
-                        f.close()
-                        file = "data/stickers/img/" + filename
-                        os.rename(filename, file)
+                    if "discordapp" not in url:
+                        file = None
                         clef = ''.join(
                             random.SystemRandom().choice(
                                 string.ascii_lowercase + string.ascii_uppercase + string.digits) for _ in
@@ -367,14 +358,34 @@ class Stickers:
                         self.add_sticker(clef, nom, file, author, url, tags=tags)
                         await self.bot.say(msgplus)
                         return
-                    except Exception as e:
-                        print("Impossible de télécharger une image : {}".format(e))
-                        await self.bot.say(
-                            "**Erreur** | Impossible de télécharger l'image - Essayez de changer l'hébergeur")
                 else:
                     await self.bot.say("**Erreur** | Ce format n'est pas supporté.")
         else:
             await self.bot.say("**Indisponible** | Un sticker sous ce nom existe déjà !")
+
+    @_stk.command(pass_context=True, hidden=True)
+    @checks.mod_or_permissions(manage_messages=True)
+    async def opti(self, ctx, servid: str = None):
+        """Optimise l'espace disponible en supprimant les doublons et les fichiers volumineux inutilisés
+
+        Le paramètre servid est optionnel et permet d'optimiser les stickers d'un serveur distant"""
+        server = self.bot.get_server(servid) if servid else ctx.message.server
+        n = 0
+        for s in self.stk[server.id]["STK"]:
+            if not "discordapp" in self.stk[server.id]["STK"][s]["URL"]:
+                chemin = self.stk[server.id]["STK"][s]["CHEMIN"]
+                file = self.stk[server.id]["STK"][r]["CHEMIN"].split('/')[-1]
+                splitted = "/".join(chemin.split('/')[:-1]) + "/"
+                if file in os.listdir(splitted):
+                    try:
+                        os.remove(chemin)
+                    except:
+                        pass
+                self.stk[server.id]["STK"][s]["CHEMIN"] = None
+                self.stk[server.id]["STK"][s]["AFFICHAGE"] = "web"
+                n += 1
+        self.save()
+        await self.bot.say("**Succès** | {} stickers ont été optimisés".format(n))
 
     @_stk.command(pass_context=True)
     @checks.mod_or_permissions(manage_messages=True)
@@ -605,6 +616,7 @@ class Stickers:
         for r in self.stk[server.id]["STK"]:
             if nom == self.stk[server.id]["STK"][r]["NOM"]:
                 stk = self.stk[server.id]["STK"][r]
+                opti = False if stk["CHEMIN"] else True
                 if "TAGS" not in self.stk[server.id]["STK"][r]:
                     self.stk[server.id]["STK"][r]["TAGS"] = []
                 while True:
@@ -672,8 +684,14 @@ class Stickers:
                         elif rep.content == "3":
                             em = discord.Embed(title="STK| Modifier {} > Affichage".format(r),
                                                description="**Ecrivez le format désiré**")
-                            em.set_footer(text="Formats supportés : 'web', 'upload', 'billet'")
+                            if opti:
+                                em.set_footer(text="Formats supportés : 'web', 'billet'")
+                            else:
+                                em.set_footer(text="Formats supportés : 'web', 'upload', 'billet'")
                             m = await self.bot.say(embed=em)
+                            liste = ['web', 'upload', 'billet']
+                            if opti:
+                                liste.remove("upload")
                             valid = False
                             while valid is False:
                                 rep = await self.bot.wait_for_message(channel=ctx.message.channel,
@@ -683,13 +701,13 @@ class Stickers:
                                     em.set_footer(text="TIMEOUT | Bye !")
                                     await self.bot.edit_message(m, embed=em)
                                     return
-                                elif rep.content.lower() in ['web', 'upload', 'billet']:
+                                elif rep.content.lower() in liste:
                                     self.stk[server.id]["STK"][r]["AFFICHAGE"] = rep.content.lower()
                                     self.save()
                                     await self.bot.say("**Modifiée** | Retour au menu...")
                                     valid = True
                                 else:
-                                    await self.bot.say("**Erreur** | Ce format n'existe pas (web, upload ou billet)")
+                                    await self.bot.say("**Erreur** | Ce format n'est pas disponible")
                         elif rep.content == "4":
                             em = discord.Embed(title="STK| Modifier {} > Tags".format(r),
                                                description="**Tapez ci-dessous les tags, séparés par une virgule (,)**")
@@ -876,7 +894,7 @@ class Stickers:
                                 await self.bot.send_message(channel, embed=em)
                         else:
                             continue
-                    elif img["AFFICHAGE"] == 'upload':
+                    elif img["AFFICHAGE"] == 'upload' and imm["CHEMIN"]:
                         try:
                             await self.bot.send_typing(channel)
                             await self.bot.send_file(channel, img["CHEMIN"])
