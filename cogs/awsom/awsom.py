@@ -121,6 +121,8 @@ class Awsom:
             output = re.compile(r"(?:r[ée]p[eè]tes*|di[ts]) (.*)", re.IGNORECASE | re.DOTALL).findall(msg)
             if output:
                 u = output[0]
+                if "@everyone" in u:
+                    u.replace("@everyone", "everyone")
                 await self.bot.send_message(message.channel, u)
                 return
 
