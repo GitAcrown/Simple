@@ -373,17 +373,18 @@ class Stickers:
         n = 0
         for s in self.stk[server.id]["STK"]:
             if not "discordapp" in self.stk[server.id]["STK"][s]["URL"]:
-                chemin = self.stk[server.id]["STK"][s]["CHEMIN"]
-                file = self.stk[server.id]["STK"][r]["CHEMIN"].split('/')[-1]
-                splitted = "/".join(chemin.split('/')[:-1]) + "/"
-                if file in os.listdir(splitted):
-                    try:
-                        os.remove(chemin)
-                    except:
-                        pass
-                self.stk[server.id]["STK"][s]["CHEMIN"] = None
-                self.stk[server.id]["STK"][s]["AFFICHAGE"] = "web"
-                n += 1
+                if self.stk[server.id]["STK"][s]["CHEMIN"]:
+                    chemin = self.stk[server.id]["STK"][s]["CHEMIN"]
+                    file = chemin.split('/')[-1]
+                    splitted = "/".join(chemin.split('/')[:-1]) + "/"
+                    if file in os.listdir(splitted):
+                        try:
+                            os.remove(chemin)
+                        except:
+                            pass
+                    self.stk[server.id]["STK"][s]["CHEMIN"] = None
+                    self.stk[server.id]["STK"][s]["AFFICHAGE"] = "web"
+                    n += 1
         self.save()
         await self.bot.say("**Succès** | {} stickers ont été optimisés".format(n))
 
@@ -894,7 +895,7 @@ class Stickers:
                                 await self.bot.send_message(channel, embed=em)
                         else:
                             continue
-                    elif img["AFFICHAGE"] == 'upload' and imm["CHEMIN"]:
+                    elif img["AFFICHAGE"] == 'upload' and img["CHEMIN"]:
                         try:
                             await self.bot.send_typing(channel)
                             await self.bot.send_file(channel, img["CHEMIN"])
