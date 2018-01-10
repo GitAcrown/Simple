@@ -395,10 +395,11 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                                          "**Enregistrement:** {} (**{}**j)\n"
                                          "**Dernier msg:** {}".format(datecreation, creation, datearrive, arrive,
                                                                       strorigine, since_origine, dmsg))
-        roles = ", ".join([r.name for r in user.roles if r.name != "@everyone"])
+        roles = [r.name for r in user.roles if r.name != "@everyone"]
         for role in roles:
             if role.startswith("nvoice"):
                 roles.remove(role)
+        roles = ", ".join(roles)
         em.add_field(name="Rôles", value="***{}***\n\n{}".format(roles if roles else "***Aucun***",
                                                                  self.rolebarre(user)))
         pseudoslist = data["DATA"]["PSEUDOS"] if data["DATA"]["PSEUDOS"] else "?"
