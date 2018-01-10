@@ -279,7 +279,7 @@ class Agora:
 
         <qr>: Question?;réponse1;réponse2;réponseN
         Il est possible d'ajouter $ à la fin de la commande pour passer le sondage en mode 'Souple'
-        L'arrêt du sondage se fait automatiquement lors du desépinglage de celui-ci ou si vous faîtes &fp stop <id>"""
+        L'arrêt du sondage se fait automatiquement lors du desépinglage de celui-ci ou si vous faîtes [p]fp stop <id>"""
         rs = lambda: random.randint(0, 255)
         rcolor = int('0x%02X%02X%02X' % (rs(), rs(), rs()), 16)
         emojis = [s for s in "🇦🇧🇨🇩🇪🇫🇬🇭🇮🇯🇰🇱🇲🇳🇴🇵🇶🇷🇸🇹🇺🇻🇼🇽🇾🇿"]
@@ -343,7 +343,7 @@ class Agora:
                     pass
             await self.bot.pin_message(msg)
         else:
-            await self.bot.say("**Format** | `&fp Question ?;Réponse 1;Réponse 2;Réponse N...($)`")
+            await self.bot.say("**Format** | `{}fp Question ?;Réponse 1;Réponse 2;Réponse N...($)`".format(ctx.prefix))
 
     async def fp_listen_add(self, reaction, user):
         message = reaction.message
