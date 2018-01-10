@@ -17,6 +17,7 @@ from .utils.dataIO import dataIO, fileIO
 
 class PRISMApp:
     """API PRISM | Version Light"""
+
     def __init__(self, bot, path):
         self.bot = bot
         self.data = dataIO.load_json(path)
@@ -274,6 +275,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     def rolebarre(self, member) -> str or bool:
         """Génère un STR de la barre de progression jusqu'au prochain rôle (Hab. ou Old.)"""
+
         def u_bar(prc) -> str:
             ch1 = "░"
             ch2 = "▒"
@@ -289,6 +291,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
             while len(bar) < 10:
                 bar += ch1
             return bar
+
         hab = 14
         old = 120
         days = (datetime.datetime.now() - member.joined_at).days
@@ -354,7 +357,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                 count += self.app.open(member, "DATA")["MSG_PART"]
         return count
 
-# COMMANDES +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    # COMMANDES +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @commands.group(name="card", aliases=["c"], pass_context=True, invoke_without_command=True, no_pm=True)
     async def prism_card(self, ctx, user: discord.Member = None):
@@ -392,7 +395,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                                          "**Enregistrement:** {} (**{}**j)\n"
                                          "**Dernier msg:** {}".format(datecreation, creation, datearrive, arrive,
                                                                       strorigine, since_origine, dmsg))
-        roles = ", ".join([r.name for r in user.roles if r.name != "@everyone"])
+        roles = ", ".join([r.name for r in user.roles if r.name != "@everyone" or not r.name.startswith("nvoice")])
         em.add_field(name="Rôles", value="***{}***\n\n{}".format(roles if roles else "***Aucun***",
                                                                  self.rolebarre(user)))
         pseudoslist = data["DATA"]["PSEUDOS"] if data["DATA"]["PSEUDOS"] else "?"
@@ -432,7 +435,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
             txt = "Aucune action"
         em.add_field(name="Historique", value=txt)
         em.set_footer(text="{}{}".format(self.app.grade(user)[0],
-                                                " | Joue à {}".format(user.game) if user.game else ""),
+                                         " | Joue à {}".format(user.game) if user.game else ""),
                       icon_url=self.app.grade(user)[1])
         await self.bot.say(embed=em)
 
@@ -450,7 +453,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         u["BIO"] = " ".join(texte)
 
     @prism_card.command(pass_context=True)
-    async def sexe(self, ctx, sexe:str):
+    async def sexe(self, ctx, sexe: str):
         """Permet d'indiquer au bot son sexe, permettant d'adapter un certain nombre de fonctionnalités
         Reconnus : neutre, feminin/femme, masculin/homme"""
         data = self.app.open(ctx.message.author, "SYS")
@@ -646,7 +649,8 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                             msgemo += "**{}** {}\n".format(nom, num)
                         em.add_field(name="Emojis populaires", value=msgemo)
 
-                    em.set_footer(text="Naviguez avec les réactions ci-dessous | Messages supprimés et réactions pris en compte")
+                    em.set_footer(
+                        text="Naviguez avec les réactions ci-dessous | Messages supprimés et réactions pris en compte")
                 else:
                     em = discord.Embed(title="Données | **{}**".format(date if date != today else "Aujourd'hui"),
                                        description="Aucune donnée n'est disponible pour ce jour.")
@@ -666,7 +670,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                           "**Propriétaire** {}\n" \
                           "**Membres** {}/{}\n" \
                           "**Age** {}j".format(server.name, server.id, server.region, server.owner, online,
-                                                total_users, passed)
+                                               total_users, passed)
                 em = discord.Embed(title="Données | En direct ({}h)".format(heure), description=presmsg)
                 em.set_thumbnail(url=server.icon_url)
 
@@ -703,7 +707,8 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                         msgemo += "**{}** {}\n".format(nom, num)
                     em.add_field(name="Emojis populaires", value=msgemo)
 
-                em.set_footer(text="Naviguez avec les réactions ci-dessous | Messages supprimés et réactions pris en compte")
+                em.set_footer(
+                    text="Naviguez avec les réactions ci-dessous | Messages supprimés et réactions pris en compte")
 
             if menu is None:
                 menu = await self.bot.say(embed=em)
@@ -776,7 +781,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                 continue
 
 
-# TRIGGERS ----------------------------------------------
+            # TRIGGERS ----------------------------------------------
 
     async def prism_msg(self, message):
         if not hasattr(message, "server"):
@@ -873,6 +878,8 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
             url = url.split("?")[0]  # On retire le reformatage serveur Discord
             self.app.add_past(after, "Changement d'avatar ([Ancien]({}))".format(url))
         if after.top_role != before.top_role:
+            if after.top_role.name.startswith("nvoice"):
+                return
             if after.top_role.name is "Prison" and before.top_role.name != "Prison":
                 self.app.add_past(after, "Entrée en prison")
             elif before.top_role.name is "Prison" and after.top_role.name != "Prison":
@@ -881,7 +888,10 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                 if after.top_role > before.top_role:
                     self.app.add_past(after, "A reçu le rôle {}".format(after.top_role.name))
                 else:
-                    self.app.add_past(after, "A été rétrogradé {}".format(after.top_role.name))
+                    if after.top_role.name != "@everyone":
+                        self.app.add_past(after, "A été rétrogradé {}".format(after.top_role.name))
+                    else:
+                        self.app.add_past(after, "Ne possède plus de rôles")
             else:
                 pass
         p = self.app.open(after, "JEUX")
