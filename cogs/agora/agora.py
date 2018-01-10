@@ -289,7 +289,7 @@ class Agora:
                 if qr[1].upper() in self.sys["POLLS"]:
                     pid = qr[1].upper()
                     poll = self.sys["POLLS"][pid]
-                    if poll["AUTEUR"] != ctx.message.author or not ctx.message.author.server_permissions.manage_messages:
+                    if poll["AUTEUR"] != ctx.message.author or not ctx.message.author.server_permissions.ban_members:
                         await self.bot.say("**Erreur** | Vous n'êtes pas le propriétaire du sondage")
                         return
                     mess = await self.bot.get_message(ctx.message.channel, poll["MSGID"])
