@@ -46,6 +46,8 @@ class Awsom:
 
     async def detect(self, message):  # Regex c'est la VIE
         channel = message.channel
+        if message.mention_everyone:
+            return
         if not hasattr(channel, 'server'):
             return
         server = channel.server
