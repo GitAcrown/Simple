@@ -895,7 +895,7 @@ class Stickers:
                                 await self.bot.send_message(channel, embed=em)
                         else:
                             continue
-                    elif img["AFFICHAGE"] == 'upload' and imm["CHEMIN"]:
+                    elif img["AFFICHAGE"] == 'upload' and img["CHEMIN"]:
                         try:
                             await self.bot.send_typing(channel)
                             await self.bot.send_file(channel, img["CHEMIN"])
