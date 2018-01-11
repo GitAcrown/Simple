@@ -17,27 +17,6 @@ class Awsom:
         self.bot = bot
         self.sys = dataIO.load_json("data/awsom/sys.json")
         set_lang("fr")
-        self.cycle_task = bot.loop.create_task(self.loop())
-
-    async def loop(self):
-        await self.bot.wait_until_ready()
-        try:
-            await asyncio.sleep(5)  # Temps de mise en route
-            do = True
-            channel = self.bot.get_channel("204585334925819904")
-            while do:
-                date = time.strftime("%d/%m/%Y", time.localtime())
-                heure = time.strftime("%H:%M", time.localtime())
-                if date == "01/01/2018" and heure == "00:00":
-                    await self.bot.send_message(channel, "Chers EKheysiens, je vous souhaite une excellente année 2018 "
-                                                         "(meilleure que 2017 qui était pas ouf), "
-                                                         "j'espère que vous réussirez tous à faire ce que vous désirez "
-                                                         "et j'espère passer encore d'extraordinaires moments avec vous."
-                                                         "\n**Bonne année à tous !**\n\n- Acrown")
-                    do = False
-                await asyncio.sleep(10)
-        except asyncio.CancelledError:
-            pass
 
     async def do(self, message: discord.Message, txt: str):
         new_message = deepcopy(message)
