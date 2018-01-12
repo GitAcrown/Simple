@@ -121,7 +121,10 @@ class Awsom:
             if output:
                 u = output[0]
                 em = await self.wiki(u)
-                await self.bot.send_message(message.channel, embed=em)
+                if type(em) == str:
+                    await self.bot.send_message(message.channel, em)
+                else:
+                    await self.bot.send_message(message.channel, embed=em)
                 return
 
 def check_folders():
