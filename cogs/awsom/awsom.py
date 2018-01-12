@@ -1,4 +1,5 @@
 import asyncio
+import aiohttp
 import os
 import re
 import time
@@ -22,6 +23,41 @@ class Awsom:
         new_message = deepcopy(message)
         new_message.content = "&" + txt
         await self.bot.process_commands(new_message)
+
+    async def wiki(self, *query: str):
+        try:
+            url = 'https://en.wikipedia.org/w/api.php?'
+            payload = {}
+            payload['action'] = 'query'
+            payload['format'] = 'json'
+            payload['prop'] = 'extracts'
+            payload['titles'] = ''.join(query).replace(' ', '_')
+            payload['exsentences'] = '5'
+            payload['redirects'] = '1'
+            payload['explaintext'] = '1'
+            headers = {'user-agent': 'Awsom/1.0'}
+            conn = aiohttp.TCPConnector(verify_ssl=False)
+            session = aiohttp.ClientSession(connector=conn)
+            async with session.get(url, params=payload, headers=headers) as r:
+                result = await r.json()
+            session.close()
+            if '-1' not in result['query']['pages']:
+                for page in result['query']['pages']:
+                    title = result['query']['pages'][page]['title']
+                    description = result['query']['pages'][page]['extract'].replace('\n', '\n\n')
+                em = discord.Embed(title='{}'.format(title),
+                                   description=u'\u2063\n{}...\n\u2063'.format(description[:-3]),
+                                   color=discord.Color.blue(),
+                                   url='https://fr.wikipedia.org/wiki/{}'.format(title.replace(' ', '_')))
+                em.set_footer(text='Information tirée de Wikipedia',
+                              icon_url='https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Wikimedia-logo.png/600px-Wikimedia-logo.png')
+                return em
+            else:
+                message = "**Erreur** | Impossible de trouver *{}*".format(''.join(query))
+                return message
+        except Exception as e:
+            message = '**Erreur** | `{}`'.format(e)
+            return message
 
     async def detect(self, message):  # Regex c'est la VIE
         channel = message.channel
@@ -84,18 +120,7 @@ class Awsom:
             output = re.compile(r"(?:re)?cherche (.*)", re.IGNORECASE | re.DOTALL).findall(msg)
             if output:
                 u = output[0]
-                try:
-                    s = search(u)
-                    suma = summary(s[0])
-                    if len(suma) > 1960:
-                        suma = suma[:1960] + "..."
-                except:
-                    await self.bot.send_message(message.channel, "**Erreur** | La recherche n'est pas assez précise\n"
-                                                                 "Vouliez-vous dire *{}* ?".format(
-                        s[1] if s[1] else s[0]))
-                    return
-                em = discord.Embed(title=s[0], description=suma)
-                em.set_footer(text="Similaire: {}".format(", ".join(s[:5])))
+                em = await self.wiki(u)
                 await self.bot.send_message(message.channel, embed=em)
                 return
 
