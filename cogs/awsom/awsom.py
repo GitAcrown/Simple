@@ -145,7 +145,7 @@ class Awsom:
                     try:
                         await self.bot.send_message(message.channel, embed=r)
                     except:
-                        await self.bot.send_message(message.channel, "**Indisponible** | La page recherchée est indisponible")
+                        await self.bot.send_message(message.channel, r)
                 return
 
 def check_folders():
