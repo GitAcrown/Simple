@@ -30,7 +30,7 @@ class Awsom:
 
     def wiki(self, recherche: str, langue: str = 'fr', souple: bool = True):
         wikipedia.set_lang(langue)
-        s = wikipedia.search(recherche, 10, True)
+        s = wikipedia.search(recherche, 8, True)
         try:
             if s[1]:
                 r = s[1]
