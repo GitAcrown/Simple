@@ -56,7 +56,7 @@ class Awsom:
                 if langue == "en":
                     return "Impossible de trouver {}".format(recherche)
                 else:
-                    self.wiki(recherche, "en")
+                    return self.wiki(recherche, "en")
         except:
             if langue == "en":
                 if souple:
@@ -70,12 +70,12 @@ class Awsom:
                     else:
                         return "**Introuvable** | Aucun résultat pour *{}*".format(recherche)
                 else:
-                    self.wiki(recherche, "en", False)
+                    return self.wiki(recherche, "en", False)
             else:
                 if souple:
-                    self.wiki(recherche, "en")
+                    return self.wiki(recherche, "en")
                 else:
-                    self.wiki(recherche, "fr", False)
+                    return self.wiki(recherche, "fr", False)
 
     async def detect(self, message):  # Regex c'est la VIE
         channel = message.channel
@@ -145,7 +145,7 @@ class Awsom:
                     try:
                         await self.bot.send_message(message.channel, embed=r)
                     except:
-                        await self.bot.send_message(message.channel, r)
+                        await self.bot.send_message(message.channel, "**Erreur** | La ressource demandée est indisponible")
                 return
 
 def check_folders():
