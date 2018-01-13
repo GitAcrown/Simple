@@ -1,5 +1,4 @@
 import asyncio
-import aiohttp
 import os
 import re
 import time
@@ -7,7 +6,7 @@ from copy import deepcopy
 
 import discord
 from sympy import sympify
-from wikipedia import summary, search, set_lang
+import wikipedia
 
 from .utils.dataIO import fileIO, dataIO
 
@@ -17,47 +16,64 @@ class Awsom:
     def __init__(self, bot):
         self.bot = bot
         self.sys = dataIO.load_json("data/awsom/sys.json")
-        set_lang("fr")
 
     async def do(self, message: discord.Message, txt: str):
         new_message = deepcopy(message)
         new_message.content = "&" + txt
         await self.bot.process_commands(new_message)
 
-    async def wiki(self, *query: str):
+    def redux(self, string: str, separateur: str = ".", limite: int = 2000):
+        n = -1
+        while len(separateur.join(string.split(separateur)[:n])) >= limite:
+            n -= 1
+        return separateur.join(string.split(separateur)[:n]) + separateur
+
+    def wiki(self, recherche: str, langue: str = 'fr', souple: bool = True):
+        wikipedia.set_lang(langue)
+        s = wikipedia.search(recherche, 10, True)
         try:
-            url = 'https://en.wikipedia.org/w/api.php?'
-            payload = {}
-            payload['action'] = 'query'
-            payload['format'] = 'json'
-            payload['prop'] = 'extracts'
-            payload['titles'] = ''.join(query).replace(' ', '_')
-            payload['exsentences'] = '5'
-            payload['redirects'] = '1'
-            payload['explaintext'] = '1'
-            headers = {'user-agent': 'Awsom/1.0'}
-            conn = aiohttp.TCPConnector(verify_ssl=False)
-            session = aiohttp.ClientSession(connector=conn)
-            async with session.get(url, params=payload, headers=headers) as r:
-                result = await r.json()
-            session.close()
-            if '-1' not in result['query']['pages']:
-                for page in result['query']['pages']:
-                    title = result['query']['pages'][page]['title']
-                    description = result['query']['pages'][page]['extract'].replace('\n', '\n\n')
-                em = discord.Embed(title='{}'.format(title),
-                                   description=u'\u2063\n{}...\n\u2063'.format(description[:-3]),
-                                   color=discord.Color.blue(),
-                                   url='https://fr.wikipedia.org/wiki/{}'.format(title.replace(' ', '_')))
-                em.set_footer(text='Information tirée de Wikipedia',
-                              icon_url='https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Wikimedia-logo.png/600px-Wikimedia-logo.png')
+            if s[1]:
+                r = s[1]
+            else:
+                r = s[0][0] if s[0] else None
+            if r:
+                page = wikipedia.page(r, auto_suggest=souple)
+                images = page.images
+                image = images[0]
+                for i in images:
+                    if i.endswith(".png") or i.endswith(".gif") or i.endswith(".jpg") or i.endswith(".jpeg"):
+                        image = i
+                resum = page.summary
+                if len(resum) + len(r) > 1995:
+                    resum = self.redux(resum, limite=1950)
+                em = discord.Embed(title=r, description=resum)
+                em.set_thumbnail(url=image)
+                em.set_footer(text="Similaire: {}".format(", ".join(s[0])))
                 return em
             else:
-                message = "**Erreur** | Impossible de trouver *{}*".format(''.join(query))
-                return message
-        except Exception as e:
-            message = '**Erreur** | `{}`'.format(e)
-            return message
+                if langue == "en":
+                    return "Impossible de trouver {}".format(recherche)
+                else:
+                    self.wiki(recherche, "en")
+        except:
+            if langue == "en":
+                if souple:
+                    if s[0]:
+                        if len(s[0]) >= 2:
+                            wikipedia.set_lang("fr")
+                            s = wikipedia.search(recherche, 3, True)
+                            return "**Introuvable** | Vouliez-vous dire *{}* ?".format(s[0][1])
+                        else:
+                            return "**Introuvable** | Aucun résultat pour *{}*".format(recherche)
+                    else:
+                        return "**Introuvable** | Aucun résultat pour *{}*".format(recherche)
+                else:
+                    self.wiki(recherche, "en", False)
+            else:
+                if souple:
+                    self.wiki(recherche, "en")
+                else:
+                    self.wiki(recherche, "fr", False)
 
     async def detect(self, message):  # Regex c'est la VIE
         channel = message.channel
@@ -120,11 +136,11 @@ class Awsom:
             output = re.compile(r"(?:re)?cherche (.*)", re.IGNORECASE | re.DOTALL).findall(msg)
             if output:
                 u = output[0]
-                em = await self.wiki(u)
-                if type(em) == str:
-                    await self.bot.send_message(message.channel, em)
+                r = self.wiki(u)
+                if type(r) is str:
+                    await self.bot.send_message(message.channel, r)
                 else:
-                    await self.bot.send_message(message.channel, embed=em)
+                    await self.bot.send_message(message.channel, embed=r)
                 return
 
 def check_folders():
