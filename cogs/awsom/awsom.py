@@ -44,6 +44,8 @@ class Awsom:
                     if i.endswith(".png") or i.endswith(".gif") or i.endswith(".jpg") or i.endswith(".jpeg"):
                         image = i
                 resum = page.summary
+                if not resum:
+                    resum = "Contenu indisponible"
                 if len(resum) + len(r) > 1995:
                     resum = self.redux(resum, limite=1950)
                 em = discord.Embed(title=r, description=resum)
@@ -140,7 +142,10 @@ class Awsom:
                 if type(r) is str:
                     await self.bot.send_message(message.channel, r)
                 else:
-                    await self.bot.send_message(message.channel, embed=r)
+                    try:
+                        await self.bot.send_message(message.channel, embed=r)
+                    except:
+                        await self.bot.send_message(message.channel, "**Indisponible** | La page recherchée est indisponible")
                 return
 
 def check_folders():
