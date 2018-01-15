@@ -167,7 +167,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                          "{} ne supportait plus d'être l'*Omega* du serveur.", "{} a paniqué une fois de plus.",
                          "{}, itsbhuge mostaje", "{} s'est *enfin* barré !", "Plus besoin de le bloquer, {} est parti !",
                          "Boop bip boup {} bip", "{} a pris sa retraite.",
-                         "{} a disparu dans des conditions encore incertaines...", "Non pas toi {} ! 😢",
+                         "{} a disparu dans des circonstances encore incertaines...", "Non pas toi {} ! 😢",
                          "{} a quitté. Un de plus ou un de moins hein...",
                          "{} était de toute évidence trop underground pour ce serveur de normies.",
                          "{} a refusé de *checker ses privilèges* et en a payé le prix.",
