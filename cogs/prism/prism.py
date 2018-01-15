@@ -151,17 +151,28 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         self.bot = bot
         self.app = PRISMApp(bot, "data/prism/data.json")  # API\\PRISM
         self.glb = dataIO.load_json("data/prism/global.json")
-        self.quit_msg = ["Au revoir, ***{}*** petit ange.", "***{}*** a quitté notre monde.",
-                         "***{}*** a quitté la partie.", "***{}*** s'est déconnecté un peu trop violemment",
-                         "RIP ***{}*** :cry:", "Bye bye *{}*", "***{}*** a appuyé sur le mauvais bouton...",
-                         "***{}*** a quitté la secte.", "***{}*** est mort ! Il va respawn non ?",
-                         "***{}*** est sorti de la Matrice !", "***{}*** est tombé du bord de la Terre !",
-                         "***{}*** a été banni... Non je déconne, il est parti tout seul.",
-                         "Je crois que ***{}*** est parti...", "***{}*** a raccroché.",
-                         "***{}*** est en fuite...", "***{}*** s'est libéré de ses chaines !",
-                         "***{}*** s'est suicidé de deux balles dans le dos."]
-        self.quit_msg_event = []
         self.cycle_task = bot.loop.create_task(self.loop())
+        self.quit_msg = ["Au revoir {} !", "Bye bye {}.", "{} s'est trompé de bouton.",
+                         "{} a été suicidé de deux bans dans le dos.", "{} a ragequit le serveur.",
+                         "GAME OVER {}", "A jamais {} !", "Les meilleurs partent en premier, sauf {}...",
+                         "{} est parti, un de moins !", "{} s'envole vers d'autres cieux !", "YOU DIED {}",
+                         "De toute évidence {} ne faisait pas parti de l'élite.", "{} a sauté d'un trottoir.",
+                         "{} a roulé jusqu'en bas de la falaise.", "{} est parti ouvrir son propre serveur...",
+                         "{} n'était de toute évidence pas assez *chill* pour ce serveur.",
+                         "{} a été supprimé par le lobby LGBTQ+.", "{} a été neutralisé par le lobby e-estonien.",
+                         "{}... désolé c'est qui ce random ?", "On m'annonce à l'oreillette que {} est parti.",
+                         "C'est la fin pour {}...", "{} est parti faire caca chez Paul.",
+                         "{} a été jeté dans la fosse aux randoms.", "{} est parti rejoindre Johnny...",
+                         "{} est parti suite à une rupture de stock de biscuits *Belvita*",
+                         "{} ne supportait plus d'être l'*Omega* du serveur.", "{} a paniqué une fois de plus.",
+                         "{}, itsbhuge mostaje", "{} s'est *enfin* barré !", "Plus besoin de le bloquer, {} est parti !",
+                         "Boop bip boup {} bip", "{} a pris sa retraite.",
+                         "{} a disparu dans des conditions encore incertaines...", "Non pas toi {} ! 😢",
+                         "{} a quitté. Un de plus ou un de moins hein...",
+                         "{} était de toute évidence trop underground pour ce serveur de normies.",
+                         "{} a refusé de *checker ses privilèges* et en a payé le prix.",
+                         "{} est parti. C'est tellement triste j'en ai recraché mes céréales.",
+                         "{} a quitté/20", "{} est parti voir le serveur adulte.", "Ce n'est qu'un *au revoir* {} !"]
 
     async def loop(self):
         await self.bot.wait_until_ready()
@@ -490,6 +501,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         txt += "Origine estimee\t{}\n".format(strorigine)
         txt += "Solde BitKheys\t{}\n".format(p["ECO"]["SOLDE"])
         txt += "Bio\t{}\n".format(p["SYS"]["BIO"])
+        txt += "Grade\t{}\n".format(self.app.grade(user)[0])
         txt += "\n--- Stats ---\n"
         txt += "Nb msg reel\t{}\n".format(p["DATA"]["MSG_REEL"])
         txt += "Nb msg total\t{}\n".format(p["DATA"]["MSG_PART"])
@@ -863,8 +875,12 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         p["SYS"]["QUIT_SAVE"] = [r.name for r in user.roles]
         self.app.add_past(user, "Quitte le serveur")
         msgchannel = self.bot.get_channel("204585334925819904")  # HALL
-        quitmsg = self.quit_msg if not self.quit_msg_event else self.quit_msg_event
-        await self.bot.send_message(msgchannel, "**>** " + random.choice(quitmsg).format(user.name))
+        grade, img, nomb = self.app.grade(user)
+        quitmsg = random.choice(self.quit_msg).format("<@" + str(user.id) + ">")
+        em = discord.Embed(description="👋 | {}".format(quitmsg), color=user.color)
+        bip = user.top_role.name
+        em.set_footer(text="Ex-{} | {}".format(grade.lower(), bip), icon_url=img)
+        await self.bot.send_message(msgchannel, embed=em)
 
     async def prism_perso(self, before, after):
         p = self.app.open(after, "DATA")
