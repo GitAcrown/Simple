@@ -878,7 +878,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         grade, img, nomb = self.app.grade(user)
         quitmsg = random.choice(self.quit_msg).format("<@" + str(user.id) + ">")
         em = discord.Embed(description="👋 | {}".format(quitmsg), color=user.color)
-        bip = user.top_role.name
+        bip = user.top_role.name if user.top_role.name != "@everyone" else "Aucun rôle"
         em.set_footer(text="Ex-{} | {}".format(grade.lower(), bip), icon_url=img)
         await self.bot.send_message(msgchannel, embed=em)
 
