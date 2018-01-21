@@ -879,7 +879,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         quitmsg = random.choice(self.quit_msg).format("<@" + str(user.id) + ">")
         em = discord.Embed(description="👋 - {}".format(quitmsg), color=user.color)
         bip = user.top_role.name if user.top_role.name != "@everyone" else "Aucun rôle"
-        em.set_footer(text="{} | {}".format(grade, bip), icon_url=img)
+        em.set_footer(text="{} | {}".format(user.display_name, bip), icon_url=img)
         await self.bot.send_message(msgchannel, embed=em)
 
     async def prism_perso(self, before, after):
