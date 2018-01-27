@@ -179,7 +179,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         await self.bot.wait_until_ready()
         try:
             await asyncio.sleep(6)  # Temps de mise en route
-            n = 0
+            n = 1
             while True:
                 self.app.save()
                 fileIO("data/prism/global.json", "save", self.glb)
@@ -382,7 +382,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
             await ctx.invoke(self.show, user=user)
 
     @prism_card.command(pass_context=True)
-    async def show(self, ctx, user: discord.Member = None):
+    async def beta(self, ctx, user: discord.Member = None):
         """Affiche la carte de membre d'un utilisateur (Nouvelle version)"""
         if not user:
             user = ctx.message.author
@@ -455,7 +455,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                 if top:
                     clt = []
                     for t in top:
-                        clt.append("{} | *{}*".format(t[0], t[1]))
+                        clt.append("{} - *{}*".format(t[0], t[1]))
                     statstxt += "**Emojis favoris**\n{}\n".format("\n".join(clt))
                 em.add_field(name="Stats", value=statstxt)
 
@@ -533,7 +533,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                 continue
 
     @prism_card.command(pass_context=True)
-    async def old(self, ctx, user: discord.Member = None):
+    async def show(self, ctx, user: discord.Member = None):
         """Affiche la carte de membre (Ancienne version) d'un utilisateur ou de soi-même le cas écheant"""
         if not user:
             user = ctx.message.author
@@ -558,13 +558,14 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                                          "**Enregistrement:** {} (**{}**j)\n"
                                          "**Dernier msg:** {}".format(datecreation, creation, datearrive, arrive,
                                                                       strorigine, since_origine, dmsg))
-        roles = [r.name for r in user.roles if r.name != "@everyone"]
-        for role in roles:
-            if role.startswith("nvoice"):
-                roles.remove(role)
-        roles = ", ".join(roles)
-        em.add_field(name="Rôles", value="***{}***\n\n{}".format(roles if roles else "***Aucun***",
-                                                                 self.rolebarre(user)))
+        roles = []
+        for r in user.roles:
+            if r.name != "@everyone":
+                if r.mentionable:
+                    roles.append(r.mention)
+                else:
+                    roles.append("*" + r.name + "*")
+        em.add_field(name="Rôles", value="{}\n\n{}".format(roles if roles else "**Aucun**", self.rolebarre(user)))
         pseudoslist = data["DATA"]["PSEUDOS"] if data["DATA"]["PSEUDOS"] else "?"
         surnomslist = data["DATA"]["SURNOMS"] if data["DATA"]["SURNOMS"] else "?"
         psd = pseudoslist[-3:] if pseudoslist != "?" else []
