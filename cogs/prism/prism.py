@@ -398,7 +398,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
             em.set_thumbnail(url=user.avatar_url if user.avatar_url else self.fake_avatar())
             for r in user.roles:
                 if r.name != "@everyone":
-                    if r.mentionnable:
+                    if r.mentionable:
                         roles.append(r.mention)
                     else:
                         roles.append("*" + r.name + "*")
