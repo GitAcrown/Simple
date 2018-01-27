@@ -414,15 +414,15 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                 dmsg = data["SYS"]["D_VU"]
                 ptxt = "**ID** `{}`\n".format(user.id)
                 ptxt += "**Rôles** {}\n".format(" ,".join(roles) if roles else "Aucun")
-                ptxt += "**Création** `{}` (**{}**j)".format(datecreation, creation)
-                ptxt += "**Arrivée** `{}` (**{}**j)".format(datearrive, arrive)
-                ptxt += "**Apparition** `{}` (**{}**j)".format(strorigine, since_origine)
-                ptxt += "**Dernier msg** `{}`".format(dmsg)
+                ptxt += "**Création** `{}` (**{}**j)\n".format(datecreation, creation)
+                ptxt += "**Arrivée** `{}` (**{}**j)\n".format(datearrive, arrive)
+                ptxt += "**Apparition** `{}` (**{}**j)\n".format(strorigine, since_origine)
+                ptxt += "**Dernier msg** `{}\n`".format(dmsg)
                 ptxt += "\n"
                 if user.voice_channel:
-                    ptxt += "- **En vocal sur *{}***".format(user.voice_channel.name)
+                    ptxt += "- **En vocal sur *{}***\n".format(user.voice_channel.name)
                 if user.top_role.name == "Prison":
-                    ptxt += "- **En prison**"
+                    ptxt += "- **En prison**\n"
                 if user.game:
                     if user.game.name:
                         ptxt += "- **Joue à *{}***\n".format(user.game.name)
