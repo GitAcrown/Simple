@@ -63,7 +63,8 @@ class PRISMApp:
                         "QUIT_SAVE": [],
                         "D_VU": None,
                         "SEXE": "neutre",
-                        "LIMITE_GRADE": None},
+                        "LIMITE_GRADE": None,
+                        "BADGES": {}},
                 "ECO": {"SOLDE": 0}}
         for e in tree:
             for i in tree[e]:
@@ -382,7 +383,151 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     @prism_card.command(pass_context=True)
     async def show(self, ctx, user: discord.Member = None):
-        """Affiche la carte de membre d'un utilisateur ou de soi-même le cas écheant"""
+        """Affiche la carte de membre d'un utilisateur (Nouvelle version)"""
+        if not user:
+            user = ctx.message.author
+        page = "home"
+        menu = None
+        while True:
+            today = time.strftime("%d/%m/%Y", time.localtime())
+            timestamp = datetime.datetime.now()
+            data = self.app.open(user)
+            roles = []
+            formatname = user.name if user.display_name == user.name else "{} «{}»".format(user.name, user.display_name)
+            em = discord.Embed(title=formatname, description=data["SYS"]["BIO"], color=self.color_status(user))
+            em.set_thumbnail(url=user.avatar_url if user.avatar_url else self.fake_avatar())
+            for r in user.roles:
+                if r.name != "@everyone":
+                    if r.mentionnable:
+                        roles.append(r.mention)
+                    else:
+                        roles.append("*" + r.name + "*")
+            if page == "home":
+                emolist = ["📊","⏱","🏅"]
+                creation = (timestamp - user.created_at).days
+                datecreation = user.created_at.strftime("%d/%m/%Y")
+                arrive = (timestamp - user.joined_at).days
+                datearrive = user.joined_at.strftime("%d/%m/%Y")
+                origine = datetime.datetime.fromtimestamp(data["ORIGINE"])
+                since_origine = (timestamp - origine).days
+                strorigine = datetime.datetime.strftime(origine, "%d/%m/%Y %H:%M")
+                dmsg = data["SYS"]["D_VU"]
+                ptxt = "**ID** `{}`\n".format(user.id)
+                ptxt += "**Rôles** {}\n".format(" ,".join(roles) if roles else "Aucun")
+                ptxt += "**Création** `{}` (**{}**j)".format(datecreation, creation)
+                ptxt += "**Arrivée** `{}` (**{}**j)".format(datearrive, arrive)
+                ptxt += "**Apparition** `{}` (**{}**j)".format(strorigine, since_origine)
+                ptxt += "**Dernier msg** `{}`".format(dmsg)
+                ptxt += "\n"
+                if user.voice_channel:
+                    ptxt += "- **En vocal sur *{}***".format(user.voice_channel.name)
+                if user.top_role.name == "Prison":
+                    ptxt += "- **En prison**"
+                if user.game:
+                    if user.game.name:
+                        ptxt += "- **Joue à *{}***\n".format(user.game.name)
+                em.add_field(name="Données", value=ptxt)
+
+                pseudoslist = data["DATA"]["PSEUDOS"] if data["DATA"]["PSEUDOS"] else "?"
+                surnomslist = data["DATA"]["SURNOMS"] if data["DATA"]["SURNOMS"] else "?"
+                psd = pseudoslist[-3:] if pseudoslist != "?" else []
+                psd.reverse()
+                srn = surnomslist[-3:] if surnomslist != "?" else []
+                srn.reverse()
+                em.add_field(name="Anciennement", value="**Pseudos** {}\n**Surnoms** {}".format(
+                    ", ".join(psd) if psd else "Aucun", ", ".join(srn) if srn else "Aucun"))
+
+            elif page == "stats":
+                origine = datetime.datetime.fromtimestamp(data["ORIGINE"])
+                jours = (timestamp - origine).days
+                statstxt = ""
+                emolist = ["👤", "⏱", "🏅"]
+                msgjour = round(data["DATA"]["MSG_PART"] / jours, 2)
+                statstxt += "**{}** msg/jour\n".format(msgjour)
+                motsmsg = round(data["DATA"]["MOTS_PART"] / data["DATA"]["MSG_PART"], 2)
+                statstxt += "**{}** mots/msg\n".format(motsmsg)
+                ltrmsg = round(data["DATA"]["LETTRES_PART"] / data["DATA"]["MSG_PART"], 2)
+                statstxt += "**{}** lettres/msg\n".format(ltrmsg)
+                top = self.top_emote_perso(user, 5)
+                if top:
+                    clt = []
+                    for t in top:
+                        clt.append("{} | *{}*".format(t[0], t[1]))
+                    statstxt += "**Emojis favoris** {}\n".format("\n".join(clt))
+                em.add_field(name="Stats", value=statstxt)
+
+            elif page == "hist":
+                txt = ""
+                emolist = ["👤", "📊", "🏅"]
+                if data["PAST"]:
+                    b = data["PAST"][-5:]
+                    b.reverse()
+                    for e in b:
+                        if e[1] == today:
+                            txt += "**{}** - {}\n".format(e[0], e[2])
+                        else:
+                            txt += "**{}** - {}\n".format(e[1], e[2])
+                else:
+                    txt = "Aucune action"
+                em.add_field(name="Historique", value=txt)
+
+            elif page == "badges":
+                txt = ""
+                emolist = ["👤", "📊", "⏱"]
+                if data["SYS"]["BADGES"]:
+                    lb = [[b["DATE"], b["NOM"], b["DESC"]] for b in data["SYS"]["BADGES"]]
+                    lb = sorted(lb, key=operator.itemgetter(0), reverse=True)
+                    for e in lb[-5:]:
+                        txt += "**{}** - *{}*\n".format(e[1], e[2])
+                else:
+                    txt = "**Aucun succès** (Non disponibles)"
+                em.add_field(name="Succès", value=txt)
+
+            em.set_footer(text="{} | Utilisez les réactions pour naviguer".format(self.app.grade(user)[0]),
+                          icon_url=self.app.grade(user)[1])
+            if menu is None:
+                menu = await self.bot.say(embed=em)
+            else:
+                try:
+                    await self.bot.clear_reactions(menu)
+                except:
+                    pass
+                menu = await self.bot.edit_message(menu, embed=em)
+
+            for e in emolist:
+                await self.bot.add_reaction(menu, e)
+            act = await self.bot.wait_for_reaction(emolist, message=menu, timeout=60,
+                                                   check=self.check)
+            if act is None:
+                em.set_footer(text="{} | Session expirée".format(self.app.grade(user)[0]),
+                              icon_url=self.app.grade(user)[1])
+                await self.bot.edit_message(menu, embed=em)
+                try:
+                    await self.bot.clear_reactions(menu)
+                except:
+                    pass
+                return
+            elif act.reaction.emoji == "👤":
+                page = "home"
+            elif act.reaction.emoji == "📊":
+                page = "stats"
+            elif act.reaction.emoji == "⏱":
+                page = "hist"
+            elif act.reaction.emoji == "🏅":
+                page = "badges"
+            else:
+                em.set_footer(text="{} | Page indisponible".format(self.app.grade(user)[0]),
+                              icon_url=self.app.grade(user)[1])
+                await self.bot.edit_message(menu, embed=em)
+                try:
+                    await self.bot.clear_reactions(menu)
+                except:
+                    pass
+                continue
+
+    @prism_card.command(pass_context=True)
+    async def old(self, ctx, user: discord.Member = None):
+        """Affiche la carte de membre (Ancienne version) d'un utilisateur ou de soi-même le cas écheant"""
         if not user:
             user = ctx.message.author
         today = time.strftime("%d/%m/%Y", time.localtime())
@@ -420,7 +565,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         srn = surnomslist[-3:] if surnomslist != "?" else []
         srn.reverse()
         statstxt = ""
-        jours = self.since(user, "jour") if self.since(user, "jour") > arrive else arrive
+        jours = since_origine
         msgjour = round(data["DATA"]["MSG_PART"] / jours, 2)
         statstxt += "**{}** msg/jour\n".format(msgjour)
         motsmsg = round(data["DATA"]["MOTS_PART"] / data["DATA"]["MSG_PART"], 2)
