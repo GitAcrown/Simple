@@ -394,8 +394,6 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
             data = self.app.open(user)
             roles = []
             formatname = user.name if user.display_name == user.name else "{} «{}»".format(user.name, user.display_name)
-            em = discord.Embed(title=formatname, description=data["SYS"]["BIO"], color=self.color_status(user))
-            em.set_thumbnail(url=user.avatar_url if user.avatar_url else self.fake_avatar())
             for r in user.roles:
                 if r.name != "@everyone":
                     if r.mentionable:
@@ -403,6 +401,8 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                     else:
                         roles.append("*" + r.name + "*")
             if page == "home":
+                em = discord.Embed(title=formatname, description=data["SYS"]["BIO"], color=self.color_status(user))
+                em.set_thumbnail(url=user.avatar_url if user.avatar_url else self.fake_avatar())
                 emolist = ["📊","⏱","🏅"]
                 creation = (timestamp - user.created_at).days
                 datecreation = user.created_at.strftime("%d/%m/%Y")
@@ -438,6 +438,8 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                     ", ".join(psd) if psd else "Aucun", ", ".join(srn) if srn else "Aucun"))
 
             elif page == "stats":
+                em = discord.Embed(title=formatname, description=data["SYS"]["BIO"], color=self.color_status(user))
+                em.set_thumbnail(url=user.avatar_url if user.avatar_url else self.fake_avatar())
                 origine = datetime.datetime.fromtimestamp(data["ORIGINE"])
                 jours = (timestamp - origine).days
                 statstxt = ""
@@ -453,10 +455,12 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                     clt = []
                     for t in top:
                         clt.append("{} | *{}*".format(t[0], t[1]))
-                    statstxt += "**Emojis favoris** {}\n".format("\n".join(clt))
+                    statstxt += "**Emojis favoris**\n{}\n".format("\n".join(clt))
                 em.add_field(name="Stats", value=statstxt)
 
             elif page == "hist":
+                em = discord.Embed(title=formatname, description=data["SYS"]["BIO"], color=self.color_status(user))
+                em.set_thumbnail(url=user.avatar_url if user.avatar_url else self.fake_avatar())
                 txt = ""
                 emolist = ["👤", "📊", "🏅"]
                 if data["PAST"]:
@@ -472,6 +476,8 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                 em.add_field(name="Historique", value=txt)
 
             elif page == "badges":
+                em = discord.Embed(title=formatname, description=data["SYS"]["BIO"], color=self.color_status(user))
+                em.set_thumbnail(url=user.avatar_url if user.avatar_url else self.fake_avatar())
                 txt = ""
                 emolist = ["👤", "📊", "⏱"]
                 if data["SYS"]["BADGES"]:
