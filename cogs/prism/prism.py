@@ -389,6 +389,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         page = "home"
         menu = None
         while True:
+            await asyncio.sleep(1)
             today = time.strftime("%d/%m/%Y", time.localtime())
             timestamp = datetime.datetime.now()
             data = self.app.open(user)
@@ -403,7 +404,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
             if page == "home":
                 em = discord.Embed(title=formatname, description=data["SYS"]["BIO"], color=self.color_status(user))
                 em.set_thumbnail(url=user.avatar_url if user.avatar_url else self.fake_avatar())
-                emolist = ["📊","⏱","🏅"]
+                emolist = ["📊", "⏱", "🏅"]
                 creation = (timestamp - user.created_at).days
                 datecreation = user.created_at.strftime("%d/%m/%Y")
                 arrive = (timestamp - user.joined_at).days
