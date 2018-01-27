@@ -565,7 +565,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                     roles.append(r.mention)
                 else:
                     roles.append("*" + r.name + "*")
-        em.add_field(name="Rôles", value="{}\n\n{}".format(roles if roles else "**Aucun**", self.rolebarre(user)))
+        em.add_field(name="Rôles", value="{}\n\n{}".format(", ".join(roles) if roles else "**Aucun**", self.rolebarre(user)))
         pseudoslist = data["DATA"]["PSEUDOS"] if data["DATA"]["PSEUDOS"] else "?"
         surnomslist = data["DATA"]["SURNOMS"] if data["DATA"]["SURNOMS"] else "?"
         psd = pseudoslist[-3:] if pseudoslist != "?" else []
