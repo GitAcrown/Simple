@@ -372,20 +372,27 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     # COMMANDES +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @commands.group(name="card", aliases=["c"], pass_context=True, invoke_without_command=True, no_pm=True)
-    async def prism_card(self, ctx, user: discord.Member = None):
+    async def prism_card(self, ctx, user: discord.Member or str = None):
         """Ensemble de commandes relatives à la Carte de Membre fournie par le système PRISM
 
         Par défaut, renvoie la carte de membre de l'utilisateur visé (ou soi-même)"""
         if ctx.invoked_subcommand is None:
             if not user:
                 user = ctx.message.author
+            if type(user) is str:
+                if len(user) == 18:
+                    user = ctx.message.server.get_member(user)
             await ctx.invoke(self.show, user=user)
 
     @prism_card.command(pass_context=True)
-    async def beta(self, ctx, user: discord.Member = None):
+    async def beta(self, ctx, user: discord.Member or str = None):
         """Affiche la carte de membre d'un utilisateur (Nouvelle version)"""
+        server = ctx.message.server
         if not user:
             user = ctx.message.author
+        if type(user) is str:
+            if len(user) == 18:
+                user = server.get_member(user)
         page = "home"
         menu = None
         while True:
@@ -537,6 +544,9 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         """Affiche la carte de membre (Ancienne version) d'un utilisateur ou de soi-même le cas écheant"""
         if not user:
             user = ctx.message.author
+        if type(user) is str:
+            if len(user) == 18:
+                user = ctx.message.server.get_member(user)
         today = time.strftime("%d/%m/%Y", time.localtime())
         timestamp = datetime.datetime.now()
         data = self.app.open(user)
