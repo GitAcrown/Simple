@@ -73,7 +73,8 @@ class PRISMApp:
                 "ECO": {"SOLDE": 0}}
         for e in tree:
             if e not in self.data[user.id]:
-                self.data[user.id][e] = tree[e]
+                if user:
+                    self.data[user.id][e] = tree[e]
             for i in tree[e]:
                 if user:
                     if i not in self.data[user.id][e]:
