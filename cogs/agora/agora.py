@@ -345,6 +345,7 @@ class Agora:
                     await self.bot.add_reaction(msg, e)
                 except:
                     pass
+            await self.bot.add_reaction(msg, "📱")
             await self.bot.pin_message(msg)
         else:
             await self.bot.say("**Format** | `{}fp Question ?;Réponse 1;Réponse 2;Réponse N...($)`".format(ctx.prefix))
@@ -363,6 +364,21 @@ class Agora:
                                 await self.bot.edit_message(message, embed=self.poll_embed(message.id))
                                 await self.bot.send_message(user, "**#{}** | Merci d'avoir voté !"
                                                                   "".format(pid))
+                    elif reaction.emoji == "📱":
+                        txt = "**AFFICHAGE MOBILE** - ***{}***\n\n".format(poll["TITRE"])
+                        reponses = poll["REPONSES"]
+                        rtx = stx = ""
+                        tot = sum([poll["R_STATS"][p]["NB"] for p in poll["R_STATS"]])
+                        for r in reponses:
+                            nb = poll["R_STATS"][r]["NB"]
+                            emoji = poll["R_STATS"][r]["EMOJI"]
+                            prc = nb / tot if int(tot) > 0 else 0
+                            rtx += "\{} - **{}**\n".format(emoji, r)
+                            stx += "\{} - **{}** (*{}*%)\n".format(emoji, nb, round(prc * 100, 2))
+                        txt += "__**Réponses**__\n{}\n".format(rtx)
+                        txt += "__**Stats**__\n{}".format(stx)
+                        await self.bot.send_message(user, txt)
+                        await self.bot.remove_reaction(message, reaction.emoji, user)
                     else:
                         await self.bot.remove_reaction(message, reaction.emoji, user)
                 else:
