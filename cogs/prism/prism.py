@@ -63,8 +63,13 @@ class PRISMApp:
                         "QUIT_SAVE": [],
                         "D_VU": None,
                         "SEXE": "neutre",
-                        "LIMITE_GRADE": None,
-                        "BADGES": {}},
+                        "LIMITE_GRADE": None},
+                "SOC": {"SUCCES": {},
+                        "FLAMMES": [],
+                        "MSGFLUX": {},
+                        "RAWBIO" : None,
+                        "MSGSAVE": {},
+                        "WALLURL": None},
                 "ECO": {"SOLDE": 0}}
         for e in tree:
             for i in tree[e]:
@@ -369,7 +374,19 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                 count += self.app.open(member, "DATA")["MSG_PART"]
         return count
 
+    def proc_txt(self, txt: str, *, auteur : discord.Member, message : discord.Message, channel : discord.Channel):
+
+
     # COMMANDES +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    @commands.command(pass_context=True, aliases=["s", "soc"], no_pm=True)
+    async def social(self, ctx, user: discord.Member = None):
+        """Affiche le profil SOCIAL du membre"""
+        if not user:
+            user = ctx.message.author
+        flamme = "🔥"
+        data = self.app.open(user, "SOC")
+        em = discord.Embed(description=data["RAWBIO"])
 
     @commands.group(name="card", aliases=["c"], pass_context=True, invoke_without_command=True, no_pm=True)
     async def prism_card(self, ctx, user: discord.Member or str = None):
