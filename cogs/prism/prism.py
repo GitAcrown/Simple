@@ -374,7 +374,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                 count += self.app.open(member, "DATA")["MSG_PART"]
         return count
 
-    def proc_txt(self, txt: str, *, auteur : discord.Member, message : discord.Message, channel : discord.Channel):
+    ### def proc_txt(self, txt: str, *, auteur : discord.Member, message : discord.Message, channel : discord.Channel):
 
 
     # COMMANDES +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
