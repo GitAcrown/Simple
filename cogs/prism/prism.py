@@ -35,7 +35,7 @@ class PRISMApp:
                                    range(4)))
             self.data[user.id] = {"SID": c, "ORIGINE": time.time(), "ECO": {},
                                   "DATA": {"PSEUDOS": [], "SURNOMS": [], "MSG_REEL": 0, "MSG_PART": 0},
-                                  "SYS": {}, "PAST": [], "JEUX": {}}
+                                  "SYS": {}, "PAST": [], "JEUX": {}, "SOC": {}}
             self.update(user)
             if user.id in self.old:
                 self.data[user.id]["SID"] = self.old[user.id]["SID"]
@@ -46,7 +46,7 @@ class PRISMApp:
                 self.data[user.id]["DATA"]["MSG_PART"] = self.old[user.id]["DATA"]["MSG_PART"]
         return self.data[user.id][category] if category else self.data[user.id]
 
-    def update(self, user: discord.Member or discord.User = None):
+    def update(self, user: discord.Member = None):
         tree = {"DATA": {"PSEUDOS": [user.name] if user else [],
                          "SURNOMS": [user.display_name] if user else [],
                          "MSG_PART": 0,
@@ -72,6 +72,8 @@ class PRISMApp:
                         "WALLURL": None},
                 "ECO": {"SOLDE": 0}}
         for e in tree:
+            if e not in self.data[user.id]:
+                self.data[user.id][e] = tree[e]
             for i in tree[e]:
                 if user:
                     if i not in self.data[user.id][e]:
