@@ -381,7 +381,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                 user = ctx.message.author
             if type(user) is str:
                 if len(user) == 18:
-                    user = self.bot.get_user(user)
+                    user = self.bot.get_user_info(user)
             await ctx.invoke(self.show, user=user)
 
     @prism_card.command(pass_context=True)
@@ -392,7 +392,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
             user = ctx.message.author
         if type(user) is str:
             if len(user) == 18:
-                user = self.bot.get_user(user)
+                user = self.bot.get_user_info(user)
         page = "home"
         menu = None
         while True:
@@ -546,7 +546,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
             user = ctx.message.author
         if type(user) is str:
             if len(user) == 18:
-                user = self.bot.get_user(user)
+                user = self.bot.get_user_info(user)
         today = time.strftime("%d/%m/%Y", time.localtime())
         timestamp = datetime.datetime.now()
         data = self.app.open(user)
