@@ -540,7 +540,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                 continue
 
     @prism_card.command(pass_context=True)
-    async def show(self, ctx, user: discord.Member = None):
+    async def show(self, ctx, user: discord.User = None):
         """Affiche la carte de membre (Ancienne version) d'un utilisateur ou de soi-même le cas écheant"""
         if not user:
             user = ctx.message.author
