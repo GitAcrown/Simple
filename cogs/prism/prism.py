@@ -28,7 +28,7 @@ class PRISMApp:
         fileIO("data/prism/data.json", "save", self.data)
         return True
 
-    def open(self, user: discord.Member, category: str = None):
+    def open(self, user: discord.Member or discord.User, category: str = None):
         """Retourne un dict contenant toutes les informations du membre"""
         if user.id not in self.data:
             c = "//" + str(''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in
@@ -46,7 +46,7 @@ class PRISMApp:
                 self.data[user.id]["DATA"]["MSG_PART"] = self.old[user.id]["DATA"]["MSG_PART"]
         return self.data[user.id][category] if category else self.data[user.id]
 
-    def update(self, user: discord.Member = None):
+    def update(self, user: discord.Member or discord.User = None):
         tree = {"DATA": {"PSEUDOS": [user.name] if user else [],
                          "SURNOMS": [user.display_name] if user else [],
                          "MSG_PART": 0,
@@ -77,7 +77,7 @@ class PRISMApp:
                             self.data[u][e][i] = tree[e][i]
         return True
 
-    def add_past(self, user: discord.Member, event: str):
+    def add_past(self, user: discord.Member or discord.User, event: str):
         p = self.open(user)
         jour = time.strftime("%d/%m/%Y", time.localtime())
         heure = time.strftime("%H:%M", time.localtime())
@@ -96,7 +96,7 @@ class PRISMApp:
                         dispo.append(g)
         return dispo
 
-    def grade(self, user: discord.Member):
+    def grade(self, user: discord.Member or discord.User):
         data = self.open(user)
         roles = [r.name for r in user.roles]
         msg = data["DATA"]["MSG_REEL"]
@@ -206,7 +206,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                                                 "EMOJIS": {}}
         return self.glb[server.id][date][heure]
 
-    def color_status(self, user: discord.Member):
+    def color_status(self, user: discord.Member or discord.User):
         s = user.status
         if not user.bot:
             if s == discord.Status.online:
@@ -225,7 +225,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
              "https://i.imgur.com/yltqljv.png", "https://i.imgur.com/SN2E0Kc.png"]
         return random.choice(l)
 
-    def since(self, user: discord.Member, format=None):
+    def since(self, user: discord.Member or discord.User, format=None):
         origine = self.app.open(user)["ORIGINE"]
         origine = datetime.datetime.fromtimestamp(origine)
         s = (datetime.datetime.now() - origine).seconds
@@ -240,7 +240,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         if format == "annee": return sa
         return s
 
-    def top_emote_perso(self, user: discord.Member, top: int = 3):
+    def top_emote_perso(self, user: discord.Member or discord.User, top: int = 3):
         p = self.app.open(user, "DATA")
         if p["EMOJIS"]:
             liste = [[r, p["EMOJIS"][r]] for r in p["EMOJIS"]]
@@ -381,7 +381,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                 user = ctx.message.author
             if type(user) is str:
                 if len(user) == 18:
-                    user = ctx.message.server.get_member(user)
+                    user = self.bot.get_user(user)
             await ctx.invoke(self.show, user=user)
 
     @prism_card.command(pass_context=True)
@@ -392,7 +392,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
             user = ctx.message.author
         if type(user) is str:
             if len(user) == 18:
-                user = server.get_member(user)
+                user = self.bot.get_user(user)
         page = "home"
         menu = None
         while True:
@@ -546,7 +546,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
             user = ctx.message.author
         if type(user) is str:
             if len(user) == 18:
-                user = ctx.message.server.get_member(user)
+                user = self.bot.get_user(user)
         today = time.strftime("%d/%m/%Y", time.localtime())
         timestamp = datetime.datetime.now()
         data = self.app.open(user)
