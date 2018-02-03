@@ -72,12 +72,12 @@ class PRISMApp:
                         "WALLURL": None},
                 "ECO": {"SOLDE": 0}}
         for e in tree:
-            if e not in self.data[user.id]:
-                if user:
+            if user:
+                if e not in self.data[user.id]:
                     self.data[user.id][e] = tree[e]
-                else:
-                    for u in self.data:
-                        self.data[u][e] = tree[e]
+            else:
+                for u in self.data:
+                    self.data[u][e] = tree[e]
             for i in tree[e]:
                 if user:
                     if i not in self.data[user.id][e]:
