@@ -380,7 +380,16 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                 count += self.app.open(member, "DATA")["MSG_PART"]
         return count
 
-    ### def proc_txt(self, txt: str, *, auteur : discord.Member, message : discord.Message, channel : discord.Channel):
+    def proc_txt(self, txt: str, *, auteur : discord.Member, message : discord.Message, channel : discord.Channel):
+        """Prend un texte balisé et le transforme en texte formaté avec les balises correspondantes
+        BALISES :
+        {auteur} = auteur (.name)
+        {salon} = salon (.name)
+        {message} = message (.content)"""
+        if not auteur and message:
+            auteur = message.author
+        if not channel and message:
+            channel = message.channel
 
 
     # COMMANDES +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -520,7 +529,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                     txt = "**Aucun succès** (Non disponibles)"
                 em.add_field(name="Succès", value=txt)
 
-            em.set_footer(text="{} | Utilisez les réactions pour naviguer".format(self.app.grade(user)[0]),
+            em.set_footer(text="{} | Utilisez les réactions pour naviguer ({})".format(self.app.grade(user)[0], page.title()),
                           icon_url=self.app.grade(user)[1])
             if menu is None:
                 menu = await self.bot.say(embed=em)
