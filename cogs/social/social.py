@@ -178,7 +178,7 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
     def __init__(self, bot):
         self.bot = bot
         self.api = SocialAPI(bot, "data/social/user.json")  # SocialAPI
-        self._save_instance = {"COUNT": 0, "NEED": 200, "SAVETIME": time.time() + 300}
+        self._save_instance = {"COUNT": 0, "NEED": 200, "SAVETIME": time.time() + 300, "FIRST": False}
         self.quit_msg = ["Au revoir {} !", "Bye bye {}.", "{} s'est trompé de bouton.",
                          "{} a été suicidé de deux bans dans le dos.", "{} a ragequit le serveur.",
                          "GAME OVER {}", "A jamais {} !", "Les meilleurs partent en premier, sauf {}...",
@@ -203,6 +203,9 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
                          "{} a quitté/20", "{} est parti voir le serveur adulte.", "Ce n'est qu'un *au revoir* {} !"]
 
     def smart_save(self):
+        if not self._save_instance["FIRST"]:
+            self.api.apisave()
+            self._save_instance["FIRST"] = True
         self._save_instance["COUNT"] += 1
         if self._save_instance["COUNT"] >= self._save_instance["NEED"]:
             self._save_instance["COUNT"] = 0
