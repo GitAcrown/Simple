@@ -34,6 +34,7 @@ class SocialAPI:
             self.user[user.id] = {"CLEF": clef,
                                   "STATS": {},
                                   "SOC": {},
+                                  "ECO": {},
                                   "LOGS": [],
                                   "ENRG": time.time()}
             self.update(user)
@@ -205,11 +206,22 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
         if d["COUNT"] >= d["NEED"]:
             d["COUNT"] = 0
             self.api.save()
+            print("MAJ Réalisée: N={}".format(d["NEED"]))
             # TODO Ajouter Log réussite
             if time.time() < d["SAVETIME"]:
-                d["NEED"] += 20
+                if d["NEED"] < 1000:
+                    d["NEED"] += 20
                 d["SAVETIME"] = time.time() + 300
+                print("MAJ Allongement pour N={}".format(d["NEED"]))
                 # TODO Ajouter Log allongement
+            elif time.time() > d["SAVETIME"] + 300:
+                if d["NEED"] > 100:
+                    d["NEED"] -= 40
+                d["SAVETIME"] = time.time() + 300
+                print("MAJ Réduction pour N={}".format(d["NEED"]))
+                # TODO Ajouter Log réduction
+            else:
+                d["SAVETIME"] = time.time() + 300
         return True
 
     @commands.group(no_pm=True, pass_context=True)
