@@ -304,9 +304,9 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
             em.set_thumbnail(url=membre.avatar_url)
         em.add_field(name="Données", value="**ID** `{}`\n"
                                            "**Clef** `{}`\n"
-                                           "**Solde** `{}BK`\n"
+                                           "**Solde** `{} BK`\n"
                                            "`{}`\🔥".format(membre.id, data["CLEF"], data["ECO"]["SOLDE"],
-                                                            len(data["SOC"]["FLAMMES"]) - 1))
+                                                            len(data["SOC"]["FLAMMES"])))
         timestamp = ctx.message.timestamp
         creation = (timestamp - membre.created_at).days
         datecreation = membre.created_at.strftime("%d/%m/%Y")
