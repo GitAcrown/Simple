@@ -24,7 +24,7 @@ class SocialAPI:
         self.past_nicknames = dataIO.load_json("data/mod/past_nicknames.json")
         self.update()
 
-    def save(self):
+    def apisave(self):
         fileIO("data/social/user.json", "save", self.user)
         return True
 
@@ -84,7 +84,7 @@ class SocialAPI:
                             if sub not in self.user[u][cat]:
                                 self.user[u][cat][sub] = tree[cat][sub]
         if not user:
-            self.save()
+            self.apisave()
         # TODO Ajouter Log
         return True
 
@@ -202,28 +202,27 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
                          "{} est parti. C'est tellement triste j'en ai recraché mes céréales.",
                          "{} a quitté/20", "{} est parti voir le serveur adulte.", "Ce n'est qu'un *au revoir* {} !"]
 
-    def _save(self):
-        d = self._save_instance
-        d["COUNT"] += 1
-        if d["COUNT"] >= d["NEED"]:
-            d["COUNT"] = 0
-            self.api.save()
-            print("MAJ Réalisée: N={}".format(d["NEED"]))
+    def smart_save(self):
+        self._save_instance["COUNT"] += 1
+        if self._save_instance["COUNT"] >= self._save_instance["NEED"]:
+            self._save_instance["COUNT"] = 0
+            self.api.apisave()
+            print("MAJ Réalisée: N={}".format(self._save_instance["NEED"]))
             # TODO Ajouter Log réussite
-            if time.time() < d["SAVETIME"]:
-                if d["NEED"] < 1000:
-                    d["NEED"] += 20
-                d["SAVETIME"] = time.time() + 300
-                print("MAJ Allongement pour N={}".format(d["NEED"]))
+            if time.time() < self._save_instance["SAVETIME"]:
+                if self._save_instance["NEED"] < 1000:
+                    self._save_instance["NEED"] += 20
+                    self._save_instance["SAVETIME"] = time.time() + 300
+                print("MAJ Allongement pour N={}".format(self._save_instance["NEED"]))
                 # TODO Ajouter Log allongement
-            elif time.time() > d["SAVETIME"] + 300:
-                if d["NEED"] > 100:
-                    d["NEED"] -= 40
-                d["SAVETIME"] = time.time() + 300
-                print("MAJ Réduction pour N={}".format(d["NEED"]))
+            elif time.time() > self._save_instance["SAVETIME"] + 300:
+                if self._save_instance["NEED"] > 100:
+                    self._save_instance["NEED"] -= 40
+                    self._save_instance["SAVETIME"] = time.time() + 300
+                print("MAJ Réduction pour N={}".format(self._save_instance["NEED"]))
                 # TODO Ajouter Log réduction
             else:
-                d["SAVETIME"] = time.time() + 300
+                self._save_instance["SAVETIME"] = time.time() + 300
         return True
 
     @commands.group(no_pm=True, pass_context=True)
@@ -251,6 +250,7 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
             await self.bot.say("**Succès** | Le membre ne sera pas limité dans son grade")
         else:
             await self.bot.say("**Impossible** | La valeur doit être entre 1 et 3 (Voir `&help socmod limite`)")
+        self.smart_save()
 
     @socmod.command(pass_context=True)
     async def restore(self, ctx, user: discord.Member):
@@ -280,6 +280,7 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
         else:
             await self.bot.say("**Impossible** | Aucun rôle n'est restaurable, il est possible qu'ils n'existent plus "
                                "ou que Discord ai changé leurs identifiants.")
+        self.smart_save()
 
     @commands.group(name="carte", aliases=["c"], pass_context=True, invoke_without_command=True, no_pm=True)
     async def _carte(self, ctx, membre: discord.Member = None):
@@ -367,7 +368,7 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
         else:
             await self.bot.say("**Inconnu** | Je ne reconnais que 3 sexes: **Neutre**, **Feminin** et **Masculin**.\n"
                                "*Veillez à ne pas mettre d'accents !*")
-        self._save()
+        self.smart_save()
 
     @_carte.command(pass_context=True)
     async def bio(self, ctx, *texte: str):
@@ -381,7 +382,7 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
             await self.bot.say("**Succès** | Votre bio n'affichera aucun texte.")
         self.api.add_log(ctx.message.author, "Changement de bio")
         u["BIO"] = " ".join(texte)
-        self._save()
+        self.smart_save()
 
     @_carte.command(pass_context=True)
     async def image(self, ctx, url: str= None):
@@ -401,7 +402,7 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
             await self.bot.say("**Retirée** | Aucune image ne s'affichera sur votre carte")
             u["VITRINE"] = None
         self.api.add_log(ctx.message.author, "Image vitrine modifiée")
-        self._save()
+        self.smart_save()
 
 # TRIGGERS ----------------------------------------------
 
@@ -428,7 +429,7 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
                 for i in output:
                     if i in [e.name for e in server.emojis]:
                         p["STATS"]["EMOJIS"][i] = p["STATS"]["EMOJIS"][i] + 1 if i in p["STATS"]["EMOJIS"] else 1
-        self._save()
+        self.smart_save()
 
     async def prism_msgdel(self, message):
         if not hasattr(message, "server"):
@@ -436,7 +437,7 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
         author = message.author
         p = self.api.get(author)
         p["STATS"]["MSG_SUPPR"] += 1
-        self._save()
+        self.smart_save()
 
     async def prism_react(self, reaction, author):
         message = reaction.message
@@ -450,7 +451,7 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
             name = reaction.emoji.name
         if name in [e.name for e in server.emojis]:
             p["STATS"]["EMOJIS"][name] = p["STATS"]["EMOJIS"][name] + 1 if name in p["STATS"]["EMOJIS"] else 1
-        self._save()
+        self.smart_save()
 
     async def prism_join(self, user: discord.Member):
         p = self.api.get(user, "STATS")
@@ -460,7 +461,7 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
             self.api.add_log(user, "Retour sur le serveur")
         else:
             self.api.add_log(user, "Arrivée sur le serveur")
-        self._save()
+        self.smart_save()
 
     async def prism_quit(self, user: discord.Member):
         p = self.api.get(user)
@@ -471,7 +472,7 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
             p["SOC"]["ROLE_SAVE"] = [r.name for r in user.roles if r.name != "@everyone"]
             save = True
         self.api.add_log(user, "Quitte le serveur")
-        self._save()
+        self.smart_save()
         msgchannel = self.bot.get_channel("204585334925819904")  # HALL
         grade, img, nomb = self.api.grade(user)
         quitmsg = random.choice(self.quit_msg).format("<@" + str(user.id) + ">")
@@ -519,7 +520,7 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
         p["STATS"]["QUIT"] += 1
         p["STATS"]["BAN"] += 1
         self.api.add_log(user, "Banni du serveur")
-        self._save()
+        self.smart_save()
 
 
 def check_folders():
