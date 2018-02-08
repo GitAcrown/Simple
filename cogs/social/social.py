@@ -236,6 +236,24 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
             await send_cmd_help(ctx)
 
     @socmod.command(pass_context=True)
+    async def forcesave(self):
+        """Permet de forcer la sauvegarde des données (en cas d'API Discord instable)"""
+        if self.api.apisave():
+            await self.bot.say("**Sauvegarde forcée effectuée avec succès**")
+        else:
+            await self.bot.say("Impossible de réaliser la sauvegarde")
+
+    @socmod.command(pass_context=True, hidden=True)
+    async def editdata(self, ctx, user: discord.Member, sub: str, val: int):
+        """Permet de modifier manuellement la valeur d'une statistique d'un utilisateur"""
+        p = self.api.get(user, "STATS")
+        if sub.upper() in p:
+            p[sub.upper()] = val
+            await self.bot.say("**Valeur modifiée avec succès**")
+        else:
+            await self.bot.say("**Impossible de trouver cette sub-catégorie de STATS**")
+
+    @socmod.command(pass_context=True)
     async def limite(self, ctx, user: discord.Member, lim: int = 3):
         """Permet de limiter le grade du membre visé
         1 - Migrant·e maximum
