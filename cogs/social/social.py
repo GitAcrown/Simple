@@ -178,7 +178,7 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
     def __init__(self, bot):
         self.bot = bot
         self.api = SocialAPI(bot, "data/social/user.json")  # SocialAPI
-        self._save_instance = {"COUNT": 0, "NEED": 200, "SAVETIME": time.time() + 300, "FIRST": False}
+        self._save_instance = {"COUNT": 0, "NEED": 100, "SAVETIME": time.time() + 300, "FIRST": False}
         self.quit_msg = ["Au revoir {} !", "Bye bye {}.", "{} s'est trompé de bouton.",
                          "{} a été suicidé de deux bans dans le dos.", "{} a ragequit le serveur.",
                          "GAME OVER {}", "A jamais {} !", "Les meilleurs partent en premier, sauf {}...",
@@ -213,14 +213,14 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
             print("MAJ Réalisée: N={}".format(self._save_instance["NEED"]))
             # TODO Ajouter Log réussite
             if time.time() < self._save_instance["SAVETIME"]:
-                if self._save_instance["NEED"] < 1000:
-                    self._save_instance["NEED"] += 20
+                if self._save_instance["NEED"] < 500:
+                    self._save_instance["NEED"] += 10
                     self._save_instance["SAVETIME"] = time.time() + 300
                 print("MAJ Allongement pour N={}".format(self._save_instance["NEED"]))
                 # TODO Ajouter Log allongement
             elif time.time() > self._save_instance["SAVETIME"] + 300:
-                if self._save_instance["NEED"] > 100:
-                    self._save_instance["NEED"] -= 40
+                if self._save_instance["NEED"] > 60:
+                    self._save_instance["NEED"] -= 20
                     self._save_instance["SAVETIME"] = time.time() + 300
                 print("MAJ Réduction pour N={}".format(self._save_instance["NEED"]))
                 # TODO Ajouter Log réduction
