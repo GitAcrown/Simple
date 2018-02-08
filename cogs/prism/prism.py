@@ -992,7 +992,7 @@ class Prism:  # MODULE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                 continue
 
 
-            # TRIGGERS ----------------------------------------------
+# TRIGGERS ----------------------------------------------
 
     async def prism_msg(self, message):
         if not hasattr(message, "server"):

@@ -22,6 +22,7 @@ class SocialAPI:
         self.old = dataIO.load_json("data/prism/data.json")
         self.past_names = dataIO.load_json("data/mod/past_names.json")
         self.past_nicknames = dataIO.load_json("data/mod/past_nicknames.json")
+        self.update()
 
     def save(self):
         fileIO("data/social/user.json", "save", self.user)
