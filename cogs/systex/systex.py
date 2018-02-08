@@ -27,7 +27,7 @@ class Systex:
         self.bot = bot
         self.stk = dataIO.load_json("data/systex/stk.json")
         self.user = dataIO.load_json("data/systex/user.json")
-        self.app = self.bot.get_cog('Prism').app
+        self.social = self.bot.get_cog('Social').api
         self.cycle_task = bot.loop.create_task(self.systex_loop())
 
     def save(self):
@@ -42,8 +42,8 @@ class Systex:
     @commands.command(pass_context=True, hidden=True)
     async def sysprism(self, ctx):
         """Permet de s'assurer de la connexion entre Systex et Prism"""
-        await self.bot.say("**Votre grade est {} ({})**".format(self.app.grade(ctx.message.author)[0],
-                                                                self.app.grade(ctx.message.author)[2]))
+        await self.bot.say("**Votre grade est {} ({})**".format(self.social.grade(ctx.message.author)[0],
+                                                                self.social.grade(ctx.message.author)[2]))
 
     def levenshtein(self, s1, s2):
         if len(s1) < len(s2):
@@ -91,7 +91,7 @@ class Systex:
     def add_sticker(self, clef, nom: str, chemin, auteur: discord.Member, url, autbis=None, importe=None,
                     tags=None):
         if tags is None: tags = []
-        grade = self.app.grade(auteur)[2]
+        grade = self.social.grade(auteur)[2]
         if clef not in self.stk:
             autorise = False if not auteur.server_permissions.manage_messages else True
             if grade == 3:
@@ -455,7 +455,7 @@ class Systex:
         Supporte l'upload d'image à travers Discord"""
         author = ctx.message.author
         server = ctx.message.server
-        grade = self.app.grade(author)[2]
+        grade = self.social.grade(author)[2]
         if not tags: tags = []
         if url == "":
             url = None
