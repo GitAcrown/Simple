@@ -84,7 +84,7 @@ class SocialAPI:
                             if sub not in self.user[u][cat]:
                                 self.user[u][cat][sub] = tree[cat][sub]
         if not user:
-            self.apisave()
+            fileIO("data/social/user.json", "save", self.user)
         # TODO Ajouter Log
         return True
 
