@@ -74,7 +74,7 @@ class SocialAPI:
                 for u in self.user:
                     if cat not in self.user[u]:
                         self.user[u][cat] = tree[cat]
-            for sub in cat:
+            for sub in tree[cat]:
                 if user:
                     if sub not in self.user[user.id][cat]:
                         self.user[user.id][cat][sub] = tree[cat][sub]
