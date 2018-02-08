@@ -83,6 +83,8 @@ class SocialAPI:
                         if cat in self.user[u]:  # Sécurité en +
                             if sub not in self.user[u][cat]:
                                 self.user[u][cat][sub] = tree[cat][sub]
+        if not user:
+            self.save()
         # TODO Ajouter Log
         return True
 
