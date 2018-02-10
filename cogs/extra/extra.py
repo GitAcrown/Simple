@@ -5,7 +5,7 @@ import time
 import discord
 from discord.ext import commands
 
-from .utils.dataIO import dataIO, fileIO
+from .utils.dataIO import dataIO
 
 
 class ExtraAPI:
@@ -18,12 +18,12 @@ class ExtraAPI:
         jour = time.strftime("%d/%m/%Y", time.localtime())
         heure = time.strftime("%H:%M", time.localtime())
         self.sys["SYSLOGS"].append([heure, jour, str(niveau), module.upper(), desc, solution])
-        fileIO("data/extra/sys.json", "save", self.sys)
+        dataIO.save_json("data/extra/sys.json", self.sys)
         return True
 
     def resetlogs(self):
         self.sys["SYSLOGS"] = []
-        fileIO("data/extra/sys.json", "save", self.sys)
+        dataIO.save_json("data/extra/sys.json", self.sys)
         return True
 
     def getlogs(self):
