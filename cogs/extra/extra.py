@@ -20,7 +20,7 @@ class ExtraAPI:
         self.sys["SYSLOGS"].append([heure, jour, str(niveau), module.upper(), desc, solution])
         #niveau = 0, 1 ou 2
 
-    def getlogs(self, *parametres):
+    def getlogs(self, parametres):
         if not parametres:
             return self.sys["SYSLOGS"]
         logs = []
