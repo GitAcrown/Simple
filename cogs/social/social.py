@@ -251,8 +251,39 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
             if sub.upper() in p[cat.upper()]:
                 p[cat.upper()][sub.upper()] = val
                 await self.bot.say("**Valeur modifiée avec succès**")
-            else:
-                await self.bot.say("**Impossible de trouver cette sub-catégorie de STATS**")
+                return
+        await self.bot.say("**Impossible de trouver ce chemin de données**")
+
+    @socmod.command(pass_context=True, hidden=True)
+    async def resetdata(self, ctx, user: discord.Member, cat: str, sub: str):
+        """Permet de modifier manuellement la valeur d'une statistique d'un utilisateur"""
+        p = self.api.get(user)
+        tree = tree = {"STATS": {"MSG_TOTAL": 0,
+                          "MSG_SUPPR": 0,
+                          "MSG_CHANS": {},
+                          "EMOJIS": {},
+                          "JOIN": 0,
+                          "QUIT": 0,
+                          "BAN": 0},
+                "SOC": {"BIO": "",
+                        "VITRINE": None,
+                        "SUCCES": {},
+                        "FLAMMES": [],
+                        "MSG_FLUX": {},
+                        "MSG_SAVE": {},
+                        "SEXE": "neutre",
+                        "ROLE_SAVE": [],
+                        "GRADELIMIT": 3},
+                "ECO": {"SOLDE": 100,
+                        "TRS": [],
+                        "SAC": {}}}
+        if cat.upper() in tree and cat.upper() in p:
+            if sub.upper() in tree[cat.upper()] and sub.upper() in p[cat.upper()]:
+                p[cat.upper()][sub.upper()] = tree[cat.upper()][sub.upper()]
+                await self.bot.say("**Succès** | Réinitialisé à `{}`".format(tree[cat.upper()][sub.upper()]))
+                return
+        await self.bot.say("**Impossible de trouver ce chemin de données**")
+
 
     @socmod.command(pass_context=True)
     async def limite(self, ctx, user: discord.Member, lim: int = 3):
