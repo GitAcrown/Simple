@@ -264,10 +264,11 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
             await send_cmd_help(ctx)
 
     @socmod.command(pass_context=True)
-    async def forcesave(self):
+    async def forcesave(self, ctx):
         """Permet de forcer la sauvegarde des données (en cas d'API Discord instable)"""
         if self.api.apisave():
             await self.bot.say("**Sauvegarde forcée effectuée avec succès**")
+            self.logs.logit(0, "smart", "Sauvegarde forcée réalisée par {}".format(ctx.message.author.mention))
         else:
             await self.bot.say("Impossible de réaliser la sauvegarde")
 

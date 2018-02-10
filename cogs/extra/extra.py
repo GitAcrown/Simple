@@ -24,8 +24,8 @@ class ExtraAPI:
         if not parametres:
             return self.sys["SYSLOGS"]
         logs = []
-        parametres = " ".join(parametres)
-        balises = re.compile(r"(jour|module|niveau|ignorer):(\w)", re.IGNORECASE | re.DOTALL).findall(" ".join(parametres))
+        balises = re.compile(r"(jour|module|niveau|ignorer):(\w)", re.IGNORECASE | re.DOTALL).findall(
+            " ".join(parametres))
         for b in balises:
             if b[0] is "module":
                 logs = [l for l in self.sys["SYSLOGS"] if l[3] == b[1].upper()]
