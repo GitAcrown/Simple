@@ -21,12 +21,11 @@ class ExtraAPI:
         fileIO("data/extra/sys.json", "save", self.sys)
         #niveau = 0, 1 ou 2
 
-    def getlogs(self, parametres):
+    def getlogs(self, parametres: list):
         if not parametres:
             return self.sys["SYSLOGS"]
         logs = []
-        balises = re.compile(r"(jour|module|niveau|ignorer):(\w)", re.IGNORECASE | re.DOTALL).findall(
-            " ".join(parametres))
+        balises = re.compile(r"(jour|module|niveau|ignorer):(\w)", re.IGNORECASE | re.DOTALL).findall(" ".join(parametres))
         for b in balises:
             if b[0] is "module":
                 logs = [l for l in self.sys["SYSLOGS"] if l[3] == b[1].upper()]
@@ -62,19 +61,19 @@ class Extra:
             for l in logs[:15]:
                 if l[1] == jour:
                     if l[0] == heure:
-                        "*{}* | **A l'instant** - {}{} [{}]\n".format(l[2], l[4], " > {}".format(l[5]) if l[5] else "",
+                        txt += "*{}* | **A l'instant** - {}{} [{}]\n".format(l[2], l[4], " > {}".format(l[5]) if l[5] else "",
                                                                       l[3])
                     else:
-                        "*{}* | **{}** - {}{} [{}]\n".format(l[2], l[0], l[4], " > {}".format(l[5]) if l[5] else "",
+                        txt += "*{}* | **{}** - {}{} [{}]\n".format(l[2], l[0], l[4], " > {}".format(l[5]) if l[5] else "",
                                                              l[3])
                 else:
-                    "*{}* | **{}** - {}{} [{}]\n".format(l[2], l[1], l[4], " > {}".format(l[5]) if l[5] else "", l[3])
+                    txt += "*{}* | **{}** - {}{} [{}]\n".format(l[2], l[1], l[4], " > {}".format(l[5]) if l[5] else "", l[3])
             em = discord.Embed(title="Logs Bot{}".format("| {}".format("/".join(parametres)) if parametres else ""),
                                description=txt)
             em.set_footer(text="Certains modules peuvent ne pas être compatible avec ce système de logs.")
             await self.bot.say(embed=em)
         else:
-            await self.bot.say("**Erreur** | Aucun log n'est disponible avec les options recherchées.")
+            await self.bot.say("**Erreur** | Aucun log n'est disponible avec les options recherchées (Voir `&help logs`")
 
 
 def check_folders():
