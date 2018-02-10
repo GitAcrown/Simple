@@ -19,7 +19,13 @@ class ExtraAPI:
         heure = time.strftime("%H:%M", time.localtime())
         self.sys["SYSLOGS"].append([heure, jour, str(niveau), module.upper(), desc, solution])
         fileIO("data/extra/sys.json", "save", self.sys)
+        return True
         #niveau = 0, 1 ou 2
+
+    def resetlogs(self):
+        self.sys["SYSLOGS"] = []
+        fileIO("data/extra/sys.json", "save", self.sys)
+        return True
 
     def getlogs(self, parametres: str = None):
         if not parametres:
@@ -47,8 +53,6 @@ class ExtraAPI:
                     if b[1] == i[1]:
                         if i not in logs:
                             logs.append(i)
-            else:
-                logs = self.sys["SYSLOGS"]
         return logs
 
 class Extra:
@@ -56,6 +60,10 @@ class Extra:
     def __init__(self, bot):
         self.bot = bot
         self.api = ExtraAPI(bot, "data/extra/sys.json")
+
+    @commands.command(pass_context=True, hidden=True)
+    async def totalresetlogs(self, ctx):
+        """Permet de reset les logs du bot TOTALEMENT"""
 
     @commands.command(pass_context=True)
     async def logs(self, ctx, *parametres):
@@ -71,6 +79,7 @@ class Extra:
         0 = Notification (Tout s'est bien passé)
         1 = Erreur (Une petite erreur, parfois la solution automatisée apparait avec '>')
         2 = Erreur critique (Nécéssitant souvent un redémarrage, souvent automatique, du bot ou du module)"""
+        await self.bot.say(parametres)
         logs = self.api.getlogs(" ".join(parametres)) if parametres else self.api.getlogs()
         jour = time.strftime("%d/%m/%Y", time.localtime())
         heure = time.strftime("%H:%M", time.localtime())
@@ -88,7 +97,7 @@ class Extra:
                     txt += "*{}* | **{}** - {}{} [{}]\n".format(l[2], l[1], l[4], " > {}".format(l[5]) if l[5] else "", l[3])
             em = discord.Embed(title="Logs Bot{}".format("| {}".format("/".join(parametres)) if parametres else ""),
                                description=txt)
-            em.set_footer(text="Certains modules ne supportent pas ce système de logs | 0 = Notification, 1 = Erreur, 2 = Erreur critique")
+            em.set_footer(text="Certains modules ne supportent pas ce système de logs | Du plus ancien au plus récent")
             await self.bot.say(embed=em)
         else:
             await self.bot.say("**Erreur** | Aucun log n'est disponible avec les options recherchées (Voir `&help logs`)")

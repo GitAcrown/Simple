@@ -86,7 +86,7 @@ class SocialAPI:
                                 self.user[u][cat][sub] = tree[cat][sub]
         if not user:
             fileIO("data/social/user.json", "save", self.user)
-            self.logs.logit(0, "smart", "Mise à jour globale réalisée")
+            self.logs.logit(0, "social", "Mise à jour globale réalisée")
         return True
 
     def add_log(self, user: discord.Member, event: str):
@@ -239,19 +239,19 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
             self._save_instance["COUNT"] = 0
             self.api.apisave()
             print("MAJ Réalisée: N={}".format(self._save_instance["NEED"]))
-            self.logs.logit(0, "smart", "Sauvegarde réalisée avec N={}".format(self._save_instance["NEED"]))
+            self.logs.logit(0, "social", "Sauvegarde réalisée avec N={}".format(self._save_instance["NEED"]))
             if time.time() < self._save_instance["SAVETIME"]:
                 if self._save_instance["NEED"] < 500:
                     self._save_instance["NEED"] += 10
                     self._save_instance["SAVETIME"] = time.time() + 300
                 print("MAJ Allongement pour N={}".format(self._save_instance["NEED"]))
-                self.logs.logit(0, "smart", "Ajustement de la sauvegarde à N={}".format(self._save_instance["NEED"]))
+                self.logs.logit(0, "social", "Ajustement de la sauvegarde à N={}".format(self._save_instance["NEED"]))
             elif time.time() > self._save_instance["SAVETIME"] + 300:
                 if self._save_instance["NEED"] > 60:
                     self._save_instance["NEED"] -= 20
                     self._save_instance["SAVETIME"] = time.time() + 300
                 print("MAJ Réduction pour N={}".format(self._save_instance["NEED"]))
-                self.logs.logit(0, "smart", "Réduction de la sauvegarde à N={}".format(self._save_instance["NEED"]))
+                self.logs.logit(0, "social", "Réduction de la sauvegarde à N={}".format(self._save_instance["NEED"]))
             else:
                 self._save_instance["SAVETIME"] = time.time() + 300
         return True
@@ -268,7 +268,7 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
         """Permet de forcer la sauvegarde des données (en cas d'API Discord instable)"""
         if self.api.apisave():
             await self.bot.say("**Sauvegarde forcée effectuée avec succès**")
-            self.logs.logit(0, "smart", "Sauvegarde forcée réalisée par {}".format(ctx.message.author.mention))
+            self.logs.logit(0, "social", "Sauvegarde forcée réalisée par {}".format(ctx.message.author.mention))
         else:
             await self.bot.say("Impossible de réaliser la sauvegarde")
 
