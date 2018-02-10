@@ -26,43 +26,47 @@ class ExtraAPI:
         fileIO("data/extra/sys.json", "save", self.sys)
         return True
 
-    def getlogs(self, parametres: str = None):
-        if not parametres:
-            return self.sys["SYSLOGS"]
-        logs = []
-        balises = re.compile(r"(jour|module|niveau|ignorer):(\w+)", re.IGNORECASE | re.DOTALL).findall(parametres)
-        for b in balises:
-            if b[0] is "module":
-                for i in self.sys["SYSLOGS"]:
-                    if b[1].upper() in i:
-                        if i not in logs:
-                            logs.append(i)
-                continue
-            if b[0] is "niveau":
-                for i in self.sys["SYSLOGS"]:
-                    if b[1] == i[2]:
-                        if i not in logs:
-                            logs.append(i)
-                continue
-            if b[0] is "ignorer":
-                for i in self.sys["SYSLOGS"]:
-                    if b[1] != i[2]:
-                        if i not in logs:
-                            logs.append(i)
-                continue
-            if b[0] is "jour":
-                for i in self.sys["SYSLOGS"]:
-                    if b[1] == i[1]:
-                        if i not in logs:
-                            logs.append(i)
-                continue
-        return logs
+    def getlogs(self):
+        return self.sys["SYSLOGS"]
 
 class Extra:
     """"Extra | Module d'aide à l'administration du système et outils divers"""
     def __init__(self, bot):
         self.bot = bot
         self.api = ExtraAPI(bot, "data/extra/sys.json")
+
+    def tri_logs(self, parametres: str = None):
+        base = self.api.getlogs()
+        if not parametres:
+            return base
+        logs = []
+        balises = re.compile(r"(jour|module|niveau|ignorer):(\w+)", re.IGNORECASE | re.DOTALL).findall(parametres)
+        for b in balises:
+            if b[0] is "module":
+                for i in base:
+                    if b[1].upper() in i:
+                        if i not in logs:
+                            logs.append(i)
+                continue
+            if b[0] is "niveau":
+                for i in base:
+                    if b[1] == i[2]:
+                        if i not in logs:
+                            logs.append(i)
+                continue
+            if b[0] is "ignorer":
+                for i in base:
+                    if b[1] != i[2]:
+                        if i not in logs:
+                            logs.append(i)
+                continue
+            if b[0] is "jour":
+                for i in base:
+                    if b[1] == i[1]:
+                        if i not in logs:
+                            logs.append(i)
+                continue
+        return logs
 
     @commands.command(pass_context=True, hidden=True)
     async def totalresetlogs(self, ctx):
