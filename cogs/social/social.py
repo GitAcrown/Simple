@@ -123,6 +123,32 @@ class SocialAPI:
             names = ""
         return names, nicks
 
+    def resetdata_all(self, cat: str, sub: str):
+        tree = {"STATS": {"MSG_TOTAL": 0,
+                          "MSG_SUPPR": 0,
+                          "MSG_CHANS": {},
+                          "EMOJIS": {},
+                          "JOIN": 0,
+                          "QUIT": 0,
+                          "BAN": 0},
+                "SOC": {"BIO": "",
+                        "VITRINE": None,
+                        "SUCCES": {},
+                        "FLAMMES": [],
+                        "MSG_FLUX": {},
+                        "MSG_SAVE": {},
+                        "SEXE": "neutre",
+                        "ROLE_SAVE": [],
+                        "GRADELIMIT": 3},
+                "ECO": {"SOLDE": 100,
+                        "TRS": [],
+                        "SAC": {}}}
+        for p in self.user:
+            if cat.upper() in tree and cat.upper() in p:
+                if sub.upper() in tree[cat.upper()] and sub.upper() in p[cat.upper()]:
+                    p[cat.upper()][sub.upper()] = tree[cat.upper()][sub.upper()]
+        return True
+
     def grade(self, user: discord.Member or discord.User):
         data = self.get(user)
         roles = [r.name for r in user.roles]
@@ -255,33 +281,39 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
         await self.bot.say("**Impossible de trouver ce chemin de données**")
 
     @socmod.command(pass_context=True, hidden=True)
-    async def resetdata(self, ctx, user: discord.Member, cat: str, sub: str):
+    async def resetdata(self, ctx, cat: str, sub: str, user: discord.Member = None):
         """Permet de modifier manuellement la valeur d'une statistique d'un utilisateur"""
-        p = self.api.get(user)
-        tree = tree = {"STATS": {"MSG_TOTAL": 0,
-                          "MSG_SUPPR": 0,
-                          "MSG_CHANS": {},
-                          "EMOJIS": {},
-                          "JOIN": 0,
-                          "QUIT": 0,
-                          "BAN": 0},
-                "SOC": {"BIO": "",
-                        "VITRINE": None,
-                        "SUCCES": {},
-                        "FLAMMES": [],
-                        "MSG_FLUX": {},
-                        "MSG_SAVE": {},
-                        "SEXE": "neutre",
-                        "ROLE_SAVE": [],
-                        "GRADELIMIT": 3},
-                "ECO": {"SOLDE": 100,
-                        "TRS": [],
-                        "SAC": {}}}
-        if cat.upper() in tree and cat.upper() in p:
-            if sub.upper() in tree[cat.upper()] and sub.upper() in p[cat.upper()]:
-                p[cat.upper()][sub.upper()] = tree[cat.upper()][sub.upper()]
-                await self.bot.say("**Succès** | Réinitialisé à `{}`".format(tree[cat.upper()][sub.upper()]))
-                return
+        if user:
+            p = self.api.get(user)
+            tree = tree = {"STATS": {"MSG_TOTAL": 0,
+                                     "MSG_SUPPR": 0,
+                                     "MSG_CHANS": {},
+                                     "EMOJIS": {},
+                                     "JOIN": 0,
+                                     "QUIT": 0,
+                                     "BAN": 0},
+                           "SOC": {"BIO": "",
+                                   "VITRINE": None,
+                                   "SUCCES": {},
+                                   "FLAMMES": [],
+                                   "MSG_FLUX": {},
+                                   "MSG_SAVE": {},
+                                   "SEXE": "neutre",
+                                   "ROLE_SAVE": [],
+                                   "GRADELIMIT": 3},
+                           "ECO": {"SOLDE": 100,
+                                   "TRS": [],
+                                   "SAC": {}}}
+            if cat.upper() in tree and cat.upper() in p:
+                if sub.upper() in tree[cat.upper()] and sub.upper() in p[cat.upper()]:
+                    p[cat.upper()][sub.upper()] = tree[cat.upper()][sub.upper()]
+                    await self.bot.say("**Succès** | Réinitialisé à `{}`".format(tree[cat.upper()][sub.upper()]))
+                    return
+        else:
+            if self.api.resetdata_all(cat, sub):
+                await self.bot.say("**Succès** | La réinitialisation à été réalisée pour tous les inscrits.")
+            else:
+                await self.bot.say("**Erreur** | La réinitialisation n'a pas pu se faire.")
         await self.bot.say("**Impossible de trouver ce chemin de données**")
 
 
