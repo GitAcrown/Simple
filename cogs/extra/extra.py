@@ -21,11 +21,11 @@ class ExtraAPI:
         fileIO("data/extra/sys.json", "save", self.sys)
         #niveau = 0, 1 ou 2
 
-    def getlogs(self, parametres: list):
+    def getlogs(self, parametres: str = None):
         if not parametres:
             return self.sys["SYSLOGS"]
         logs = []
-        balises = re.compile(r"(jour|module|niveau|ignorer):(\w+)", re.IGNORECASE | re.DOTALL).findall(" ".join(parametres))
+        balises = re.compile(r"(jour|module|niveau|ignorer):(\w+)", re.IGNORECASE | re.DOTALL).findall(parametres)
         for b in balises:
             if b[0] is "module":
                 logs = [l for l in self.sys["SYSLOGS"] if l[3] == b[1].upper()]
@@ -52,7 +52,7 @@ class Extra:
         'niveau:<0, 1 ou 2>' = voir les logs par niveau
         'ignorer:<0, 1 ou 2>' = inverse de 'niveau'
         'jour:<jj/mm/aaaa>' = jour à rechercher"""
-        logs = self.api.getlogs(parametres)
+        logs = self.api.getlogs(" ".join(parametres)) if parametres else self.api.getlogs()
         jour = time.strftime("%d/%m/%Y", time.localtime())
         heure = time.strftime("%H:%M", time.localtime())
         if logs:
