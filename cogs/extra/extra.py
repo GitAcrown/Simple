@@ -28,13 +28,25 @@ class ExtraAPI:
         balises = re.compile(r"(jour|module|niveau|ignorer):(\w+)", re.IGNORECASE | re.DOTALL).findall(parametres)
         for b in balises:
             if b[0] is "module":
-                logs = [l for l in self.sys["SYSLOGS"] if l[3] == b[1].upper()]
+                for i in self.sys["SYSLOGS"]:
+                    if b[1].upper() == i[3]:
+                        if i not in logs:
+                            logs.append(i)
             elif b[0] is "niveau":
-                logs = [l for l in self.sys["SYSLOGS"] if l[2] == b[1]]
+                for i in self.sys["SYSLOGS"]:
+                    if b[1] == i[2]:
+                        if i not in logs:
+                            logs.append(i)
             elif b[0] is "ignorer":
-                logs = [l for l in self.sys["SYSLOGS"] if l[2] != b[1]]
+                for i in self.sys["SYSLOGS"]:
+                    if b[1] != i[2]:
+                        if i not in logs:
+                            logs.append(i)
             elif b[0] is "jour":
-                logs = [l for l in self.sys["SYSLOGS"] if l[1] == b[1]]
+                for i in self.sys["SYSLOGS"]:
+                    if b[1] == i[1]:
+                        if i not in logs:
+                            logs.append(i)
         return logs
 
 class Extra:
@@ -51,7 +63,12 @@ class Extra:
         'module:<nom du module>' = voir les logs par module
         'niveau:<0, 1 ou 2>' = voir les logs par niveau
         'ignorer:<0, 1 ou 2>' = inverse de 'niveau'
-        'jour:<jj/mm/aaaa>' = jour à rechercher"""
+        'jour:<jj/mm/aaaa>' = jour à rechercher
+
+        Niveaux:
+        0 = Notification (Tout s'est bien passé)
+        1 = Erreur (Une petite erreur, parfois la solution automatisée apparait avec '>')
+        2 = Erreur critique (Nécéssitant souvent un redémarrage, souvent automatique, du bot ou du module)"""
         logs = self.api.getlogs(" ".join(parametres)) if parametres else self.api.getlogs()
         jour = time.strftime("%d/%m/%Y", time.localtime())
         heure = time.strftime("%H:%M", time.localtime())
@@ -70,7 +87,7 @@ class Extra:
                     txt += "*{}* | **{}** - {}{} [{}]\n".format(l[2], l[1], l[4], " > {}".format(l[5]) if l[5] else "", l[3])
             em = discord.Embed(title="Logs Bot{}".format("| {}".format("/".join(parametres)) if parametres else ""),
                                description=txt)
-            em.set_footer(text="Certains modules peuvent ne pas être compatible avec ce système de logs.")
+            em.set_footer(text="Certains modules ne supportent pas ce système de logs | 0 = Notification, 1 = Erreur, 2 = Erreur critique")
             await self.bot.say(embed=em)
         else:
             await self.bot.say("**Erreur** | Aucun log n'est disponible avec les options recherchées (Voir `&help logs`)")
