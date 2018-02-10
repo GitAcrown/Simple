@@ -14,11 +14,10 @@ class ExtraAPI:
         self.bot = bot
         self.sys = dataIO.load_json(path)
 
-    def logit(self, niveau: int or str, module: str, desc: str):
-        if type(niveau) is int: niveau = str(niveau)
+    def logit(self, niveau, module: str, desc: str, solution: str=None):
         jour = time.strftime("%d/%m/%Y", time.localtime())
         heure = time.strftime("%H:%M", time.localtime())
-        self.sys["SYSLOGS"].append([heure, jour, niveau, module.upper(), desc])
+        self.sys["SYSLOGS"].append([heure, jour, str(niveau), module.upper(), desc, solution])
         #niveau = 0, 1 ou 2
 
     def getlogs(self, *parametres):
@@ -62,11 +61,13 @@ class Extra:
             for l in logs[:15]:
                 if l[1] == jour:
                     if l[0] == heure:
-                        "*{}* | **A l'instant** - {} [{}]\n".format(l[2], l[4], l[3])
+                        "*{}* | **A l'instant** - {}{} [{}]\n".format(l[2], l[4], " > {}".format(l[5]) if l[5] else "",
+                                                                      l[3])
                     else:
-                        "*{}* | **{}** - {} [{}]\n".format(l[2], l[0], l[4], l[3])
+                        "*{}* | **{}** - {}{} [{}]\n".format(l[2], l[0], l[4], " > {}".format(l[5]) if l[5] else "",
+                                                             l[3])
                 else:
-                    "*{}* | **{}** - {} [{}]\n".format(l[2], l[1], l[4], l[3])
+                    "*{}* | **{}** - {}{} [{}]\n".format(l[2], l[1], l[4], " > {}".format(l[5]) if l[5] else "", l[3])
             em = discord.Embed(title="Logs Bot{}".format("| {}".format("/".join(parametres))) if parametres else "",
                                description=txt)
             em.set_footer(text="Certains modules peuvent ne pas être compatible avec ce système de logs.")

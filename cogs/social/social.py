@@ -22,6 +22,7 @@ class SocialAPI:
         self.old = dataIO.load_json("data/prism/data.json")
         self.past_names = dataIO.load_json("data/mod/past_names.json")
         self.past_nicknames = dataIO.load_json("data/mod/past_nicknames.json")
+        self.logs = self.bot.get_cog('Extra').api
         self.update()
 
     def apisave(self):
@@ -85,7 +86,7 @@ class SocialAPI:
                                 self.user[u][cat][sub] = tree[cat][sub]
         if not user:
             fileIO("data/social/user.json", "save", self.user)
-        # TODO Ajouter Log
+            self.logs.logit(0, "smart", "Mise à jour globale réalisée")
         return True
 
     def add_log(self, user: discord.Member, event: str):
@@ -204,6 +205,7 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
     def __init__(self, bot):
         self.bot = bot
         self.api = SocialAPI(bot, "data/social/user.json")  # SocialAPI
+        self.logs = self.bot.get_cog('Extra').api
         self._save_instance = {"COUNT": 0, "NEED": 100, "SAVETIME": time.time() + 300, "FIRST": False}
         self.quit_msg = ["Au revoir {} !", "Bye bye {}.", "{} s'est trompé de bouton.",
                          "{} a été suicidé de deux bans dans le dos.", "{} a ragequit le serveur.",
@@ -237,19 +239,19 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
             self._save_instance["COUNT"] = 0
             self.api.apisave()
             print("MAJ Réalisée: N={}".format(self._save_instance["NEED"]))
-            # TODO Ajouter Log réussite
+            self.logs.logit(0, "smart", "Sauvegarde réalisée avec N={}".format(self._save_instance["NEED"]))
             if time.time() < self._save_instance["SAVETIME"]:
                 if self._save_instance["NEED"] < 500:
                     self._save_instance["NEED"] += 10
                     self._save_instance["SAVETIME"] = time.time() + 300
                 print("MAJ Allongement pour N={}".format(self._save_instance["NEED"]))
-                # TODO Ajouter Log allongement
+                self.logs.logit(0, "smart", "Ajustement de la sauvegarde à N={}".format(self._save_instance["NEED"]))
             elif time.time() > self._save_instance["SAVETIME"] + 300:
                 if self._save_instance["NEED"] > 60:
                     self._save_instance["NEED"] -= 20
                     self._save_instance["SAVETIME"] = time.time() + 300
                 print("MAJ Réduction pour N={}".format(self._save_instance["NEED"]))
-                # TODO Ajouter Log réduction
+                self.logs.logit(0, "smart", "Réduction de la sauvegarde à N={}".format(self._save_instance["NEED"]))
             else:
                 self._save_instance["SAVETIME"] = time.time() + 300
         return True

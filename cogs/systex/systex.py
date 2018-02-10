@@ -28,6 +28,7 @@ class Systex:
         self.stk = dataIO.load_json("data/systex/stk.json")
         self.user = dataIO.load_json("data/systex/user.json")
         self.social = self.bot.get_cog('Social').api
+        self.logs = self.bot.get_cog('Extra').api
         self.cycle_task = bot.loop.create_task(self.systex_loop())
 
     def save(self):
@@ -118,6 +119,7 @@ class Systex:
                                                    "TAGS": tags}
             self.save()
             return True
+        self.logs.logit(1, "systex", "Impossible d'ajouter le sticker '{}'".format(nom))
         return False
 
     async def systex_loop(self):
@@ -539,6 +541,8 @@ class Systex:
                 del self.stk["STK"][r]
                 self.save()
                 await self.bot.say("**Succès** | Sticker supprimé avec succès.")
+                self.logs.logit(0, "systex",
+                                "Suppression de :{}: réalisée par {}".format(nom, ctx.message.author.mention))
                 return
         else:
             await self.bot.say("**Introuvable** | Le sticker ne semble pas exister.")
@@ -665,6 +669,7 @@ class Systex:
             self.stk["OPT"]["APPROB"] = {}
             self.save()
             await self.bot.say("**Succès** | Le reset total des stickers en approbation a été réalisé")
+            self.logs.logit(0, "systex", "Reset des approbations effectué par {}".format(ctx.message.author.mention))
             return
         if not nom:
             msg = "\n".join([self.stk["OPT"]["APPROB"][r]["NOM"] for r in self.stk["OPT"]["APPROB"]])
@@ -1003,6 +1008,7 @@ class Systex:
                             await self.bot.send_typing(channel)
                             await self.bot.send_message(channel, embed=em)
                         except:
+                            self.logs.logit(1, "systex", "URL de :{}: indisponible.".format(img["NOM"]))
                             print("L'URL de :{}: est indisponible. Je ne peux pas l'envoyer. (Format: billet)"
                                   "".format(img["NOM"]))
                     elif img["AFFICHAGE"] == 'infos':
@@ -1026,12 +1032,15 @@ class Systex:
                             await self.bot.send_typing(channel)
                             await self.bot.send_file(channel, img["CHEMIN"])
                         except:
+                            self.logs.logit(0, "systex", "Fichier de :{}: indisponible".format(img["NOM"]),
+                                            "Envoi de l'URL")
                             print(
                                 "Le fichier de :{}: n'existe plus ou n'a jamais existé. Je ne peux pas l'envoyer. "
                                 "(Format: upload)\nJe vais envoyer l'URL liée à la place...".format(img["NOM"]))
                             try:  # En cas que l'upload fail, on envoie l'URL brute
                                 await self.bot.send_message(channel, img["URL"])
                             except:
+                                self.logs.logit(1, "systex", "URL de :{}: indisponible.".format(img["NOM"]))
                                 print("L'URL de :{}: est indisponible. Je ne peux pas l'envoyer. (Format: web)"
                                       "".format(img["NOM"]))
                     else:
@@ -1039,6 +1048,7 @@ class Systex:
                             await self.bot.send_typing(channel)
                             await self.bot.send_message(channel, img["URL"])
                         except:
+                            self.logs.logit(1, "systex", "URL de :{}: indisponible.".format(img["NOM"]))
                             print("L'URL de :{}: est indisponible. Je ne peux pas l'envoyer. (Format: web/defaut)"
                                   "".format(img["NOM"]))
 
