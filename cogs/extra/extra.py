@@ -20,7 +20,6 @@ class ExtraAPI:
         self.sys["SYSLOGS"].append([heure, jour, str(niveau), module.upper(), desc, solution])
         fileIO("data/extra/sys.json", "save", self.sys)
         return True
-        #niveau = 0, 1 ou 2
 
     def resetlogs(self):
         self.sys["SYSLOGS"] = []
@@ -35,24 +34,28 @@ class ExtraAPI:
         for b in balises:
             if b[0] is "module":
                 for i in self.sys["SYSLOGS"]:
-                    if b[1].upper() == i[3]:
+                    if b[1].upper() in i:
                         if i not in logs:
                             logs.append(i)
-            elif b[0] is "niveau":
+                continue
+            if b[0] is "niveau":
                 for i in self.sys["SYSLOGS"]:
                     if b[1] == i[2]:
                         if i not in logs:
                             logs.append(i)
-            elif b[0] is "ignorer":
+                continue
+            if b[0] is "ignorer":
                 for i in self.sys["SYSLOGS"]:
                     if b[1] != i[2]:
                         if i not in logs:
                             logs.append(i)
-            elif b[0] is "jour":
+                continue
+            if b[0] is "jour":
                 for i in self.sys["SYSLOGS"]:
                     if b[1] == i[1]:
                         if i not in logs:
                             logs.append(i)
+                continue
         return logs
 
 class Extra:
@@ -64,6 +67,10 @@ class Extra:
     @commands.command(pass_context=True, hidden=True)
     async def totalresetlogs(self, ctx):
         """Permet de reset les logs du bot TOTALEMENT"""
+        if self.api.resetlogs():
+            await self.bot.say("**Succès** | Les logs ont été supprimés entièrement.")
+        else:
+            await self.bot.say("**Erreur** | Impossible de supprimer les logs.")
 
     @commands.command(pass_context=True)
     async def logs(self, ctx, *parametres):
@@ -79,7 +86,6 @@ class Extra:
         0 = Notification (Tout s'est bien passé)
         1 = Erreur (Une petite erreur, parfois la solution automatisée apparait avec '>')
         2 = Erreur critique (Nécéssitant souvent un redémarrage, souvent automatique, du bot ou du module)"""
-        await self.bot.say(parametres)
         logs = self.api.getlogs(" ".join(parametres)) if parametres else self.api.getlogs()
         jour = time.strftime("%d/%m/%Y", time.localtime())
         heure = time.strftime("%H:%M", time.localtime())
