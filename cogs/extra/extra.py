@@ -76,7 +76,6 @@ class Extra:
         heure = time.strftime("%H:%M", time.localtime())
         if logs:
             txt = ""
-            logs.reverse()
             for l in logs[-15:]:
                 if l[1] == jour:
                     if l[0] == heure:
