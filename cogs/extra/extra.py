@@ -68,7 +68,7 @@ class Extra:
                                                              l[3])
                 else:
                     "*{}* | **{}** - {}{} [{}]\n".format(l[2], l[1], l[4], " > {}".format(l[5]) if l[5] else "", l[3])
-            em = discord.Embed(title="Logs Bot{}".format("| {}".format("/".join(parametres))) if parametres else "",
+            em = discord.Embed(title="Logs Bot{}".format("| {}".format("/".join(parametres)) if parametres else ""),
                                description=txt)
             em.set_footer(text="Certains modules peuvent ne pas être compatible avec ce système de logs.")
             await self.bot.say(embed=em)
