@@ -244,14 +244,15 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
             await self.bot.say("Impossible de réaliser la sauvegarde")
 
     @socmod.command(pass_context=True, hidden=True)
-    async def editdata(self, ctx, user: discord.Member, sub: str, val: int):
+    async def editdata(self, ctx, user: discord.Member, cat: str, sub: str, val: int):
         """Permet de modifier manuellement la valeur d'une statistique d'un utilisateur"""
-        p = self.api.get(user, "STATS")
-        if sub.upper() in p:
-            p[sub.upper()] = val
-            await self.bot.say("**Valeur modifiée avec succès**")
-        else:
-            await self.bot.say("**Impossible de trouver cette sub-catégorie de STATS**")
+        p = self.api.get(user)
+        if cat.upper() in p:
+            if sub.upper() in p[cat.upper()]:
+                p[cat.upper()][sub.upper()] = val
+                await self.bot.say("**Valeur modifiée avec succès**")
+            else:
+                await self.bot.say("**Impossible de trouver cette sub-catégorie de STATS**")
 
     @socmod.command(pass_context=True)
     async def limite(self, ctx, user: discord.Member, lim: int = 3):
@@ -441,9 +442,11 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
         p["STATS"]["MSG_CHANS"][channel.id] = p["STATS"]["MSG_CHANS"][channel.id] + 1 if \
             channel.id in p["STATS"]["MSG_CHANS"] else 1
         if hier in p["SOC"]["FLAMMES"]:
-            p["SOC"]["FLAMMES"].append(date)
+            if date not in p["SOC"]["FLAMMES"]:
+                p["SOC"]["FLAMMES"].append(date)
         else:
-            p["SOC"]["FLAMMES"] = [date]
+            if date not in p["SOC"]["FLAMMES"]:
+                p["SOC"]["FLAMMES"] = [date]
         if ":" in message.content:
             output = re.compile(':(.*?):', re.DOTALL | re.IGNORECASE).findall(message.content)
             if output:
