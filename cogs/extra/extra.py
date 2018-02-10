@@ -25,7 +25,7 @@ class ExtraAPI:
         if not parametres:
             return self.sys["SYSLOGS"]
         logs = []
-        balises = re.compile(r"(jour|module|niveau|ignorer):(\w)", re.IGNORECASE | re.DOTALL).findall(" ".join(parametres))
+        balises = re.compile(r"(jour|module|niveau|ignorer):(\w+)", re.IGNORECASE | re.DOTALL).findall(" ".join(parametres))
         for b in balises:
             if b[0] is "module":
                 logs = [l for l in self.sys["SYSLOGS"] if l[3] == b[1].upper()]
@@ -73,7 +73,7 @@ class Extra:
             em.set_footer(text="Certains modules peuvent ne pas être compatible avec ce système de logs.")
             await self.bot.say(embed=em)
         else:
-            await self.bot.say("**Erreur** | Aucun log n'est disponible avec les options recherchées (Voir `&help logs`")
+            await self.bot.say("**Erreur** | Aucun log n'est disponible avec les options recherchées (Voir `&help logs`)")
 
 
 def check_folders():
