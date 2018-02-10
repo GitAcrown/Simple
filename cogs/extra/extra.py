@@ -47,6 +47,8 @@ class ExtraAPI:
                     if b[1] == i[1]:
                         if i not in logs:
                             logs.append(i)
+            else:
+                logs = self.sys["SYSLOGS"]
         return logs
 
 class Extra:
@@ -73,9 +75,8 @@ class Extra:
         jour = time.strftime("%d/%m/%Y", time.localtime())
         heure = time.strftime("%H:%M", time.localtime())
         if logs:
-            logs.reverse()
             txt = ""
-            for l in logs[:15]:
+            for l in logs[-15:]:
                 if l[1] == jour:
                     if l[0] == heure:
                         txt += "*{}* | **A l'instant** - {}{} [{}]\n".format(l[2], l[4], " > {}".format(l[5]) if l[5] else "",
