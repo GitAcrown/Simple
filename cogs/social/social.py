@@ -314,6 +314,7 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
                 await self.bot.say("**Succès** | La réinitialisation à été réalisée pour tous les inscrits.")
             else:
                 await self.bot.say("**Erreur** | La réinitialisation n'a pas pu se faire.")
+            return
         await self.bot.say("**Impossible de trouver ce chemin de données**")
 
 
