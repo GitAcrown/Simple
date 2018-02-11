@@ -82,6 +82,7 @@ class Extra:
         'niveau:<0, 1 ou 2>' = voir les logs par niveau
         'ignorer:<0, 1 ou 2>' = inverse de 'niveau'
         'date:<jj/mm/aaaa>' = jour à rechercher
+        Il est possible de combiner plusieurs paramètres, mais ceux-ci sont cumulatifs
 
         Niveaux:
         0 = Notification (Tout s'est bien passé)
@@ -102,7 +103,7 @@ class Extra:
                                                              l[3])
                 else:
                     txt += "*{}* | **{}** - {}{} [{}]\n".format(l[2], l[1], l[4], " > {}".format(l[5]) if l[5] else "", l[3])
-            em = discord.Embed(title="Logs Bot{}".format(" | {}".format(" ;".join(parametres)) if parametres else ""),
+            em = discord.Embed(title="Logs Bot{}".format(" | {}".format(" + ".join(parametres)) if parametres else ""),
                                description=txt)
             em.set_footer(text="Certains modules ne supportent pas ce système de logs | Du plus ancien au plus récent")
             await self.bot.say(embed=em)
