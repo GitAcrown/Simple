@@ -40,7 +40,7 @@ class Extra:
         if not parametres:
             return base
         logs = []
-        balises = re.compile(r"(jour|module|niveau|ignorer):(\w+)", re.IGNORECASE | re.DOTALL).findall(parametres)
+        balises = re.compile(r"(date|module|niveau|ignorer*):(\w+)", re.IGNORECASE | re.DOTALL).findall(parametres)
         for b in balises:
             if b[0] == "module":
                 for i in base:
@@ -52,12 +52,12 @@ class Extra:
                     if b[1] == i[2]:
                         if i not in logs:
                             logs.append(i)
-            if b[0] == "ignorer":
+            if b[0] == "ignorer" or b[0] == "ignore":
                 for i in base:
                     if b[1] != i[2]:
                         if i not in logs:
                             logs.append(i)
-            if b[0] == "jour":
+            if b[0] == "date":
                 for i in base:
                     if b[1] == i[1]:
                         if i not in logs:
@@ -81,7 +81,7 @@ class Extra:
         'module:<nom du module>' = voir les logs par module
         'niveau:<0, 1 ou 2>' = voir les logs par niveau
         'ignorer:<0, 1 ou 2>' = inverse de 'niveau'
-        'jour:<jj/mm/aaaa>' = jour à rechercher
+        'date:<jj/mm/aaaa>' = jour à rechercher
 
         Niveaux:
         0 = Notification (Tout s'est bien passé)
