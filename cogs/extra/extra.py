@@ -90,7 +90,7 @@ class Extra:
         0 = Notification (Tout s'est bien passé)
         1 = Erreur (Une petite erreur, parfois la solution automatisée apparait avec '>')
         2 = Erreur critique (Nécéssitant souvent un redémarrage, souvent automatique, du bot ou du module)"""
-        logs = self.api.getlogs(" ".join(parametres)) if parametres else self.api.getlogs()
+        logs = self.tri_logs(" ".join(parametres)) if parametres else self.tri_logs()
         jour = time.strftime("%d/%m/%Y", time.localtime())
         heure = time.strftime("%H:%M", time.localtime())
         if logs:
