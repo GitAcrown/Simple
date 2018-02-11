@@ -42,31 +42,28 @@ class Extra:
         logs = []
         balises = re.compile(r"(jour|module|niveau|ignorer):(\w+)", re.IGNORECASE | re.DOTALL).findall(parametres)
         for b in balises:
-            if b[0] is "module":
+            if b[0] == "module":
                 for i in base:
                     if b[1].upper() in i:
                         if i not in logs:
                             logs.append(i)
-                continue
-            if b[0] is "niveau":
+            if b[0] == "niveau":
                 for i in base:
                     if b[1] == i[2]:
                         if i not in logs:
                             logs.append(i)
-                continue
-            if b[0] is "ignorer":
+            if b[0] == "ignorer":
                 for i in base:
                     if b[1] != i[2]:
                         if i not in logs:
                             logs.append(i)
-                continue
-            if b[0] is "jour":
+            if b[0] == "jour":
                 for i in base:
                     if b[1] == i[1]:
                         if i not in logs:
                             logs.append(i)
-                continue
-        return logs
+        else:
+            return logs
 
     @commands.command(pass_context=True, hidden=True)
     async def totalresetlogs(self, ctx):
