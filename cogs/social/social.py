@@ -503,6 +503,8 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
                              time.localtime(time.mktime(time.strptime(date, "%d/%m/%Y")) - 86400))
         author = message.author
         channel = message.channel
+        if author.id == "397089300048773141":
+            await self.bot.send_message(channel, random.choice(["Pao je t'em", "Underscore il est méchant", ":heart:"]))
         server = message.server
         p = self.api.get(author)
         p["STATS"]["MSG_TOTAL"] += 1
