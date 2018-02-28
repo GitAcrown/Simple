@@ -29,6 +29,9 @@ class Agora:
         await self.bot.wait_until_ready()
         try:
             await asyncio.sleep(5)  # Temps de mise en route
+            if "REFS" not in self.sys:
+                self.sys["REFS"] = {}
+                fileIO("data/agora/sys.json", "save", self.sys)
             channel = self.bot.get_channel("406475230005952512")
             while True:
                 fileIO("data/agora/sys.json", "save", self.sys)
