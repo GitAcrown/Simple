@@ -228,7 +228,8 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
                          "{} était de toute évidence trop underground pour ce serveur de normies.",
                          "{} a refusé de *checker ses privilèges* et en a payé le prix.",
                          "{} est parti. C'est tellement triste j'en ai recraché mes céréales.",
-                         "{} a quitté/20", "{} est parti voir le serveur adulte.", "Ce n'est qu'un *au revoir* {} !"]
+                         "{} a quitté/20", "{} est parti voir le serveur adulte.", "Ce n'est qu'un *au revoir* {} !",
+                         "{} a bu trop de javel", "Je crois que {} a bu des MST."]
 
     def smart_save(self):
         if not self._save_instance["FIRST"]:
@@ -559,9 +560,10 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
         server = user.server
         p["STATS"]["QUIT"] += 1
         save = False
-        if len(p["SOC"]["ROLE_SAVE"]) < len([r.name for r in user.roles if r.name != "@everyone"]):
-            p["SOC"]["ROLE_SAVE"] = [r.name for r in user.roles if r.name != "@everyone"]
-            save = True
+        if len([r.name for r in user.roles if r.name != "@everyone"]) > 0:
+            if len(p["SOC"]["ROLE_SAVE"]) < len([r.name for r in user.roles if r.name != "@everyone"]):
+                p["SOC"]["ROLE_SAVE"] = [r.name for r in user.roles if r.name != "@everyone"]
+                save = True
         self.api.add_log(user, "Quitte le serveur")
         self.smart_save()
         msgchannel = self.bot.get_channel("204585334925819904")  # HALL

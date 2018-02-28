@@ -4,6 +4,7 @@ import os
 import random
 import re
 import string
+import time
 
 import discord
 from __main__ import send_cmd_help
@@ -20,9 +21,116 @@ class Agora:
         self.bot = bot
         self.sys = dataIO.load_json("data/agora/sys.json")
         self.law = dataIO.load_json("data/agora/law.json")
+        self.ektv = dataIO.load_json("data/agora/ektv.json")
+        self.cycle_task = bot.loop.create_task(self.agora_loop())
         self.instances = {}
 
-        # FULLCONTROL >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    async def agora_loop(self):
+        await self.bot.wait_until_ready()
+        try:
+            await asyncio.sleep(5)  # Temps de mise en route
+            channel = self.bot.get_channel("406475230005952512")
+            while True:
+                fileIO("data/agora/sys.json", "save", self.sys)
+                for i in self.sys["REFS"]:
+                    if self.sys["REFS"][i]["LIMITE"] >= time.time():
+                        mess = await self.bot.get_message(channel, self.sys["REFS"][i]["MSGID"])
+                        if mess:
+                            await self.bot.unpin_message(mess)
+                            continue
+                        else:
+                            await self.bot.send_message(channel, "**Erreur critique** | L'arrêt automatique de #{} est "
+                                                                 "impossible car le message lié est introuvable"
+                                                                 "".format(i))
+                await asyncio.sleep(60)
+        except asyncio.CancelledError:
+            pass
+
+#EKTV =======================================
+
+    """@commands.group(aliases=["tv"], pass_context=True)
+    async def ektv(self, ctx):
+        if ctx.invoked_subcommand is None:
+            await send_cmd_help(ctx)
+
+    @ektv.command(pass_context=True)
+    async def pub(self, *billet: str):"""
+
+# OUTILS ASSEMBLEE :::::::::::::::::::::::::::
+
+    @commands.command(aliases=["r", "ref"], pass_context=True, no_pm=True)
+    async def referendum(self, ctx, *qr):
+        """Lance un Référendum et épingle celui-ci dans le channel #Assemblee
+
+        Format: &r question ?;réponse 1;réponse 2;réponse n..."""
+        emojis = [s for s in "🇦🇧🇨🇩🇪🇫🇬🇭🇮🇯🇰🇱🇲🇳🇴🇵🇶🇷🇸🇹🇺🇻🇼🇽🇾🇿"]
+        server = ctx.message.server
+        if qr:
+            if qr[0].lower() == "stop":
+                if qr[1].upper() in self.sys["POLLS"]:
+                    num = qr[1].upper()
+                    poll = self.sys["REFS"][num]
+                    if not ctx.message.author.server_permissions.ban_members:
+                        await self.bot.say("**Erreur** | Vous n'êtes pas autorisé à arrêter le référendum")
+                        return
+                    mess = await self.bot.get_message(ctx.message.channel, poll["MSGID"])
+                    if mess:
+                        await self.bot.unpin_message(mess)
+                        return
+                    else:
+                        await self.bot.say("**Erreur** | Vous devez être sur le channel du référendum épinglé pour l'arrêter.")
+                        return
+                else:
+                    await self.bot.say("**Introuvable** | Cet identifiant est introuvable (Ne mettez pas le #)")
+                    return
+            lim = (int(len([user.id for user in server.members if "Habitué" in [r.name for r in user.roles]])) / 2) + 1
+            num = random.randint(100, 999)
+            color = ctx.message.author.color
+            qr = " ".join(qr)
+            qr = qr.split(";")
+            question = qr[0]
+            reponses = [self.normalize(r) for r in qr[1:]]
+            if not 2 <= len(reponses) <= 9:
+                await self.bot.say("**Invalide** | Il ne peut y avoir qu'entre 2 et 9 options disponibles.")
+                return
+            reps = {}
+            emos = []
+            n = 0
+            rtx = stx = ""
+            for r in reponses:
+                index = reponses.index(r)
+                reps[r] = {"EMOJI": emojis[index],
+                           "VOTES": []}
+                rtx += "\{} - **{}**\n".format(emojis[index], r)
+                stx += "\{} - **{}** (*{}*%)\n".format(emojis[index], 0, 0)
+                emos.append(emojis[index])
+            em = discord.Embed(title="RÉFÉRENDUM | {}".format(question.capitalize()), color=color)
+            em.add_field(name="Réponses", value=rtx)
+            em.add_field(name="Stats", value=stx)
+            em.set_footer(text="#{} ({}) | Votez avec les réactions ci-dessous".format(num, ctx.message.author.name))
+            await self.bot.send_typing(ctx.message.channel)
+            msg = await self.bot.send_message(server.get_channel("406475230005952512"), embed=em)
+            self.sys["REFS"][num] = {"QUESTION": question.capitalize(),
+                                     "REPONSES": reps,
+                                     "COLOR": color,
+                                     "MSGID": msg.id,
+                                     "DESC": "",
+                                     "AUTEUR": ctx.message.author.name,
+                                     "AUTEUR_ID": ctx.message.author.id,
+                                     "TIMESTAMP": time.strftime("le %d/%m/%Y à %H:%M", time.localtime()),
+                                     "LIMITE": time.time() + 3600,  # x*24h
+                                     "MIN_VOTES": lim}  # Nb de membres habitués / 2 + 1
+            for e in emos:
+                try:
+                    await self.bot.add_reaction(msg, e)
+                except:
+                    pass
+            await self.bot.add_reaction(msg, "📱")
+            await self.bot.pin_message(msg)
+        else:
+            await self.bot.say("**Format** | `&r Question ?;Réponse 1;Réponse 2;Réponse N...`")
+
+    # FULLCONTROL >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     @commands.command(pass_context=True, no_pm=True, hidden=True)
     async def incarne(self, ctx, identifiant: str):
@@ -240,6 +348,12 @@ class Agora:
                 return self.sys["POLLS"][i], i
         return False
 
+    def msgid_to_ref(self, msgid):
+        for i in self.sys["REFS"]:
+            if self.sys["REFS"][i]["MSGID"] == msgid:
+                return self.sys["REFS"][i], i
+        return False
+
     def poll_embed(self, msgid):
         if self.msgid_to_poll(msgid):
             poll, pid = self.msgid_to_poll(msgid)
@@ -265,11 +379,80 @@ class Agora:
             return em
         return False
 
+    def ref_embed(self, msgid, type: str="edit"):
+        if self.msgid_to_ref(msgid):
+            ref, num = self.msgid_to_ref(msgid)
+            color = ref["COLOR"]
+            question = ref["QUESTION"]
+            reponses = ref["REPONSES"]
+            auteur = "<@{}>".format(ref["AUTEUR_ID"])
+            demar = ref["TIMESTAMP"]
+            membretot = (ref["MIN_VOTES"] * 2) - 1
+            tot = sum([len(ref["REPONSES"][r]["VOTES"]) for r in ref["REPONSES"]])
+            rtx = stx = ""
+            for r in reponses:
+                nb = len(ref["REPONSES"][r]["VOTES"])
+                emoji = ref["REPONSES"][r]["EMOJI"]
+                prc = nb / tot if int(tot) > 0 else 0
+                rtx += "\{} - **{}**\n".format(emoji, r)
+                stx += "\{} - **{}** (*{}*%)\n".format(emoji, nb, round(prc * 100, 1))
+            if type == "fin":
+                em = discord.Embed(title="RÉSULTATS | {}".format(question.capitalize()), color=color)
+                em.set_footer(text="#{} ({}) | {} participant·e·s | Merci d'y avoir participé !".format(
+                    num, ref["AUTEUR"], tot))
+            elif type == "cr":  #compte rendu
+                plus = "Lancé par {} {}\n**{}** membres de l'Assemblée y ont participé, soit {}% des membres.\n" \
+                       "*Si ce message s'affiche aucun problème n'a eu lieu, ainsi le résultat est certifié " \
+                       "valide.*".format(auteur, demar, tot, membretot)
+                em = discord.Embed(title="COMPTE-RENDU | {}".format(question.capitalize()), description= plus,
+                                   color= color)
+                em.set_footer(text="Fichier texte disponible dans le salon de l'Assemblée".format(
+                    num, ref["AUTEUR"], tot))
+            else:
+                em = discord.Embed(title="RÉFÉRENDUM | {}".format(question.capitalize()), color=color)
+                em.set_footer(text="#{} ({}) | {} participant·e·s".format(num, ref["AUTEUR"], tot))
+            em.add_field(name="Réponses", value=rtx)
+            em.add_field(name="Stats", value=stx)
+            return em
+        return False
+
+    def crtext(self, msgid, server: discord.Server):
+        if self.msgid_to_ref(msgid):
+            ref, num = self.msgid_to_ref(msgid)
+            txt = "IDENTIFIANT\t{}\n".format(num)
+            txt += "QUESTION\t{}\n".format(ref["QUESTION"])
+            txt += "AUTEUR\t{} ({})\n".format(ref["AUTEUR"], ref["AUTEUR_ID"])
+            tot = sum([len(ref["REPONSES"][r]["VOTES"]) for r in ref["REPONSES"]])
+            txt += "TOTAL DE VOTANTS\t{}\n".format(tot)
+            txt += "NB DE MEMBRES\t{}\n".format((ref["MIN_VOTES"] * 2) - 1)
+            txt += "=== VOTES ===\n\n"
+            for r in ref["REPONSES"]:
+                txt += ">>> {}\n".format(r)
+                for u in ref["REPONSES"][r]["VOTES"]:
+                    try:
+                        user = server.get_member(u).name
+                    except:
+                        user = u
+                    txt += "- {}\n".format(user)
+                txt += "\n"
+            return txt
+        else:
+            return False
+
+
     def find_user(self, msgid, user: discord.Member):
         if self.msgid_to_poll(msgid):
             poll, pid = self.msgid_to_poll(msgid)
             for p in poll["R_STATS"]:
                 if user.id in poll["R_STATS"][p]["USERS"]:
+                    return p
+        return False
+
+    def already_voted(self, msgid, user: discord.Member):
+        if self.msgid_to_ref(msgid):
+            ref, num = self.msgid_to_ref(msgid)
+            for p in ref["REPONSES"]:
+                if user.id in ref["REPONSES"][p]["VOTES"]:
                     return p
         return False
 
@@ -385,6 +568,37 @@ class Agora:
                     await self.bot.remove_reaction(message, reaction.emoji, user)
                 else:
                     await self.bot.remove_reaction(message, reaction.emoji, user)
+        if self.msgid_to_ref(message.id):
+            if not user.bot:
+                ref, num = self.msgid_to_ref(message.id)
+                if reaction.emoji in [ref["REPONSES"][r]["EMOJI"] for r in ref["REPONSES"]]:
+                    if not self.already_voted(message.id, user):
+                        for r in ref["REPONSES"]:
+                            if reaction.emoji == ref["REPONSES"][r]["EMOJI"]:
+                                ref["REPONSES"][r]["VOTES"].append(user.id)
+                                await self.bot.edit_message(message, embed=self.ref_embed(message.id))
+                                await self.bot.send_message(user, "**RÉFÉRENDUM (#{})** | Vote comptabilisé !".format(
+                                    num))
+                                return
+                    else:
+                        await self.bot.remove_reaction(message, reaction.emoji, user)
+                elif reaction.emoji == "📱":
+                    txt = "**AFFICHAGE MOBILE** - **{}**\n\n".format(ref["QUESTION"])
+                    reponses = ref["REPONSES"]
+                    rtx = stx = ""
+                    tot = sum([len(ref["REPONSES"][r]["VOTES"]) for r in ref["REPONSES"]])
+                    for r in reponses:
+                        nb = len(ref["REPONSES"][r]["VOTES"])
+                        emoji = ref["REPONSES"][r]["EMOJI"]
+                        prc = nb / tot if int(tot) > 0 else 0
+                        rtx += "\{} - **{}**\n".format(emoji, r)
+                        stx += "\{} - **{}** (*{}*%)\n".format(emoji, nb, round(prc * 100, 1))
+                    txt += "__**Réponses**__\n{}\n".format(rtx)
+                    txt += "__**Stats**__\n{}".format(stx)
+                    await self.bot.send_message(user, txt)
+                    await self.bot.remove_reaction(message, reaction.emoji, user)
+                else:
+                    await self.bot.remove_reaction(message, reaction.emoji, user)
 
     async def fp_listen_rem(self, reaction, user):
         message = reaction.message
@@ -405,6 +619,7 @@ class Agora:
                                         return
 
     async def fp_listen_pin(self, before, after):
+        server = after.server
         if self.msgid_to_poll(before.id):
             if before.pinned and not after.pinned:
                 poll, pid = self.msgid_to_poll(before.id)
@@ -414,6 +629,24 @@ class Agora:
                 em.set_author(name="RÉSULTATS #{} | {}".format(pid, poll["TITRE"]), icon_url=poll["IMG"])
                 await self.bot.send_message(after.channel, embed=em)
                 del self.sys["POLLS"][pid]
+        if self.msgid_to_ref(before.id):
+            if before.pinned and not after.pinned:
+                hall = "204585334925819904"
+                ref, num = self.msgid_to_ref(before.id)
+                await self.bot.send_message(after.channel, embed=self.ref_embed(before.id, "fin"))
+                await self.bot.send_message(server.get_channel(hall), embed=self.ref_embed(before.id, "cr"))
+                txt = self.crtext(before.id, server)
+                filename = "Ref_{}.txt".format(num)
+                file = open("data/agora/junk/{}".format(filename), "w", encoding="UTF-8")
+                file.write(txt)
+                file.close()
+                await asyncio.sleep(0.5)
+                try:
+                    await self.bot.send_file(before.channel, "data/agora/junk/{}".format(filename))
+                    os.remove("data/agora/junk/{}".format(filename))
+                except Exception as e:
+                    await self.bot.say("**Impossible d'upload le Compte-rendu texte** | `{}`".format(e))
+                del self.sys["REFS"][num]
 
     async def hologram_spawn(self, message):
         if "INCARNE" in self.sys:
@@ -466,6 +699,9 @@ def check_folders():
     if not os.path.exists("data/agora"):
         print("Création du dossier Agora...")
         os.makedirs("data/agora")
+    if not os.path.exists("data/agora/junk"):
+        print("Création du dossier Agora/junk...")
+        os.makedirs("data/agora/junk")
 
 
 def check_files():
@@ -475,6 +711,9 @@ def check_files():
     if not os.path.isfile("data/agora/law.json"):
         print("Création du fichier Agora/law.json...")
         fileIO("data/agora/law.json", "save", {})
+    if not os.path.isfile("data/agora/ektv.json"):
+        print("Création du fichier Agora/ektv.json...")
+        fileIO("data/agora/ektv.json", "save", {})
 
 
 def setup(bot):
