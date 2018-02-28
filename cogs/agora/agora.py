@@ -36,7 +36,7 @@ class Agora:
             while True:
                 fileIO("data/agora/sys.json", "save", self.sys)
                 for i in self.sys["REFS"]:
-                    if self.sys["REFS"][i]["LIMITE"] >= time.time():
+                    if self.sys["REFS"][i]["LIMITE"] <= time.time():
                         mess = await self.bot.get_message(channel, self.sys["REFS"][i]["MSGID"])
                         if mess:
                             await self.bot.unpin_message(mess)
