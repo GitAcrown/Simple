@@ -122,7 +122,8 @@ class Agora:
                                      "AUTEUR_ID": ctx.message.author.id,
                                      "TIMESTAMP": time.strftime("le %d/%m/%Y à %H:%M", time.localtime()),
                                      "LIMITE": time.time() + 3600,  # x*24h
-                                     "MIN_VOTES": lim}  # Nb de membres habitués / 2 + 1
+                                     "MIN_VOTES": lim,
+                                     "LISTE_Q": reponses}  # Nb de membres habitués / 2 + 1
             for e in emos:
                 try:
                     await self.bot.add_reaction(msg, e)
@@ -132,6 +133,13 @@ class Agora:
             await self.bot.pin_message(msg)
         else:
             await self.bot.say("**Format** | `&r Question ?;Réponse 1;Réponse 2;Réponse N...`")
+
+    @commands.command(pass_context=True, no_pm=True, hidden=True)
+    async def resetrefs(self, ctx):
+        """Reset tous les référendums en cours"""
+        self.sys["REFS"] = {}
+        fileIO("data/agora/sys.json", "save", self.sys)
+        await self.bot.say("**Succès** | Tous les référendums en cours ont été supprimés.")
 
     # FULLCONTROL >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -388,12 +396,13 @@ class Agora:
             color = ref["COLOR"]
             question = ref["QUESTION"]
             reponses = ref["REPONSES"]
+            liste = ref["LISTE_Q"]
             auteur = "<@{}>".format(ref["AUTEUR_ID"])
             demar = ref["TIMESTAMP"]
             membretot = (ref["MIN_VOTES"] * 2) - 1
             tot = sum([len(ref["REPONSES"][r]["VOTES"]) for r in ref["REPONSES"]])
             rtx = stx = ""
-            for r in reponses:
+            for r in liste:
                 nb = len(ref["REPONSES"][r]["VOTES"])
                 emoji = ref["REPONSES"][r]["EMOJI"]
                 prc = nb / tot if int(tot) > 0 else 0
@@ -588,9 +597,10 @@ class Agora:
                 elif reaction.emoji == "📱":
                     txt = "**AFFICHAGE MOBILE** - **{}**\n\n".format(ref["QUESTION"])
                     reponses = ref["REPONSES"]
+                    liste = ref["LISTE_Q"]
                     rtx = stx = ""
                     tot = sum([len(ref["REPONSES"][r]["VOTES"]) for r in ref["REPONSES"]])
-                    for r in reponses:
+                    for r in liste:
                         nb = len(ref["REPONSES"][r]["VOTES"])
                         emoji = ref["REPONSES"][r]["EMOJI"]
                         prc = nb / tot if int(tot) > 0 else 0
