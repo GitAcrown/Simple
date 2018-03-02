@@ -124,7 +124,7 @@ class Agora:
                                      "AUTEUR": str(ctx.message.author.name),
                                      "AUTEUR_ID": str(ctx.message.author.id),
                                      "TIMESTAMP": time.strftime("le %d/%m/%Y à %H:%M", time.localtime()),
-                                     "LIMITE": time.time() + 300,  # x*24h
+                                     "LIMITE": time.time() + 3 * 86400,  # x*24h
                                      "MIN_VOTES": lim,
                                      "LISTE_Q": reponses}  # Nb de membres habitués / 2 + 1
             self.save()
