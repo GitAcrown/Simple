@@ -414,8 +414,8 @@ class Agora:
                     num, ref["AUTEUR"], tot))
             elif type == "cr":  #compte rendu
                 plus = "Lancé par {} {}\n**{}** membres de l'Assemblée y ont participé, soit {}% des membres.\n" \
-                       "*Si ce message s'affiche aucun problème n'a eu lieu, ainsi le résultat est certifié " \
-                       "valide.*".format(auteur, demar, tot, membretot)
+                       "*Aucun problème n'a eu lieu dans le déroulement du Référendum, le résultat est certifié valide" \
+                       "conformément à l'article 31 de la Charte.*".format(auteur, demar, tot, round((tot / membretot) * 100, 2))
                 em = discord.Embed(title="COMPTE-RENDU | {}".format(question.capitalize()), description= plus,
                                    color= color)
                 em.set_footer(text="Fichier texte disponible dans le salon de l'Assemblée".format(
