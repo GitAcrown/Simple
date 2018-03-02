@@ -25,6 +25,10 @@ class Agora:
         self.cycle_task = bot.loop.create_task(self.agora_loop())
         self.instances = {}
 
+    def save(self):
+        fileIO("data/agora/sys.json", "save", self.sys)
+        return True
+
     async def agora_loop(self):
         await self.bot.wait_until_ready()
         try:
@@ -33,7 +37,7 @@ class Agora:
                 self.sys["REFS"] = {}
             channel = self.bot.get_channel("395316684292096005")
             while True:
-                fileIO("data/agora/sys.json", "save", self.sys)
+                self.save()
                 for i in self.sys["REFS"]:
                     if self.sys["REFS"][i]["LIMITE"] <= time.time():
                         mess = await self.bot.get_message(channel, self.sys["REFS"][i]["MSGID"])
@@ -112,18 +116,18 @@ class Agora:
             em.set_footer(text="#{} ({}) | Votez avec les réactions ci-dessous".format(num, ctx.message.author.name))
             await self.bot.send_typing(ctx.message.channel)
             msg = await self.bot.send_message(server.get_channel("395316684292096005"), embed=em)
-            self.sys["REFS"][num] = {"QUESTION": question.capitalize(),
+            self.sys["REFS"][num] = {"QUESTION": question,
                                      "REPONSES": reps,
                                      "COLOR": color,
-                                     "MSGID": msg.id,
+                                     "MSGID": str(msg.id),
                                      "DESC": "",
-                                     "AUTEUR": ctx.message.author.name,
-                                     "AUTEUR_ID": ctx.message.author.id,
+                                     "AUTEUR": str(ctx.message.author.name),
+                                     "AUTEUR_ID": str(ctx.message.author.id),
                                      "TIMESTAMP": time.strftime("le %d/%m/%Y à %H:%M", time.localtime()),
                                      "LIMITE": time.time() + 60,  # x*24h
                                      "MIN_VOTES": lim,
                                      "LISTE_Q": reponses}  # Nb de membres habitués / 2 + 1
-            fileIO("data/agora/sys.json", "save", self.sys)
+            self.save()
             for e in emos:
                 try:
                     await self.bot.add_reaction(msg, e)
@@ -415,7 +419,7 @@ class Agora:
             elif type == "cr":  #compte rendu
                 plus = "Lancé par {} {}\n**{}** membres de l'Assemblée y ont participé, soit {}% des membres.\n" \
                        "*Aucun problème n'a eu lieu dans le déroulement du Référendum, le résultat est certifié valide" \
-                       "conformément à l'article 31 de la Charte.*".format(auteur, demar, tot, round((tot / membretot) * 100, 2))
+                       " conformément à l'article 31 de la Charte.*".format(auteur, demar, tot, round((tot / membretot) * 100, 2))
                 em = discord.Embed(title="COMPTE-RENDU | {}".format(question.capitalize()), description= plus,
                                    color= color)
                 em.set_footer(text="Fichier texte disponible dans le salon de l'Assemblée".format(
@@ -520,7 +524,7 @@ class Agora:
                 stx += "\{} - **{}** (*{}*%)\n".format(emojis[index], 0, 0)
                 emos.append(emojis[index])
             em = discord.Embed(color=rcolor)
-            em.set_author(name="#{} | {}".format(pid, question), icon_url=ctx.message.author.avatar_url)
+            em.set_author(name="#{} | {}".format(pid, question.capitalize()), icon_url=ctx.message.author.avatar_url)
             em.add_field(name="Réponses", value=rtx)
             em.add_field(name="Stats", value=stx)
             em.set_footer(text="Votez avec une réaction ci-dessous ({})".format("Vote strict" if strict else "Vote "
@@ -720,7 +724,7 @@ def check_folders():
 def check_files():
     if not os.path.isfile("data/agora/sys.json"):
         print("Création du fichier Agora/sys.json...")
-        fileIO("data/agora/sys.json", "save", {"POLLS": {}})
+        fileIO("data/agora/sys.json", "save", {"POLLS": {}, "REFS": {}})
     if not os.path.isfile("data/agora/law.json"):
         print("Création du fichier Agora/law.json...")
         fileIO("data/agora/law.json", "save", {})
