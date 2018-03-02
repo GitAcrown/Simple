@@ -31,8 +31,7 @@ class Agora:
             await asyncio.sleep(5)  # Temps de mise en route
             if "REFS" not in self.sys:
                 self.sys["REFS"] = {}
-                fileIO("data/agora/sys.json", "save", self.sys)
-            channel = self.bot.get_channel("406475230005952512")
+            channel = self.bot.get_channel("395316684292096005")
             while True:
                 fileIO("data/agora/sys.json", "save", self.sys)
                 for i in self.sys["REFS"]:
@@ -112,7 +111,7 @@ class Agora:
             em.add_field(name="Stats", value=stx)
             em.set_footer(text="#{} ({}) | Votez avec les réactions ci-dessous".format(num, ctx.message.author.name))
             await self.bot.send_typing(ctx.message.channel)
-            msg = await self.bot.send_message(server.get_channel("406475230005952512"), embed=em)
+            msg = await self.bot.send_message(server.get_channel("395316684292096005"), embed=em)
             self.sys["REFS"][num] = {"QUESTION": question.capitalize(),
                                      "REPONSES": reps,
                                      "COLOR": color,
@@ -121,9 +120,10 @@ class Agora:
                                      "AUTEUR": ctx.message.author.name,
                                      "AUTEUR_ID": ctx.message.author.id,
                                      "TIMESTAMP": time.strftime("le %d/%m/%Y à %H:%M", time.localtime()),
-                                     "LIMITE": time.time() + 3600,  # x*24h
+                                     "LIMITE": time.time() + 60,  # x*24h
                                      "MIN_VOTES": lim,
                                      "LISTE_Q": reponses}  # Nb de membres habitués / 2 + 1
+            fileIO("data/agora/sys.json", "save", self.sys)
             for e in emos:
                 try:
                     await self.bot.add_reaction(msg, e)
@@ -644,7 +644,7 @@ class Agora:
                 del self.sys["POLLS"][pid]
         if self.msgid_to_ref(before.id):
             if before.pinned and not after.pinned:
-                hall = "204585334925819904"
+                hall = "329071582129422337"
                 ref, num = self.msgid_to_ref(before.id)
                 await self.bot.send_message(after.channel, embed=self.ref_embed(before.id, "fin"))
                 await self.bot.send_message(server.get_channel(hall), embed=self.ref_embed(before.id, "cr"))
