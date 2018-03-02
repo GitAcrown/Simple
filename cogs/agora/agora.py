@@ -87,7 +87,7 @@ class Agora:
                     return
             lim = (int(len([user.id for user in server.members if "Habitué" in [r.name for r in user.roles]])) / 2) + 1
             num = random.randint(100, 999)
-            color = ctx.message.author.color
+            color = 0xf7f7f7
             qr = " ".join(qr)
             qr = qr.split(";")
             question = qr[0]
