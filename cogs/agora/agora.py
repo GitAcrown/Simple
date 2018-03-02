@@ -35,7 +35,7 @@ class Agora:
             await asyncio.sleep(5)  # Temps de mise en route
             if "REFS" not in self.sys:
                 self.sys["REFS"] = {}
-            channel = self.bot.get_channel("395316684292096005")
+            channel = self.bot.get_channel("406475230005952512")
             while True:
                 self.save()
                 for i in self.sys["REFS"]:
@@ -115,7 +115,7 @@ class Agora:
             em.add_field(name="Stats", value=stx)
             em.set_footer(text="#{} ({}) | Votez avec les réactions ci-dessous".format(num, ctx.message.author.name))
             await self.bot.send_typing(ctx.message.channel)
-            msg = await self.bot.send_message(server.get_channel("395316684292096005"), embed=em)
+            msg = await self.bot.send_message(server.get_channel("406475230005952512"), embed=em)
             self.sys["REFS"][num] = {"QUESTION": question,
                                      "REPONSES": reps,
                                      "COLOR": color,
@@ -648,7 +648,7 @@ class Agora:
                 del self.sys["POLLS"][pid]
         if self.msgid_to_ref(before.id):
             if before.pinned and not after.pinned:
-                hall = "329071582129422337"
+                hall = "204585334925819904"
                 ref, num = self.msgid_to_ref(before.id)
                 await self.bot.send_message(after.channel, embed=self.ref_embed(before.id, "fin"))
                 await self.bot.send_message(server.get_channel(hall), embed=self.ref_embed(before.id, "cr"))
