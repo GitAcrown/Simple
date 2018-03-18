@@ -41,7 +41,9 @@ class Arcade:
                                   "INV": [],
                                   "ATK": 2,
                                   "DEF": 1,
-                                  "VIE": 20}
+                                  "VIE": 20,
+                                  "PSEUDO": user.name}
+        self.data[user.id]["PSEUDO"] = user.name
         return self.data[user.id]
 
     async def despawn(self, channel, mid):
@@ -151,20 +153,17 @@ class Arcade:
                 em.add_field(name="STATS", value=txt)
                 em.set_thumbnail(url=entity["IMG"])
                 dlg = random.choice(["Aïe ! Vous avez fait {} dgts !", "Bien joué ! {} dgts.", "{} dgts ! Bien fait !"])
+                self.instances[message.id]["DESPAWN"] = 0
                 em.set_footer(text=dlg.format(hit))
                 await self.bot.edit_message(message, embed=em)
                 await self.bot.remove_reaction(message, reaction.emoji, user)
-                await asyncio.sleep(3)
-                em.set_footer(text="💢 Attaquer")
-                await self.bot.edit_message(message, embed=em)
             else:
                 em = discord.Embed(title="[Q_ALPHA] {}".format(entity["NOM"]), color=0xededed,  # he's ded
                                    description="***MORT***")
                 em.set_thumbnail(url=entity["IMG"])
                 liste = ""
                 for p in combattants:
-                    u = server.get_member(p)
-                    liste += "- *{}*\n".format(u.name)
+                    liste += "- *{}*\n".format(combattants[p]["PSEUDO"])
                 em.add_field(name="GAGNANTS", value=liste)
                 em.set_footer(text="Vous avez vaincu {} avec succès ! GG !".format(entity["NOM"]))
                 await self.bot.edit_message(message, embed=em)
