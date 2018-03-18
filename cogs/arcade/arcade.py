@@ -28,7 +28,7 @@ class Arcade:
                 for i in self.instances:
                     if self.instances[i]["DESPAWN"] == 1:
                         channel = self.bot.get_channel(self.instances[i]["CHANNEL"])
-                        await self.despawn(channel, i)
+                        await self.despawn(i)
                     else:
                         self.instances[i]["DESPAWN"] = 1
                 await asyncio.sleep(60)
@@ -46,9 +46,9 @@ class Arcade:
         self.data[user.id]["PSEUDO"] = user.name
         return self.data[user.id]
 
-    async def despawn(self, channel, mid):
+    async def despawn(self, mid):
         if mid in self.instances:
-            message = self.bot.get_message(channel, mid)
+            message = self.instances[mid]["MSG"]
             await self.bot.delete_message(message)
             del self.instances[mid]
         else:
@@ -128,7 +128,7 @@ class Arcade:
             self.instances[msg.id] = {"ENNEMI": entity,
                                       "COMBATTANTS": {},
                                       "DESPAWN": 0,
-                                      "CHANNEL": channel.id}
+                                      "MSG": msg}
 
     async def react_add(self, reaction, user):
         message = reaction.message
