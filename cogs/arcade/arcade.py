@@ -130,9 +130,8 @@ class Arcade:
         if message.id in self.instances:
             acc = self.open(user)
             entity = self.instances[message.id]["ENNEMI"]
-            combattants = self.instances[message.id]["ENNEMI"]
-            if user.id not in combattants:
-                combattants[user.id] = acc
+            if user.id not in self.instances[message.id]["COMBATTANTS"]:
+                self.instances[message.id]["COMBATTANTS"][user.id] = acc
             critique = True if random.randint(0, 10) == 0 else False
             hit = acc["ATK"] * 2 if critique else acc["ATK"]
             entity["VIE"] -= hit
@@ -162,8 +161,8 @@ class Arcade:
                                    description="***MORT***")
                 em.set_thumbnail(url=entity["IMG"])
                 liste = ""
-                for p in combattants:
-                    liste += "- *{}*\n".format(combattants[p]["PSEUDO"])
+                for p in self.instances[message.id]["COMBATTANTS"]:
+                    liste += "- *{}*\n".format(self.instances[message.id]["COMBATTANTS"][p]["PSEUDO"])
                 em.add_field(name="GAGNANTS", value=liste)
                 em.set_footer(text="Vous avez vaincu {} avec succès ! GG !".format(entity["NOM"]))
                 await self.bot.edit_message(message, embed=em)
