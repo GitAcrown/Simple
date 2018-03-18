@@ -49,7 +49,11 @@ class Arcade:
     async def despawn(self, mid):
         if mid in self.instances:
             message = self.instances[mid]["MSG"]
-            await self.bot.delete_message(message)
+            entity = self.instances[mid]["ENNEMI"]
+            em = discord.Embed(title="Q_α | {}".format(entity["NOM"]), color=entity["COLOR"],
+                               description="**A FUI**")
+            await self.bot.edit_message(embed=em)
+            await self.bot.clear_reactions(message)
             del self.instances[mid]
         else:
             return False
