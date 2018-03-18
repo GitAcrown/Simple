@@ -123,6 +123,8 @@ class Arcade:
         message = reaction.message
         channel = message.channel
         server = message.server
+        if user.bot:
+            return
         if message.id in self.instances:
             acc = self.open(user)
             entity = self.instances[message.id]["ENNEMI"]
