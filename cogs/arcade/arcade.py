@@ -15,9 +15,25 @@ class Arcade:
         self.bot = bot
         self.sys = dataIO.load_json("data/arcade/sys.json") # Fichier paramètres
         self.data = dataIO.load_json("data/arcade/data.json") # Fichier de joueurs
+        self.cycle_task = bot.loop.create_task(self.loop())
         self.instances = {}
         self.q_mstr = {}
         self.q_eqip = {}
+
+    async def loop(self):
+        await self.bot.wait_until_ready()
+        try:
+            await asyncio.sleep(5)  # Temps de mise en route
+            while True:
+                for i in self.instances:
+                    if self.instances[i]["DESPAWN"] == 1:
+                        channel = self.bot.get_channel(self.instances[i]["CHANNEL"])
+                        await self.despawn(channel, i)
+                    else:
+                        self.instances[i]["DESPAWN"] = 1
+                await asyncio.sleep(60)
+        except asyncio.CancelledError:
+            pass
 
     def open(self, user: discord.Member):
         if user.id not in self.data:
@@ -27,6 +43,14 @@ class Arcade:
                                   "DEF": 1,
                                   "VIE": 20}
         return self.data[user.id]
+
+    async def despawn(self, channel, mid):
+        if mid in self.instances:
+            message = self.bot.get_message(channel, mid)
+            await self.bot.delete_message(message)
+            del self.instances[mid]
+        else:
+            return False
 
     @commands.command(pass_context=True)
     async def spawn(self, ctx, model: int, channel: discord.Channel = None):
@@ -77,20 +101,23 @@ class Arcade:
         txt = "`{}` **PV**\n" \
               "**ATK** `{}`\n" \
               "**DEF** `{}`\n" \
-              "**EQUIP** `{} ({}, {}, {})".format(entity["VIE"],
+              "**EQUIP** `{} ({}, {}, {})`".format(entity["VIE"],
                                                   entity["ATK"],
                                                   entity["DEF"],
                                                   entity["EQUIP"]["NOM"],
                                                   entity["EQUIP"]["BONUS_VIE"],
                                                   entity["EQUIP"]["BONUS_ATK"],
                                                   entity["EQUIP"]["BONUS_DEF"])
+        em.set_thumbnail(url= entity["IMG"])
         em.add_field(name="STATS", value=txt)
-        em.set_footer(text="\💢 = Attaquer")
+        em.set_footer(text="💢 Attaquer")
         msg = await self.bot.send_message(channel, embed=em)
         await self.bot.add_reaction(msg, "💢")
         if msg.id not in self.instances:
             self.instances[msg.id] = {"ENNEMI": entity,
-                                      "COMBATTANTS": {}}
+                                      "COMBATTANTS": {},
+                                      "DESPAWN": 0,
+                                      "CHANNEL": channel.id}
 
     async def react_add(self, reaction, user):
         message = reaction.message
@@ -112,7 +139,7 @@ class Arcade:
                 txt = "`{}` **PV**\n" \
                       "**ATK** `{}`\n" \
                       "**DEF** `{}`\n" \
-                      "**EQUIP** `{} ({}, {}, {})".format(entity["VIE"],
+                      "**EQUIP** `{} ({}, {}, {})`".format(entity["VIE"],
                                                           entity["ATK"],
                                                           entity["DEF"],
                                                           entity["EQUIP"]["NOM"],
@@ -120,16 +147,18 @@ class Arcade:
                                                           entity["EQUIP"]["BONUS_ATK"],
                                                           entity["EQUIP"]["BONUS_DEF"])
                 em.add_field(name="STATS", value=txt)
+                em.set_thumbnail(url=entity["IMG"])
                 dlg = random.choice(["Aïe ! Vous avez fait {} dgts !", "Bien joué ! {} dgts.", "{} dgts ! Bien fait !"])
                 em.set_footer(text=dlg.format(hit))
                 await self.bot.edit_message(message, embed=em)
                 await self.bot.remove_reaction(message, reaction.emoji, user)
                 await asyncio.sleep(3)
-                em.set_footer(text="\💢 = Attaquer")
+                em.set_footer(text="💢 Attaquer")
                 await self.bot.edit_message(message, embed=em)
             else:
                 em = discord.Embed(title="[Q_ALPHA] {}".format(entity["NOM"]), color=0xededed,  # he's ded
                                    description="***MORT***")
+                em.set_thumbnail(url=entity["IMG"])
                 liste = ""
                 for p in combattants:
                     u = server.get_member(p)
