@@ -27,7 +27,6 @@ class Arcade:
             while True:
                 for i in self.instances:
                     if self.instances[i]["DESPAWN"] == 1:
-                        channel = self.bot.get_channel(self.instances[i]["CHANNEL"])
                         await self.despawn(i)
                     else:
                         self.instances[i]["DESPAWN"] = 1
