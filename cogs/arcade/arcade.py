@@ -77,6 +77,15 @@ class Arcade:
                       "EQUIP": None,
                       "IMG": "https://cdn.discordapp.com/emojis/334144438647652352.png",
                       "COLOR": 0x82503b}
+        elif model == 2:
+            entity = {"NOM": "Larry",
+                      "DESC": "Un coup de CHANCE.",
+                      "ATK": 1,
+                      "DEF": 5,
+                      "VIE": 20,
+                      "EQUIP": None,
+                      "IMG": "https://cdn.discordapp.com/emojis/391241567794626560.png",
+                      "COLOR": 0xdda78b}
         else:
             await self.bot.say("Modèle #{} non disponible.".format(model))
             return
@@ -98,7 +107,7 @@ class Arcade:
         entity["DEF"] += arme["BONUS_DEF"]
         entity["VIE"] += arme["BONUS_VIE"]
 
-        em = discord.Embed(title="[Q_ALPHA] {}".format(entity["NOM"]), color=entity["COLOR"],
+        em = discord.Embed(title="Q_α | {}".format(entity["NOM"]), color=entity["COLOR"],
                            description=entity["DESC"])
         txt = "`{}` **PV**\n" \
               "**ATK** `{}`\n" \
@@ -137,7 +146,7 @@ class Arcade:
             entity["VIE"] -= hit
             if entity["VIE"] > 0:
 
-                em = discord.Embed(title="[Q_ALPHA] {}".format(entity["NOM"]), color=entity["COLOR"],
+                em = discord.Embed(title="Q_α | {}".format(entity["NOM"]), color=entity["COLOR"],
                                    description=entity["DESC"])
                 txt = "`{}` **PV**\n" \
                       "**ATK** `{}`\n" \
@@ -157,7 +166,7 @@ class Arcade:
                 await self.bot.edit_message(message, embed=em)
                 await self.bot.remove_reaction(message, reaction.emoji, user)
             else:
-                em = discord.Embed(title="[Q_ALPHA] {}".format(entity["NOM"]), color=0xededed,  # he's ded
+                em = discord.Embed(title="Q_α | {}".format(entity["NOM"]), color=0xededed,  # he's ded
                                    description="***MORT***")
                 em.set_thumbnail(url=entity["IMG"])
                 liste = ""
