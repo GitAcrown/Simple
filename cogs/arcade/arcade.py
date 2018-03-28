@@ -41,6 +41,7 @@ class Arcade:
                                   "ATK": 2,
                                   "DEF": 1,
                                   "VIE": 20,
+                                  "VIT": 100,
                                   "PSEUDO": user.name}
         self.data[user.id]["PSEUDO"] = user.name
         return self.data[user.id]

@@ -96,6 +96,25 @@ class SocialAPI:
         p["LOGS"].append([heure, jour, event])
         return True
 
+    def g_succes(self, user: discord.Member, clef: str, nom: str, description: str, image: str, needed: int = 1, modif: int = 1):
+        """Ajoute un succès de paramètres nom, description & image en suivant la condition 'needed' en ajoutant des
+        points avec 'modif'"""
+        u = self.get(user, "SOC")
+        clef = clef.lower()
+        if clef not in u["SUCCES"]:
+            u["SUCCES"][clef] = {"DESC": description,
+                                 "IMAGE": image,
+                                 "POINTS": 0,
+                                 "UNLOCK": False,
+                                 "NOM": nom}
+        if u["SUCCES"][clef]["UNLOCK"]:
+            return False
+        u["SUCCES"][clef]["POINTS"] += modif
+        if u["SUCCES"][clef]["POINTS"] >= needed:
+            u["SUCCES"][clef]["UNLOCK"] = True
+            self.add_log(user, "Succès débloqué : [__{}__]({})".format(nom, image))
+        return True
+
     def color_disp(self, user: discord.Member):
         s = user.status
         if not user.bot:
@@ -383,6 +402,60 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
             await ctx.invoke(self.profil, membre=membre)
 
     @_carte.command(pass_context=True)
+    async def succes(self, ctx, afficher: str = None):
+        """Permet de voir ses succès débloqués ou d'en choisir un pour afficher ses détails en précisant sa clef"""
+        p = self.api.get(ctx.message.author, "SOC")
+        if not afficher:
+            txt = ""
+            aide = True
+            if p["SUCCES"]:
+                for suc in p["SUCCES"]:
+                    if p["SUCCES"][suc]["UNLOCK"]:
+                        txt += "**{}** | [__{}__]({})\n".format(suc.upper(), p["SUCCES"][suc]["NOM"],
+                                                                p["SUCCES"][suc]["IMAGE"])
+            else:
+                txt = random.choice(["Vous n'en avez débloqué aucun :(", "Désolé, mais vous n'avez aucun succès.",
+                                     "Aucun succès à l'horizon...", "Oups... vous n'avez pas de succès débloqués."])
+                aide = False
+            em = discord.Embed(color=ctx.message.author.color, title="Vos succès débloqués", description=txt)
+            if aide:
+                em.set_footer(text="Faîtes '{}c succes' + la clef (en gras) pour afficher les détails "
+                                   "du succès".format(ctx.prefix))
+            await self.bot.say(embed=em)
+        else:
+            if afficher.lower() in p["SUCCES"]:
+                suc = p["SUCCES"][afficher.lower()]
+                em = discord.Embed(color=ctx.message.author.color, title="Succès | {}".format(suc["NOM"]),
+                                   description=suc["DESC"])
+                em.set_thumbnail(url=suc["IMAGE"])
+                em.set_footer(text="✔ = Afficher ce succès sur ma carte de membre")
+                menu = await self.bot.say(embed=em)
+                await self.bot.add_reaction(menu, "✔")
+                await asyncio.sleep(0.25)
+                rep = await self.bot.wait_for_reaction(["✔"], message=menu, timeout=30,
+                                                       check=self.check, user=ctx.message.author)
+                if rep is None:
+                    em.set_footer(text="")
+                    await self.bot.edit_message(menu, embed=em)
+                    await self.bot.clear_reactions(menu)
+                    return
+                elif rep.reaction.emoji == "✔":
+                    em.set_footer(text="✔ Ce succès sera affiché sur votre Carte (coin supérieur gauche)")
+                    await self.bot.edit_message(menu, embed=em)
+                    await self.bot.clear_reactions(menu)
+                    p["DISPLAY"] = [suc["NOM"], suc["IMAGE"]]
+                    self.smart_save()
+                    return
+                else:
+                    em.set_footer(text="")
+                    await self.bot.edit_message(menu, embed=em)
+                    await self.bot.clear_reactions(menu)
+                    return
+            else:
+                await self.bot.say("**Introuvable** | Vérifiez que vous avez "
+                                   "bien tapé la clé correspondante au succès que vous désirez voir.")
+
+    @_carte.command(pass_context=True)
     async def profil(self, ctx, membre: discord.Member = None):
         """Affiche la carte de membre de l'utilisateur"""
         formatname = membre.name if membre.display_name == membre.name else "{} «{}»".format(membre.name,
@@ -390,7 +463,11 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
         pseudos, surnoms = self.api.namelist(membre)
         today = time.strftime("%d/%m/%Y", time.localtime())
         data = self.api.get(membre)
-        em = discord.Embed(title=formatname, description=data["SOC"]["BIO"], color=self.api.color_disp(membre))
+        if data["SOC"]["DISPLAY"]:
+            em = discord.Embed(color=self.api.color_disp(membre), description=data["SOC"]["BIO"])
+            em.set_author(name=formatname, icon_url=data["SOC"]["DISPLAY"][1])
+        else:
+            em = discord.Embed(title=formatname, description=data["SOC"]["BIO"], color=self.api.color_disp(membre))
         if membre.avatar_url:
             em.set_thumbnail(url=membre.avatar_url)
         em.add_field(name="Données", value="**ID** `{}`\n"
@@ -458,6 +535,8 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
         else:
             await self.bot.say("**Inconnu** | Je ne reconnais que 3 sexes: **Neutre**, **Feminin** et **Masculin**.\n"
                                "*Veillez à ne pas mettre d'accents !*")
+        self.api.g_succes(ctx.message.author, "SEX", "Changement de sexe", "Tu as changé de sexe ! (...)",
+                          "https://i.imgur.com/0H85GZ7.png")
         self.smart_save()
 
     @_carte.command(pass_context=True)
@@ -472,6 +551,8 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
             await self.bot.say("**Succès** | Votre bio n'affichera aucun texte.")
         self.api.add_log(ctx.message.author, "Changement de bio")
         u["BIO"] = " ".join(texte)
+        self.api.g_succes(ctx.message.author, "BIO", "Identité", "Tu as enfin mis une description !",
+                          "https://i.imgur.com/R7LmQWe.png")
         self.smart_save()
 
     @_carte.command(pass_context=True)
@@ -492,6 +573,8 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
             await self.bot.say("**Retirée** | Aucune image ne s'affichera sur votre carte")
             u["VITRINE"] = None
         self.api.add_log(ctx.message.author, "Image vitrine modifiée")
+        self.api.g_succes(ctx.message.author, "VIT", "Une nouvelle beauté", "Tu as changé ton image vitrine !",
+                          "https://i.imgur.com/DPk4EYT.png")
         self.smart_save()
 
 # TRIGGERS ----------------------------------------------
