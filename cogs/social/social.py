@@ -58,6 +58,7 @@ class SocialAPI:
                 "SOC": {"BIO": "",
                         "VITRINE": None,
                         "SUCCES": {},
+                        "DISPLAY": None,
                         "FLAMMES": [],
                         "MSG_FLUX": {},
                         "MSG_SAVE": {},
