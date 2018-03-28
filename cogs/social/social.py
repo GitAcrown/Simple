@@ -278,6 +278,9 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
                 self._save_instance["SAVETIME"] = time.time() + 300
         return True
 
+    def check(self, reaction, user):
+        return not user.bot
+
     @commands.group(no_pm=True, pass_context=True)
     @checks.admin_or_permissions(manage_roles=True)
     async def socmod(self, ctx):
