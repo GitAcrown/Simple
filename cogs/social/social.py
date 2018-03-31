@@ -601,6 +601,10 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
             if "EGGS" not in p["ECO"]["SAC"]:
                 p["ECO"]["SAC"]["EGGS"] = 0
             p["ECO"]["SAC"]["EGGS"] += eggs
+            if p["ECO"]["SAC"]["EGGS"] >= 100:
+                self.api.g_succes(author, "PAQ", "Plein d'oeufs",
+                                  "Vous avez réussi à avoir 100 oeufs durant l'Event du 1er Avril !",
+                                  "https://i.imgur.com/R5A6Ya2.gif")
             await self.bot.add_reaction(message, "🥚")
         p["STATS"]["MSG_TOTAL"] += 1
         p["STATS"]["MSG_CHANS"][channel.id] = p["STATS"]["MSG_CHANS"][channel.id] + 1 if \
