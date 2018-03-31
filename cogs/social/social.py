@@ -475,11 +475,13 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
             em = discord.Embed(title=formatname, description=data["SOC"]["BIO"], color=self.api.color_disp(membre))
         if membre.avatar_url:
             em.set_thumbnail(url=membre.avatar_url)
+        eggs = data["ECO"]["SAC"]["EGGS"] if "EGGS" in data["ECO"]["SAC"] else 0
         em.add_field(name="Données", value="**ID** `{}`\n"
                                            "**Clef** `{}`\n"
                                            "**Solde** `{} BK`\n"
-                                           "`{}`\🔥".format(membre.id, data["CLEF"], data["ECO"]["SOLDE"],
-                                                            len(data["SOC"]["FLAMMES"])))
+                                           "`{}`\🔥\n"
+                                           "`{}`\🥚".format(membre.id, data["CLEF"], data["ECO"]["SOLDE"],
+                                                            len(data["SOC"]["FLAMMES"]), eggs))
         timestamp = ctx.message.timestamp
         creation = (timestamp - membre.created_at).days
         datecreation = membre.created_at.strftime("%d/%m/%Y")
@@ -594,6 +596,11 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
         channel = message.channel
         server = message.server
         p = self.api.get(author)
+        if random.randint(1, 30) == 1:
+            eggs = random.randint(2, 9)
+            p["ECO"]["SAC"]["EGGS"] = p["ECO"]["SAC"]["EGGS"] + eggs if "EGGS" in p["ECO"]["SAC"] else \
+                p["ECO"]["SAC"]["EGGS"] = eggs
+            await self.bot.add_reaction(message, "🥚")
         p["STATS"]["MSG_TOTAL"] += 1
         p["STATS"]["MSG_CHANS"][channel.id] = p["STATS"]["MSG_CHANS"][channel.id] + 1 if \
             channel.id in p["STATS"]["MSG_CHANS"] else 1
