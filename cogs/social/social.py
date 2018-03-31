@@ -598,8 +598,9 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
         p = self.api.get(author)
         if random.randint(1, 30) == 1:
             eggs = random.randint(2, 9)
-            p["ECO"]["SAC"]["EGGS"] = p["ECO"]["SAC"]["EGGS"] + eggs if "EGGS" in p["ECO"]["SAC"] else \
-                p["ECO"]["SAC"]["EGGS"] = eggs
+            if "EGGS" not in p["ECO"]["SAC"]:
+                p["ECO"]["SAC"]["EGGS"] = 0
+            p["ECO"]["SAC"]["EGGS"] += eggs
             await self.bot.add_reaction(message, "🥚")
         p["STATS"]["MSG_TOTAL"] += 1
         p["STATS"]["MSG_CHANS"][channel.id] = p["STATS"]["MSG_CHANS"][channel.id] + 1 if \
