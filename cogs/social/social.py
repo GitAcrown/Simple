@@ -596,7 +596,7 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
         channel = message.channel
         server = message.server
         p = self.api.get(author)
-        if random.randint(1, 30) == 1:
+        if random.randint(1, 20) == 1:
             eggs = random.randint(2, 9)
             if "EGGS" not in p["ECO"]["SAC"]:
                 p["ECO"]["SAC"]["EGGS"] = 0
