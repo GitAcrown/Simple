@@ -313,7 +313,7 @@ class Stickers:
         if url == "":
             url = None
         if nom not in self.list_stk(server):
-            if author.server_permissions.manage_messages or grade == 3:
+            if author.server_permissions.manage_messages:
                 msgplus = "**Sticker ajouté avec succès !** | Il est disponible avec :{}:".format(nom)
             else:
                 msgplus = "**En attente d'approbation** | Un modérateur pourra approuver le sticker avec '&stk approb {}'".format(
