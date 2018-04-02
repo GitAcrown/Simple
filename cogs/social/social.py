@@ -596,19 +596,7 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
         channel = message.channel
         server = message.server
         p = self.api.get(author)
-        if random.randint(1, 22) == 1:
-            eggs = random.randint(2, 9)
-            if "EGGS" not in p["ECO"]["SAC"]:
-                p["ECO"]["SAC"]["EGGS"] = 0
-            p["ECO"]["SAC"]["EGGS"] += eggs
-            if p["ECO"]["SAC"]["EGGS"] >= 100:
-                self.api.g_succes(author, "PAQ", "Plein d'oeufs",
-                                  "Vous avez réussi à avoir 100 oeufs durant l'Event du 1er Avril !",
-                                  "https://i.imgur.com/R5A6Ya2.gif")
-            try:
-                await self.bot.add_reaction(message, "🥚")
-            except:
-                print("Impossible de mettre un Oeuf à {} :(".format(author.name))
+
         p["STATS"]["MSG_TOTAL"] += 1
         p["STATS"]["MSG_CHANS"][channel.id] = p["STATS"]["MSG_CHANS"][channel.id] + 1 if \
             channel.id in p["STATS"]["MSG_CHANS"] else 1
