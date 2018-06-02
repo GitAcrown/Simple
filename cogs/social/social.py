@@ -228,29 +228,6 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
         self.api = SocialAPI(bot, "data/social/user.json")  # SocialAPI
         self.logs = self.bot.get_cog('Extra').api
         self._save_instance = {"COUNT": 0, "NEED": 100, "SAVETIME": time.time() + 300, "FIRST": False}
-        self.quit_msg = ["Au revoir {} !", "Bye bye {}.", "{} s'est trompé de bouton.",
-                         "{} a été suicidé de deux bans dans le dos.", "{} a ragequit le serveur.",
-                         "GAME OVER {}", "A jamais {} !", "Les meilleurs partent en premier, sauf {}...",
-                         "{} est parti, un de moins !", "{} s'envole vers d'autres cieux !", "YOU DIED {}",
-                         "De toute évidence {} ne faisait pas parti de l'élite.", "{} a sauté d'un trottoir.",
-                         "{} a roulé jusqu'en bas de la falaise.", "{} est parti ouvrir son propre serveur...",
-                         "{} n'était de toute évidence pas assez *chill* pour ce serveur.",
-                         "{} a été supprimé par le lobby LGBTQ+.", "{} a été neutralisé par le lobby e-estonien.",
-                         "{}... désolé c'est qui ce random ?", "On m'annonce à l'oreillette que {} est parti.",
-                         "C'est la fin pour {}...", "{} est parti faire caca chez Paul.",
-                         "{} a été jeté dans la fosse aux randoms.", "{} est parti rejoindre Johnny...",
-                         "{} est parti suite à une rupture de stock de biscuits *Belvita*",
-                         "{} ne supportait plus d'être l'*Omega* du serveur.", "{} a paniqué une fois de plus.",
-                         "{}, itsbhuge mostaje", "{} s'est *enfin* barré !",
-                         "Plus besoin de le bloquer, {} est parti !",
-                         "Boop bip boup {} bip", "{} a pris sa retraite.",
-                         "{} a disparu dans des circonstances encore incertaines...", "Non pas toi {} ! 😢",
-                         "{} a quitté. Un de plus ou un de moins hein...",
-                         "{} était de toute évidence trop underground pour ce serveur de normies.",
-                         "{} a refusé de *checker ses privilèges* et en a payé le prix.",
-                         "{} est parti. C'est tellement triste j'en ai recraché mes céréales.",
-                         "{} a quitté/20", "{} est parti voir le serveur adulte.", "Ce n'est qu'un *au revoir* {} !",
-                         "{} a bu trop de javel", "Je crois que {} a bu des MST."]
 
     def smart_save(self):
         if not self._save_instance["FIRST"]:
@@ -657,16 +634,6 @@ class Social:  # MODULE >>>>>>>>>>>>>>>>>>>>>
                 save = True
         self.api.add_log(user, "Quitte le serveur")
         self.smart_save()
-        msgchannel = self.bot.get_channel("204585334925819904")  # HALL
-        grade, img, nomb = self.api.grade(user)
-        quitmsg = random.choice(self.quit_msg).format("<@" + str(user.id) + ">")
-        em = discord.Embed(description="👋 {}".format(quitmsg),
-                           color=user.color if user.color != discord.Colour.default() else 0x607d8b)
-        bip = user.top_role.name if user.top_role.name != "@everyone" and \
-                                    user.top_role.name.lower() != "ghostfag" else "Aucun rôle"
-        em.set_footer(text="{} | {}{}".format(user.display_name, bip, " (Rôles sauvegardés)" if save else ""),
-                      icon_url=img)
-        await self.bot.send_message(msgchannel, embed=em)
 
     async def prism_perso(self, before, after):
         p = self.api.get(after, "STATS")
